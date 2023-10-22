@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/HPCFinal.dir/serial.cpp.o CMakeFiles/HPCFinal.dir/main.cpp.o -o HPCFinal  _deps/fmt-build/libfmtd.a 

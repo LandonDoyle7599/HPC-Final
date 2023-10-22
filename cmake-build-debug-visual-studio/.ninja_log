@@ -1,0 +1,17 @@
+# ninja log v5
+8	1418	7196493604317957	_deps/fmt-build/CMakeFiles/fmt.dir/src/format.cc.obj	5564c0ec6f082516
+1	41	0	CMakeFiles/ClangFormat	7a03904d9df04b78
+93	1212	7196533545969834	CMakeFiles/HPCFinal.dir/serial.cpp.obj	68cce61b0a0bdadc
+1	41	0	C:/Users/lando/CLionProjects/HPCFinal/cmake-build-debug-visual-studio/CMakeFiles/ClangFormat	7a03904d9df04b78
+1213	1525	7196533548490304	HPCFinal.exe	3da044289ffa628a
+15	1378	7196493603902239	_deps/fmt-build/CMakeFiles/fmt.dir/src/os.cc.obj	a22111b93b3200bd
+76	461	7196495309638018	CMakeFiles/HPCFinal.dir/main.cpp.obj	6ea28768d9616157
+1418	1477	7196493604838927	_deps/fmt-build/fmtd.lib	657fedefc777d30
+0	16	0	clean	4ce1be9d639cc809
+0	105	0	CMakeFiles/ClangFormat	51953f7ac2cf7030
+0	105	0	C:/Users/lando/CLionProjects/HPCFinal/cmake-build-debug-visual-studio/CMakeFiles/ClangFormat	51953f7ac2cf7030
+106	1117	7196551259505618	CMakeFiles/HPCFinal.dir/serial.cpp.obj	68cce61b0a0bdadc
+1	50	0	CMakeFiles/ClangFormat	51953f7ac2cf7030
+1	50	0	C:/Users/lando/CLionProjects/HPCFinal/cmake-build-debug-visual-studio/CMakeFiles/ClangFormat	51953f7ac2cf7030
+51	650	7196551404380811	CMakeFiles/HPCFinal.dir/main.cpp.obj	6ea28768d9616157
+650	935	7196551406608040	HPCFinal.exe	61f5a06f578272dc

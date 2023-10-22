@@ -1,6 +1,3 @@
-#include <iostream>
+#include "serial.hpp"
 
-int main() {
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
-}
+int main() { performSerial(100, 6); }
