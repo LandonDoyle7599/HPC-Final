@@ -7,13 +7,16 @@ using namespace std;
  * @return vector of points
  *
  */
-vector<Point3D> readcsv() {
+vector<Point3D> readcsv()
+{
   vector<Point3D> points;
   string line;
+  // Hardcoded path to csv file. Change this to your own path. TODO: Or we make this relative
   ifstream file("C:\\Users\\lando\\CLionProjects\\HPCFinal\\song_data.csv");
   if (!file.is_open())
     cout << "Failed to open file\n";
-  while (getline(file, line)) {
+  while (getline(file, line))
+  {
     stringstream lineStream(line);
     string bit;
     double x, y, z;
@@ -33,30 +36,36 @@ vector<Point3D> readcsv() {
  * @param epochs - number of k means iterations
  * @param k - the number of initial centroids
  */
-void kMeansClustering(vector<Point3D> *points, int epochs, int k) {
+void kMeansClustering(vector<Point3D> *points, int epochs, int k)
+{
 
-  // Randomly initialise centroids
+  // Randomly initialize centroids
   // The index of the centroid within the centroids vector
   // represents the cluster label.
   vector<Point3D> centroids;
   srand(time(0));
   centroids.reserve(k);
-  for (int i = 0; i < k; ++i) {
+  for (int i = 0; i < k; ++i)
+  {
     centroids.push_back(points->at(rand() % points->size()));
   }
 
-  for (int i = 0; i < epochs; ++i) {
+  for (int i = 0; i < epochs; ++i)
+  {
     // For each centroid, compute distance from centroid to each point
     // and update point's cluster if necessary
     for (vector<Point3D>::iterator c = begin(centroids); c != end(centroids);
-         ++c) {
+         ++c)
+    {
       int clusterId = c - begin(centroids);
 
       for (vector<Point3D>::iterator it = points->begin(); it != points->end();
-           ++it) {
+           ++it)
+      {
         Point3D p = *it;
         double dist = c->distance(p);
-        if (dist < p.minDist) {
+        if (dist < p.minDist)
+        {
           p.minDist = dist;
           p.cluster = clusterId;
         }
@@ -67,7 +76,8 @@ void kMeansClustering(vector<Point3D> *points, int epochs, int k) {
     // Create vectors to keep track of data needed to compute means
     vector<int> nPoints;
     vector<double> sumX, sumY;
-    for (int j = 0; j < k; ++j) {
+    for (int j = 0; j < k; ++j)
+    {
       nPoints.push_back(0);
       sumX.push_back(0.0);
       sumY.push_back(0.0);
@@ -75,7 +85,8 @@ void kMeansClustering(vector<Point3D> *points, int epochs, int k) {
 
     // Iterate over points to append data to centroids
     for (vector<Point3D>::iterator it = points->begin(); it != points->end();
-         ++it) {
+         ++it)
+    {
       int clusterId = it->cluster;
       nPoints[clusterId] += 1;
       sumX[clusterId] += it->x;
@@ -85,27 +96,32 @@ void kMeansClustering(vector<Point3D> *points, int epochs, int k) {
     }
     // Compute the new centroids
     for (vector<Point3D>::iterator c = begin(centroids); c != end(centroids);
-         ++c) {
+         ++c)
+    {
       int clusterId = c - begin(centroids);
       c->x = sumX[clusterId] / nPoints[clusterId];
       c->y = sumY[clusterId] / nPoints[clusterId];
     }
   }
 
+  // TODO: Make this a separate function so that other ones can call it
   // Write to csv
   ofstream myfile;
+  // TODO: Change this to your own path or make it relative
   myfile.open("C:\\Users\\lando\\CLionProjects\\HPCFinal\\serialOutput.csv");
   myfile << "x,y,z,c" << endl;
 
   for (vector<Point3D>::iterator it = points->begin(); it != points->end();
-       ++it) {
+       ++it)
+  {
     myfile << it->x << "," << it->y << "," << it->z << "," << it->cluster
            << endl;
   }
   myfile.close();
 }
 
-void performSerial(int epoch, int clusterCount) {
+void performSerial(int epoch, int clusterCount)
+{
   vector<Point3D> points = readcsv();
 
   // Run k-means with 100 iterations and for 5 clusters
