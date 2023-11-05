@@ -13,10 +13,6 @@
 using namespace std;
 
 
-
-
-
-
  // Define a GPU device function to calculateDistance
  __device__ float calculateDistance(Point3D point, Point3D centroid) {
     float dx = point.x - centroid.x;
@@ -27,7 +23,6 @@ using namespace std;
 
 // Define a GPU kernel to perform k-means clustering
 __global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids, int nPoints, int k) {
-    
     // Get thread ID
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     // Exit if we are out of bounds
@@ -35,9 +30,9 @@ __global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids, int 
         return;
     }
     // Find the closest centroid to this point
-    float minDist = numeric_limits<float>::max(); // intiazlie to maximum so first point is closer
+    float minDist = calculateDistance(points[tid], centroids[0]); // setup first point
     int clusterId = 0;
-    for (int i = 0; i < k; ++i) {
+    for (int i = 1; i < k; ++i) {
         float dist = calculateDistance(points[tid], centroids[i]); // calculate distance between point and centroid with GPU function
         if (dist < minDist) {
             minDist = dist;
@@ -116,9 +111,6 @@ void kMeansClusteringGPU(vector<Point3D> *points, int epochs, int k)
       centroids[i].y = sumY / nPoints;
       centroids[i].z = sumZ / nPoints;
     }
-
-    // Print progress
-    cout << "Epoch " << i + 1 << " complete" << endl;
 }
 }
 
@@ -127,6 +119,6 @@ void performGPUKMeans(int epochs, int k)
     // First we use the same readcsv function as in serial.cpp. TODO: Use the parallel version of this to read in the values
     vector<Point3D> points = readcsv();
     kMeansClusteringGPU(&points, epochs, k);
-    saveOutputs(points, "single-gpu.csv");
+    saveOutputs(&points, "single-gpu.csv");
 }
 

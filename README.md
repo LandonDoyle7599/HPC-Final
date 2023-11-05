@@ -18,7 +18,17 @@ TODO: Insert Commands Here
 
 ### Parallel GPU
 
-We first need to compile the gpu fileds
+Running on CHPC first we need to load the module:
+```bash
+module load cuda/12
+```
+
+Now we can compile:
+
+```bash
+nvcc gpu.cu -o gpu
+```
+
 
 ### Distributed GPU
 
