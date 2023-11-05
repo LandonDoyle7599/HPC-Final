@@ -1,4 +1,7 @@
 #include "serial.hpp"
+#include <iostream>
+#include <fstream>
+#include <string>
 
 using namespace std;
 
@@ -7,12 +10,12 @@ using namespace std;
  * @return vector of points
  *
  */
-vector<Point3D> readcsv()
+vector<Point3D> readcsv(string filename)
 {
   vector<Point3D> points;
   string line;
   // TODO: Make this a relative path
-  ifstream file("C:\\Users\\lando\\CLionProjects\\HPCFinal\\song_data.csv");
+  ifstream file(filename);
   if (!file.is_open())
     cout << "Failed to open file\n";
   while (getline(file, line))
@@ -126,8 +129,9 @@ void saveOutputs(vector<Point3D> *points, string filename)
 
 void performSerial(int epoch, int clusterCount)
 {
-  vector<Point3D> points = readcsv();
+  vector<Point3D> points = readcsv("C:\\Users\\lando\\CLionProjects\\HPCFinal\\song_data.csv");
   kMeansClustering(&points, epoch, clusterCount); // K-means clustering on the points.
   // TODO: Make this a relative path
   saveOutputs(&points, "C:\\Users\\lando\\CLionProjects\\HPCFinal\\serialOutput.csv");
 }
+

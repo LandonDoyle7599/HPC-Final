@@ -33,6 +33,7 @@ struct Point3D {
  *
  */
 vector<Point3D> readcsv();
+
 /**
  * Perform k-means clustering
  * @param points - pointer to vector of points
@@ -44,3 +45,59 @@ void kMeansClustering(vector<Point3D> *points, int epochs, int k);
 void saveOutputs(vector<Point3D> *points, string filename);
 
 void performSerial(int epoch, int clusterCount);
+
+bool areFilesEqual(string filename1, string filename2, bool showDiff){
+    // Open the first CSV file
+    std::ifstream file1(filename1);
+    if (!file1.is_open()) {
+        std::cerr << "Error opening " << filename1 << std::endl;
+        return false;
+    }
+
+    // Open the second CSV file
+    std::ifstream file2(filename2);
+    if (!file2.is_open()) {
+        std::cerr << "Error opening " << filename2 << std::endl;
+        return false;
+    }
+
+    std::string line1, line2;
+    int lineNum = 1;  // Line number for tracking differences
+    bool flag = true; // let the parser compare the differences
+
+    while (getline(file1, line1) && getline(file2, line2)) {
+        if (line1 != line2) {
+            flag = false;
+            // Exit out early if we don't want to see the debugging
+            if (!showDiff) {
+              file1.close();
+              file2.close();
+              return false;
+            }
+            std::cout << "Difference in line " << lineNum << ":\n";
+            std::cout << "File 1: " << line1 << "\n";
+            std::cout << "File 2: " << line2 << "\n\n";
+        }
+        lineNum++;
+    }
+
+    // Check if one file has extra lines
+    if (getline(file1, line1)) {
+      flag = false;
+        while (getline(file1, line1)) {
+            std::cout << "Extra line in file 1 (line " << lineNum << "):\n";
+            std::cout << "File 1: " << line1 << "\n\n";
+            lineNum++;
+        }
+    } else if (getline(file2, line2)) {
+        while (getline(file2, line2)) {
+          flag = false;
+            std::cout << "Extra line in file 2 (line " << lineNum << "):\n";
+            std::cout << "File 2: " << line2 << "\n\n";
+            lineNum++;
+        }
+    }
+    file1.close();
+    file2.close();
+    return flag;
+}

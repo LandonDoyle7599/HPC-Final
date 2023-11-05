@@ -29,8 +29,17 @@ Now we can compile:
 nvcc gpu.cu -o gpu
 ```
 
+And execute 
+
+```bash
+./gpu
+```
 
 ### Distributed GPU
+
+### Validation
+
+In serial.hpp we wrote a function, areFilesEqual, to validate two csv files against eachother. It will return true if the are, false if not. We will check every file against the ground truth, defined by the serial implementation.
 
 ### To Run the Python Visualization
 
