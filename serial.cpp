@@ -30,6 +30,7 @@ vector<Point3D> readcsv()
   }
   return points;
 }
+
 /**
  * Perform k-means clustering
  * @param points - pointer to vector of points
@@ -102,11 +103,13 @@ void kMeansClustering(vector<Point3D> *points, int epochs, int k)
       c->y = sumY[clusterId] / nPoints[clusterId];
     }
   }
-
-  // TODO: Make this a relative path
-  saveOutputs(points, "C:\\Users\\lando\\CLionProjects\\HPCFinal\\serialOutput.csv");
 }
 
+/**
+ * Saves the points to a csv file
+ * @param points - pointer to vector of points
+ * @param filename - name of file to save to
+ */
 void saveOutputs(vector<Point3D> *points, string filename)
 {
   ofstream myfile;
@@ -124,5 +127,7 @@ void saveOutputs(vector<Point3D> *points, string filename)
 void performSerial(int epoch, int clusterCount)
 {
   vector<Point3D> points = readcsv();
-  kMeansClustering(&points, epoch, clusterCount);
+  kMeansClustering(&points, epoch, clusterCount); // K-means clustering on the points.
+  // TODO: Make this a relative path
+  saveOutputs(&points, "C:\\Users\\lando\\CLionProjects\\HPCFinal\\serialOutput.csv");
 }

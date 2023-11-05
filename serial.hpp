@@ -41,4 +41,6 @@ vector<Point3D> readcsv();
  */
 void kMeansClustering(vector<Point3D> *points, int epochs, int k);
 
+void saveOutputs(vector<Point3D> *points, string filename);
+
 void performSerial(int epoch, int clusterCount);
