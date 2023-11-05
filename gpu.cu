@@ -22,7 +22,7 @@ using namespace std;
 }
 
 // Define a GPU kernel to perform k-means clustering
-__global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids, int nPoints, int k) {
+__global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids,int* clusterAssignments, int nPoints, int k) {
     // Get thread ID
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     // Exit if we are out of bounds
@@ -40,6 +40,7 @@ __global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids, int 
         }
     }
     // Update cluster id and minimum distance for this point
+    clusterAssignments[tid] = clusterId; // clusterAssignments is a global array of ints [nPoints]
     points[tid].cluster = clusterId;
     points[tid].minDist = minDist;
 }
@@ -69,21 +70,24 @@ void kMeansClusteringGPU(vector<Point3D> *points, int epochs, int k)
     // Allocate memory on GPU
     Point3D *d_points;
     Point3D *d_centroids;
+    int* d_clusterAssignments;
+
     cudaMalloc(&d_points, points->size() * sizeof(Point3D));
     cudaMalloc(&d_centroids, centroids.size() * sizeof(Point3D));
+    cudaMalloc(&d_clusterAssignments, numPoints * sizeof(int));
 
     // Copy data to GPU
     cudaMemcpy(d_points, points->data(), points->size() * sizeof(Point3D), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_centroids, centroids.data(), centroids.size() * sizeof(Point3D), cudaMemcpyHostToDevice);
+    // cudaMemcpy(d_centroids, centroids.data(), centroids.size() * sizeof(Point3D), cudaMemcpyHostToDevice);
 
     // Run kernel
     int threadsPerBlock = 256;
     int blocksPerGrid = (int)ceil((float)points->size() / threadsPerBlock);
-    kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, points->size(), k);
+    kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, d_clusterAssignments, points->size(), k);
 
     // Copy data back to CPU
     cudaMemcpy(points->data(), d_points, points->size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
-    cudaMemcpy(centroids.data(), d_centroids, centroids.size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
+    // cudaMemcpy(centroids.data(), d_centroids, centroids.size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
 
     // Free memory on GPU
     cudaFree(d_points);
