@@ -39,7 +39,6 @@ __global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids, int 
             clusterId = i;
         }
     }
-
     // Update cluster id and minimum distance for this point
     points[tid].cluster = clusterId;
     points[tid].minDist = minDist;
@@ -78,7 +77,7 @@ void kMeansClusteringGPU(vector<Point3D> *points, int epochs, int k)
     cudaMemcpy(d_centroids, centroids.data(), centroids.size() * sizeof(Point3D), cudaMemcpyHostToDevice);
 
     // Run kernel
-    int threadsPerBlock = 1024;
+    int threadsPerBlock = 256;
     int blocksPerGrid = (int)ceil((float)points->size() / threadsPerBlock);
     kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, points->size(), k);
 
@@ -117,8 +116,16 @@ void kMeansClusteringGPU(vector<Point3D> *points, int epochs, int k)
 void performGPUKMeans(int epochs, int k)
 {
     // First we use the same readcsv function as in serial.cpp. TODO: Use the parallel version of this to read in the values
-    vector<Point3D> points = readcsv();
+    cout << "Reading the csv" << endl;
+    vector<Point3D> points = readcsv("song_data.csv");
+    cout << "Read the csv, entering the k means computation" << endl;
     kMeansClusteringGPU(&points, epochs, k);
+    cout << "Saving the output" << endl;
     saveOutputs(&points, "single-gpu.csv");
 }
+
+int main() {
+  performGPUKMeans(100, 6);
+}
+
 
