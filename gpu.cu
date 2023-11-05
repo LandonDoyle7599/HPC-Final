@@ -27,17 +27,18 @@ using namespace std;
 
 // Define a GPU kernel to perform k-means clustering
 __global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids, int nPoints, int k) {
-    // Get thread (point) ID
+    
+    // Get thread ID
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
+    // Exit if we are out of bounds
     if (tid >= nPoints) {
         return;
     }
-
     // Find the closest centroid to this point
-    float minDist = numeric_limits<float>::max();
+    float minDist = numeric_limits<float>::max(); // intiazlie to maximum so first point is closer
     int clusterId = 0;
     for (int i = 0; i < k; ++i) {
-        float dist = calculateDistance(points[tid], centroids[i]);
+        float dist = calculateDistance(points[tid], centroids[i]); // calculate distance between point and centroid with GPU function
         if (dist < minDist) {
             minDist = dist;
             clusterId = i;
@@ -82,9 +83,9 @@ void kMeansClusteringGPU(vector<Point3D> *points, int epochs, int k)
     cudaMemcpy(d_centroids, centroids.data(), centroids.size() * sizeof(Point3D), cudaMemcpyHostToDevice);
 
     // Run kernel
-    int blockSize = 1024;
-    int gridSize = (int)ceil((float)points->size() / blockSize);
-    kMeansClusteringKernel<<<gridSize, blockSize>>>(d_points, d_centroids, points->size(), k);
+    int threadsPerBlock = 1024;
+    int blocksPerGrid = (int)ceil((float)points->size() / threadsPerBlock);
+    kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, points->size(), k);
 
     // Copy data back to CPU
     cudaMemcpy(points->data(), d_points, points->size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
