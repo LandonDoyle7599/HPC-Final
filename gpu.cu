@@ -78,7 +78,7 @@ void kMeansClusteringGPU(vector<Point3D> *points, int epochs, int k)
 
     // Copy data to GPU
     cudaMemcpy(d_points, points->data(), points->size() * sizeof(Point3D), cudaMemcpyHostToDevice);
-    // cudaMemcpy(d_centroids, centroids.data(), centroids.size() * sizeof(Point3D), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_centroids, centroids.data(), centroids.size() * sizeof(Point3D), cudaMemcpyHostToDevice);
 
     // Run kernel
     int threadsPerBlock = 256;
@@ -87,12 +87,13 @@ void kMeansClusteringGPU(vector<Point3D> *points, int epochs, int k)
 
     // Copy data back to CPU
     cudaMemcpy(points->data(), d_points, points->size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
-    // cudaMemcpy(centroids.data(), d_centroids, centroids.size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
+    cudaMemcpy(centroids.data(), d_centroids, centroids.size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
 
     // Free memory on GPU
     cudaFree(d_points);
     cudaFree(d_centroids);
 
+    // TODO: Feels like the c column problem is from here...
     // Update centroids
     for (int i = 0; i < k; ++i)
     {
