@@ -37,11 +37,12 @@ And execute
 
 ### Distributed GPU
 
-### Validation
+
+## Validation
 
 In serial.hpp we wrote a function, areFilesEqual, to validate two csv files against eachother. It will return true if the are, false if not. We will check every file against the ground truth, defined by the serial implementation.
 
-### To Run the Python Visualization
+## To Run the Python Visualization
 
 Run the following commands from the project root directory:
 
