@@ -74,7 +74,7 @@ void kMeansClusteringGPU(vector<Point3D> *points, int epochs, int k)
 
     cudaMalloc(&d_points, points->size() * sizeof(Point3D));
     cudaMalloc(&d_centroids, centroids.size() * sizeof(Point3D));
-    cudaMalloc(&d_clusterAssignments, numPoints * sizeof(int));
+    cudaMalloc(&d_clusterAssignments, points->size() * sizeof(int));
 
     // Copy data to GPU
     cudaMemcpy(d_points, points->data(), points->size() * sizeof(Point3D), cudaMemcpyHostToDevice);
