@@ -22,21 +22,16 @@ Running on CHPC first we need to load the module:
 ```bash
 module load cuda/12
 ```
-
 Now we can compile:
-
 ```bash
 nvcc gpu.cu -o gpu
 ```
-
 And execute 
-
 ```bash
 ./gpu
 ```
 
 ### Distributed GPU
-
 
 ## Validation
 

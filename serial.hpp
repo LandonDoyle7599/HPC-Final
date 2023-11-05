@@ -46,6 +46,7 @@ void saveOutputs(vector<Point3D> *points, string filename);
 
 void performSerial(int epoch, int clusterCount);
 
+
 bool areFilesEqual(string filename1, string filename2, bool showDiff){
     // Open the first CSV file
     std::ifstream file1(filename1);

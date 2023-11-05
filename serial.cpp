@@ -129,9 +129,9 @@ void saveOutputs(vector<Point3D> *points, string filename)
 
 void performSerial(int epoch, int clusterCount)
 {
-  vector<Point3D> points = readcsv("C:\\Users\\lando\\CLionProjects\\HPCFinal\\song_data.csv");
+  vector<Point3D> points = readcsv("song_data.csv");
   kMeansClustering(&points, epoch, clusterCount); // K-means clustering on the points.
   // TODO: Make this a relative path
-  saveOutputs(&points, "C:\\Users\\lando\\CLionProjects\\HPCFinal\\serialOutput.csv");
+  saveOutputs(&points, "serialOutput.csv");
 }
 

@@ -1,10 +1,6 @@
 #include "serial.hpp"
 // #include "gpu.cpp"
 
-
-
-
-
 int main()
 {
     int numberEpochs = 100;
