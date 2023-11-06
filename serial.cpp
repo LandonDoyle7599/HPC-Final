@@ -14,7 +14,6 @@ vector<Point3D> readcsv(string filename)
 {
   vector<Point3D> points;
   string line;
-  // TODO: Make this a relative path
   ifstream file(filename);
   if (!file.is_open())
     cout << "Failed to open file\n";
@@ -131,7 +130,6 @@ void performSerial(int epoch, int clusterCount)
 {
   vector<Point3D> points = readcsv("song_data.csv");
   kMeansClustering(&points, epoch, clusterCount); // K-means clustering on the points.
-  // TODO: Make this a relative path
   saveOutputs(&points, "serialOutput.csv");
 }
 
