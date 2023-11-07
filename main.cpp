@@ -1,10 +1,11 @@
-#include "serial.hpp"
+// #include "serial.hpp"
+#include "serial.cpp"
 // #include "gpu.cpp"
 
 int main()
 {
-    int numberEpochs = 100;
-    int numberClusters = 6;
-    performSerial(numberEpochs, numberClusters);
+    int numEpochs = 100;
+    int numClusters = 6;
+    performSerial(numEpochs, numClusters);
     // performGPU();
 }
