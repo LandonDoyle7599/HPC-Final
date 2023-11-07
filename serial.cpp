@@ -4,7 +4,6 @@
 #include <string>
 
 using namespace std;
-
 /**
  * Reads in the data.csv file into a vector of points
  * @return vector of points
@@ -82,9 +81,9 @@ void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int
     it->minDist = numeric_limits<float>::max(); // reset distance
   }
   // Compute the new centroids
-  for (vector<Point3D>::iterator c = begin(centroids); c != end(centroids); ++c)
+  for (vector<Point3D>::iterator c = centroids->begin(); c != points->end(); ++c)
   {
-    int clusterId = c - begin(centroids);
+    int clusterId = c - centroids->begin();
     c->x = sumX[clusterId] / nPoints[clusterId];
     c->y = sumY[clusterId] / nPoints[clusterId];
   }
