@@ -46,7 +46,7 @@ void kMeansClustering(vector<Point3D> *points, int epochs, int k);
 
 void saveOutputs(vector<Point3D> *points, string filename);
 
-void performSerial(int epoch, int clusterCount);
+void performSerial(int numEpochs, int clusterCount);
 
 vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points);
 
