@@ -116,11 +116,12 @@ void saveOutputs(vector<Point3D> *points, string filename)
  */
 void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids)
 {
-
+  cout << "Initializing centroids" << endl;
   vector<Point3D> centroids = initializeCentroids(numCentroids, points);
   // Repeat over epochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
   {
+    cout << "Epoch " << i << endl;
     // For each centroid, compute distance from centroid to each point
     // and update point's cluster if necessary
     for (vector<Point3D>::iterator c = begin(centroids); c != end(centroids); ++c)
@@ -140,6 +141,8 @@ void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids)
       }
     }
 
+    // Update the centroids
+    cout << "Updating centroids" << endl;
     updateCentroidData(points, &centroids, numCentroids);
   }
 }
