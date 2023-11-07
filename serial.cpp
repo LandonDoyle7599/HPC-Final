@@ -81,7 +81,7 @@ void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int
     it->minDist = numeric_limits<float>::max(); // reset distance
   }
   // Compute the new centroids
-  for (vector<Point3D>::iterator c = centroids->begin(); c != points->end(); ++c)
+  for (vector<Point3D>::iterator c = centroids->begin(); c != centroids->end(); ++c)
   {
     int clusterId = c - centroids->begin();
     c->x = sumX[clusterId] / nPoints[clusterId];
@@ -140,7 +140,6 @@ void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids)
         *it = p;
       }
     }
-
     // Update the centroids
     cout << "Updating centroids" << endl;
     updateCentroidData(points, &centroids, numCentroids);
