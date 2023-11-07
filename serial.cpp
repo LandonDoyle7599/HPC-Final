@@ -146,7 +146,10 @@ void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids)
 
 void performSerial(int numEpochs, int clusterCount)
 {
+  cout << "Reading the csv" << endl;
   vector<Point3D> points = readcsv("song_data.csv");
+  cout << "Entering the k means computation" << endl;
   kMeansClustering(&points, numEpochs, clusterCount); // K-means clustering on the points.
+  cout << "Saving the output" << endl;
   saveOutputs(&points, "serialOutput.csv");
 }
