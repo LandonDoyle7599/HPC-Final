@@ -16,7 +16,7 @@ plt.title("Scatterplot of features")
 
 # After clustering
 plt.figure()
-df = pd.read_csv("serialOutput.csv")
+df = pd.read_csv("./persistedData/single-gpu.csv")
 fig = plt.figure()
 ax = fig.add_subplot(111, projection="3d")
 scatter = ax.scatter(df.x, df.y, df.z, c=df.c, cmap="viridis")
