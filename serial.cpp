@@ -4,7 +4,6 @@
 #include <string>
 
 using namespace std;
-
 /**
  * Reads in the data.csv file into a vector of points
  * @return vector of points
@@ -14,7 +13,6 @@ vector<Point3D> readcsv(string filename)
 {
   vector<Point3D> points;
   string line;
-  // TODO: Make this a relative path
   ifstream file(filename);
   if (!file.is_open())
     cout << "Failed to open file\n";
@@ -35,76 +33,59 @@ vector<Point3D> readcsv(string filename)
 }
 
 /**
- * Perform k-means clustering
+ * Initializes the centroids
+ * @param numCentroids - the number of initial centroids
  * @param points - pointer to vector of points
- * @param epochs - number of k means iterations
- * @param k - the number of initial centroids
+ * @return vector of centroids
  */
-void kMeansClustering(vector<Point3D> *points, int epochs, int k)
+vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points)
 {
   // Randomly initialize centroids
-  // The index of the centroid within the centroids vector
-  // represents the cluster label.
+  // The index of the centroid within the centroids vector represents the cluster label.
   vector<Point3D> centroids;
   srand(time(0));
-  centroids.reserve(k);
-  for (int i = 0; i < k; ++i)
+  centroids.reserve(numCentroids); // create space in memory for specified number of centroids
+  for (int i = 0; i < numCentroids; ++i)
   {
     centroids.push_back(points->at(rand() % points->size()));
   }
+  return centroids;
+}
 
-  for (int i = 0; i < epochs; ++i)
+/**
+ * Updates the centroid data based on the points
+ * @param points - pointer to vector of points
+ * @param centroids - pointer to vector of centroids
+ * @param numCentroids - the number of initial centroids
+ */
+
+void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int numCentroids)
+{
+  // Create vectors to keep track of data needed to compute means
+  vector<int> nPoints;
+  vector<double> sumX, sumY;
+  for (int j = 0; j < numCentroids; ++j)
   {
-    // For each centroid, compute distance from centroid to each point
-    // and update point's cluster if necessary
-    for (vector<Point3D>::iterator c = begin(centroids); c != end(centroids);
-         ++c)
-    {
-      int clusterId = c - begin(centroids);
+    nPoints.push_back(0);
+    sumX.push_back(0.0);
+    sumY.push_back(0.0);
+  }
+  // Iterate over points to append data to centroids
+  for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
+  {
+    int clusterId = it->cluster;
+    nPoints[clusterId] += 1;
+    sumX[clusterId] += it->x;
+    sumY[clusterId] += it->y;
 
-      for (vector<Point3D>::iterator it = points->begin(); it != points->end();
-           ++it)
-      {
-        Point3D p = *it;
-        double dist = c->distance(p);
-        if (dist < p.minDist)
-        {
-          p.minDist = dist;
-          p.cluster = clusterId;
-        }
-        *it = p;
-      }
-    }
-
-    // Create vectors to keep track of data needed to compute means
-    vector<int> nPoints;
-    vector<double> sumX, sumY;
-    for (int j = 0; j < k; ++j)
-    {
-      nPoints.push_back(0);
-      sumX.push_back(0.0);
-      sumY.push_back(0.0);
-    }
-
-    // Iterate over points to append data to centroids
-    for (vector<Point3D>::iterator it = points->begin(); it != points->end();
-         ++it)
-    {
-      int clusterId = it->cluster;
-      nPoints[clusterId] += 1;
-      sumX[clusterId] += it->x;
-      sumY[clusterId] += it->y;
-
-      it->minDist = numeric_limits<float>::max(); // reset distance
-    }
-    // Compute the new centroids
-    for (vector<Point3D>::iterator c = begin(centroids); c != end(centroids);
-         ++c)
-    {
-      int clusterId = c - begin(centroids);
-      c->x = sumX[clusterId] / nPoints[clusterId];
-      c->y = sumY[clusterId] / nPoints[clusterId];
-    }
+    it->minDist = numeric_limits<float>::max(); // reset distance
+  }
+  // Compute the new centroids
+  for (vector<Point3D>::iterator c = centroids->begin(); c != centroids->end(); ++c)
+  {
+    int clusterId = c - centroids->begin();
+    c->x = sumX[clusterId] / nPoints[clusterId];
+    c->y = sumY[clusterId] / nPoints[clusterId];
   }
 }
 
@@ -118,7 +99,7 @@ void saveOutputs(vector<Point3D> *points, string filename)
   ofstream myfile;
   myfile.open(filename);
   myfile << "x,y,z,c" << endl;
-    for (vector<Point3D>::iterator it = points->begin(); it != points->end();
+  for (vector<Point3D>::iterator it = points->begin(); it != points->end();
        ++it)
   {
     myfile << it->x << "," << it->y << "," << it->z << "," << it->cluster
@@ -127,11 +108,48 @@ void saveOutputs(vector<Point3D> *points, string filename)
   myfile.close();
 }
 
-void performSerial(int epoch, int clusterCount)
+/**
+ * Perform k-means clustering
+ * @param points - pointer to vector of points
+ * @param numEpochs - number of k means iterations
+ * @param numCentroids - the number of initial centroids
+ */
+void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids)
 {
-  vector<Point3D> points = readcsv("song_data.csv");
-  kMeansClustering(&points, epoch, clusterCount); // K-means clustering on the points.
-  // TODO: Make this a relative path
-  saveOutputs(&points, "serialOutput.csv");
+
+  vector<Point3D> centroids = initializeCentroids(numCentroids, points);
+  // Repeat over epochs to converge the centroids
+  for (int i = 0; i < numEpochs; ++i)
+  {
+    // For each centroid, compute distance from centroid to each point
+    // and update point's cluster if necessary
+    for (vector<Point3D>::iterator c = begin(centroids); c != end(centroids); ++c)
+    {
+      int clusterId = c - begin(centroids);
+
+      for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
+      {
+        Point3D p = *it;
+        double dist = c->distance(p);
+        if (dist < p.minDist)
+        {
+          p.minDist = dist;
+          p.cluster = clusterId;
+        }
+        *it = p;
+      }
+    }
+    // Update the centroids
+    updateCentroidData(points, &centroids, numCentroids);
+  }
 }
 
+void performSerial(int numEpochs, int clusterCount)
+{
+  cout << "Reading the csv" << endl;
+  vector<Point3D> points = readcsv("song_data.csv");
+  cout << "Entering the k means computation" << endl;
+  kMeansClustering(&points, numEpochs, clusterCount); // K-means clustering on the points.
+  cout << "Saving the output" << endl;
+  saveOutputs(&points, "serialOutput.csv");
+}

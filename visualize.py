@@ -18,8 +18,8 @@ plt.title("Scatterplot of features")
 plt.figure()
 df = pd.read_csv("serialOutput.csv")
 fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-scatter = ax.scatter(df.x, df.y, df.z, c=df.c, cmap='viridis')
+ax = fig.add_subplot(111, projection="3d")
+scatter = ax.scatter(df.x, df.y, df.z, c=df.c, cmap="viridis")
 ax.set_xlabel("Energy")
 ax.set_ylabel("Speechiness")
 ax.set_zlabel("Instrumentalness")
@@ -27,6 +27,5 @@ plt.title("Clustered: Features with cluster labels")
 
 # Create a color bar for the cluster labels
 colorbar = plt.colorbar(scatter)
-colorbar.set_label('Cluster')
-
+colorbar.set_label("Cluster")
 plt.show()

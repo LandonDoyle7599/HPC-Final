@@ -1,6 +1,6 @@
 # Spotify Visualizer
 
-## How to Run 
+## How to Run
 
 ### Serial CPU
 
@@ -9,7 +9,8 @@ We used a Cmake file to compile our project. To run the project, you must have C
 To run the project, you must first clone the repository. Then, you must run the following commands in the terminal:
 
 ```bash
-TODO: Insert Commands Here
+g++ main.cpp -o main
+./main
 ```
 
 ### Parallel CPU
@@ -19,15 +20,15 @@ TODO: Insert Commands Here
 ### Parallel GPU
 
 Running on CHPC first we need to load the module:
+
 ```bash
 module load cuda/12
 ```
-Now we can compile:
+
+Now we can compile and execute:
+
 ```bash
 nvcc gpu.cu -o gpu
-```
-And execute 
-```bash
 ./gpu
 ```
 

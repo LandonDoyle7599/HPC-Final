@@ -1,8 +1,10 @@
-#include "serial.cpp"
+#include "serial.hpp"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +13,6 @@
 #include <cmath>
 
 using namespace std;
-
 
  // Define a GPU device function to calculateDistance
  __device__ float calculateDistance(Point3D point, Point3D centroid) {
@@ -22,7 +23,7 @@ using namespace std;
 }
 
 // Define a GPU kernel to perform k-means clustering
-__global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids,int* clusterAssignments, int nPoints, int k) {
+__global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids,int* clusterAssignments, int nPoints, int numCentroids) {
     // Get thread ID
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     // Exit if we are out of bounds
@@ -31,8 +32,9 @@ __global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids,int* 
     }
     // Find the closest centroid to this point
     float minDist = calculateDistance(points[tid], centroids[0]); // setup first point
-    int clusterId = 0;
-    for (int i = 1; i < k; ++i) {
+    int clusterId = 0; // setup first cluster id
+    for (int i = 1; i < numCentroids; ++i) {
+      Point3D p = points[i]
         float dist = calculateDistance(points[tid], centroids[i]); // calculate distance between point and centroid with GPU function
         if (dist < minDist) {
             minDist = dist;
@@ -48,25 +50,17 @@ __global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids,int* 
 /**
  * Perform k-means clustering with a GPU
  * @param points - pointer to vector of points
- * @param epochs - number of k means iterations
+ * @param numEpochs - number of k means iterations
  * @param k - the number of initial centroids
  */
-void kMeansClusteringGPU(vector<Point3D> *points, int epochs, int k)
+void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, int numCentroids)
 {
-    // Randomly initialize centroids
-  vector<Point3D> centroids;
-  srand(time(0));
-  centroids.reserve(k);
-  for (int i = 0; i < k; ++i)
-  {
-    centroids.push_back(points->at(rand() % points->size()));
-  }
+  // Initialize centroids
+  vector<Point3D> centroids = initializeCentroids(points, numCentroids);
 
-  for (int i = 0; i < epochs; ++i)
+  // Run k-means clustering over number of numEpochs to converge the centroids
+  for (int i = 0; i < numEpochs; ++i)
   {
-    // For each centroid, compute distance from centroid to each point
-    // and update point's cluster if necessary
-
     // Allocate memory on GPU
     Point3D *d_points;
     Point3D *d_centroids;
@@ -74,62 +68,46 @@ void kMeansClusteringGPU(vector<Point3D> *points, int epochs, int k)
 
     cudaMalloc(&d_points, points->size() * sizeof(Point3D));
     cudaMalloc(&d_centroids, centroids.size() * sizeof(Point3D));
-    cudaMalloc(&d_clusterAssignments, numPoints * sizeof(int));
+    cudaMalloc(&d_clusterAssignments, points->size() * sizeof(int));
 
     // Copy data to GPU
     cudaMemcpy(d_points, points->data(), points->size() * sizeof(Point3D), cudaMemcpyHostToDevice);
-    // cudaMemcpy(d_centroids, centroids.data(), centroids.size() * sizeof(Point3D), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_centroids, centroids.data(), centroids.size() * sizeof(Point3D), cudaMemcpyHostToDevice);
 
-    // Run kernel
+    // Run kernel to compute distance from centroid to each point
     int threadsPerBlock = 256;
     int blocksPerGrid = (int)ceil((float)points->size() / threadsPerBlock);
-    kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, d_clusterAssignments, points->size(), k);
+    kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, d_clusterAssignments, points->size(), numCentroids);
 
     // Copy data back to CPU
     cudaMemcpy(points->data(), d_points, points->size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
-    // cudaMemcpy(centroids.data(), d_centroids, centroids.size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
+    cudaMemcpy(centroids.data(), d_centroids, centroids.size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
 
     // Free memory on GPU
     cudaFree(d_points);
     cudaFree(d_centroids);
 
     // Update centroids
-    for (int i = 0; i < k; ++i)
-    {
-      int nPoints = 0;
-      float sumX = 0;
-      float sumY = 0;
-      float sumZ = 0;
-      for (int j = 0; j < points->size(); ++j)
-      {
-        if (points->at(j).cluster == i)
-        {
-          sumX += points->at(j).x;
-          sumY += points->at(j).y;
-          sumZ += points->at(j).z;
-          nPoints++;
-        }
-      }
-      centroids[i].x = sumX / nPoints;
-      centroids[i].y = sumY / nPoints;
-      centroids[i].z = sumZ / nPoints;
-    }
-}
+    updateCentroidData(points, &centroids, numCentroids);
+  }
 }
 
-void performGPUKMeans(int epochs, int k)
+void performGPUKMeans(int numEpochs, int numCentroids)
 {
     // First we use the same readcsv function as in serial.cpp. TODO: Use the parallel version of this to read in the values
     cout << "Reading the csv" << endl;
     vector<Point3D> points = readcsv("song_data.csv");
     cout << "Read the csv, entering the k means computation" << endl;
-    kMeansClusteringGPU(&points, epochs, k);
+    kMeansClusteringGPU(&points, numEpochs, numCentroids);
     cout << "Saving the output" << endl;
     saveOutputs(&points, "single-gpu.csv");
 }
 
+// Use this to run the program and compare outputs
 int main() {
   performGPUKMeans(100, 6);
+  bool res = areFilesEqual("single-gpu.csv", "serialOutput.csv", true);
+  std::cout << "Testing: " <<  res << std::endl;
 }
 
 
