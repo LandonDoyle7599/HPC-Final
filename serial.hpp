@@ -48,6 +48,10 @@ void saveOutputs(vector<Point3D> *points, string filename);
 
 void performSerial(int epoch, int clusterCount);
 
+vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points);
+
+void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int numCentroids);
+
 bool areFilesEqual(string filename1, string filename2, bool showDiff)
 {
   // Open the first CSV file
