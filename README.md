@@ -4,9 +4,7 @@
 
 ### Serial CPU
 
-We used a Cmake file to compile our project. To run the project, you must have Cmake and a c++ compiler.
-
-To run the project, you must first clone the repository. Then, you must run the following commands in the terminal:
+To run the serial code, run the following commands in the terminal:
 
 ```bash
 g++ main.cpp -o main
@@ -38,9 +36,17 @@ nvcc gpu.cu -o gpu
 
 In serial.hpp we wrote a function, areFilesEqual, to validate two csv files against eachother. It will return true if the are, false if not. We will check every file against the ground truth, defined by the serial implementation.
 
-## To Run the Python Visualization
+In order to test the truth we need to compare two sets of data, however, to properly do the kmeans algorithm we randomly initalize data points and then take the average of each point from the input data and these random points. Because of this, we will never have the same results between CPU and GPU, or even 1 CPU run and the next CPU run.
 
-Run the following commands from the project root directory:
+However, to still show that the algorithm is working, we tested both the CPU and GPU implementations against eachother _without_ the random initaliztion, which does give the same output between the implementations, but it does not do a true k-means algorithm.
+
+Our validation does check whether the files are the same length to ensure they processed the same set of points, but other than that it does not check the contents of the files.
+
+## Running the Python Visualization
+
+First, edit the file `visualize.py` to point to the correct csv files you would like to visualize.
+
+Now, run the following commands from the project root directory:
 
 ```bash
 pip install -r requirements.txt
@@ -49,16 +55,26 @@ python3 visualize.py
 
 ## Analysis
 
-TODO: Insert Images and table comparing times, epochs, and nodes here.
+### Unprocessed Data
+
+![unprocessed data](./images/unprocessed.png)
 
 ### Serial Implementation
 
-|NumPoints|Time (s)|Epochs| Clusters|
-|---------|--------|------|---------|
-| 1240425 | 25.816402 |  100 | 6 |
-| 1240425 | 48.143714 |  100 | 12|
-| 1240425 | 52.172065 |  200 | 6 |
-| 1240425 | 95.354178 |  200 | 12 |
+| NumPoints | Time (s)  | Epochs | Clusters |
+| --------- | --------- | ------ | -------- |
+| 1240425   | 25.816402 | 100    | 6        |
+| 1240425   | 48.143714 | 100    | 12       |
+| 1240425   | 52.172065 | 200    | 6        |
+| 1240425   | 95.354178 | 200    | 12       |
+
+Serial Implementation Visualized with 6 Clusters:
+
+![6 cluster serial CPU](./images/serialProcessed.png)
+
+Serial Implementation Visualized with 12 Clusters:
+
+![12 cluster serial CPU](./images/Serial-200e-12c.png)
 
 ### Single GPU Implementation
 
@@ -85,14 +101,14 @@ Device 0: "Tesla T4"
 
 ```
 
-|NumPoints|Time (s)|Epochs| Clusters| Threads per Block | Blocks per Grid|
-|---------|--------|------|---------|----|-----|
-| 1240425 | 6.171497 |  100 | 6 | 256 |4704 |
-| 1240425 | 5.903793 |  100 | 12|256 |4704 |
-| 1240425 | 11.557186 |  200 | 6 |256 | 4704|
-| 1240425 | 11.755927 |  200 | 12 |256 | 4704|
-| 1240425 | 35.562620 |  600 | 12 |256 | 4704|
-| 1240425 | 70.860667 |  1200 | 12 |256 | 4704|
+| NumPoints | Time (s)  | Epochs | Clusters | Threads per Block | Blocks per Grid |
+| --------- | --------- | ------ | -------- | ----------------- | --------------- |
+| 1240425   | 6.171497  | 100    | 6        | 256               | 4704            |
+| 1240425   | 11.557186 | 200    | 6        | 256               | 4704            |
+| 1240425   | 5.903793  | 100    | 12       | 256               | 4704            |
+| 1240425   | 11.755927 | 200    | 12       | 256               | 4704            |
+| 1240425   | 35.562620 | 600    | 12       | 256               | 4704            |
+| 1240425   | 70.860667 | 1200   | 12       | 256               | 4704            |
 
 As you can see, compared to the serial implentation this is significantly faster. For 200 epochs on 12 clusters it took roughly 1/9th of the time.
 
@@ -100,11 +116,15 @@ This also shows that this algorithm is strongly scalable, because as we increase
 
 We can also change the number of threads per block to fully use the number of threads per block.
 
-|NumPoints|Time(s)|Epochs| Clusters| Threads per Block | Blocks per Grid|
-|---------|--------|------|---------|----|-----|
-| 1240425 | 6.224101 |  100 | 12|1024 |1176 |
-| 1240425 | 11.819179|  200 | 12 |1024 | 1176|
-| 1240425 | 35.537325 |  600 | 12 |1024 | 1176|
-| 1240425 | 70.771222 |  1200 | 12 |1024 | 1176|
+| NumPoints | Time(s)   | Epochs | Clusters | Threads per Block | Blocks per Grid |
+| --------- | --------- | ------ | -------- | ----------------- | --------------- |
+| 1240425   | 6.224101  | 100    | 12       | 1024              | 1176            |
+| 1240425   | 11.819179 | 200    | 12       | 1024              | 1176            |
+| 1240425   | 35.537325 | 600    | 12       | 1024              | 1176            |
+| 1240425   | 70.771222 | 1200   | 12       | 1024              | 1176            |
 
 As shown here above, fully using the threads per block did not make any noticeable speedup in the compuation. All values are within .3 seconds of their computation at 256 threads per block.
+
+Single GPU Implementation Visualized with 6 Clusters:
+
+![6 cluster single GPU](./images/gpuProcessed.png)
