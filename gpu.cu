@@ -11,6 +11,8 @@
 #include <time.h>
 #include <vector>
 #include <cmath>
+#include <chrono>
+#include <ctime>
 
 using namespace std;
 
@@ -69,8 +71,9 @@ void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, int numCentroid
     cudaMemcpy(d_centroids, centroids.data(), centroids.size() * sizeof(Point3D), cudaMemcpyHostToDevice);
 
     // Run kernel to compute distance from centroid to each point
-    int threadsPerBlock = 256;
+    int threadsPerBlock = 1024;
     int blocksPerGrid = (int)ceil((float)points->size() / threadsPerBlock);
+    cout << "Blocks per Grid " << blocksPerGrid << endl;
     kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, points->size(), numCentroids);
 
     // Copy data back to CPU
@@ -86,22 +89,39 @@ void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, int numCentroid
   }
 }
 
-void performGPUKMeans(int numEpochs, int numCentroids)
+void performGPUKMeans(int numEpochs, int numClusters)
 {
     // First we use the same readcsv function as in serial.cpp. TODO: Use the parallel version of this to read in the values
     cout << "Reading the csv" << endl;
     vector<Point3D> points = readcsv("song_data.csv");
+
     cout << "Entering the k means computation" << endl;
-    kMeansClusteringGPU(&points, numEpochs, numCentroids);
-    cout << "Saving the output" << endl;
-    saveOutputs(&points, "single-gpu-output.csv");
+    // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
+    auto start_time = std::chrono::high_resolution_clock::now();
+    kMeansClusteringGPU(&points, numEpochs, numClusters);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+    cout << "STATS: " << endl;
+    cout << "Total points " << points.size() << endl;
+    cout << "Epochs " << numEpochs << endl;
+    cout << "Clusters: " << numClusters << endl;
+    cout << "Time: " << duration.count() << endl;
+    cout << endl;
+    // cout << "Saving the output" << endl;
+    // saveOutputs(&points, "single-gpu-output.csv");
 }
 
 // Use this to run the program and compare outputs
 int main() {
-  performGPUKMeans(100, 6);
-  bool res = areFilesEqual("single-gpu-output.csv", "serialOutput.csv", true);
-  std::cout << "Testing: " <<  res << std::endl;
+  // performGPUKMeans(100, 6);
+  // performGPUKMeans(200, 6);
+  performGPUKMeans(100, 12);
+  // performGPUKMeans(200, 12);
+  // performGPUKMeans(600, 12);
+  // performGPUKMeans(1200, 12);
+
+  // bool res = areFilesEqual("single-gpu-output.csv", "serialOutput.csv", true);
+  // std::cout << "Testing: " <<  res << std::endl;
 }
 
 
