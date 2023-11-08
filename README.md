@@ -57,7 +57,7 @@ python3 visualize.py
 
 ### Unprocessed Data
 
-![unprocessed data](./images/unprocessed.png)
+![unprocessed data](./images/Unprocessed.png)
 
 ### Serial Implementation
 
@@ -131,4 +131,4 @@ Single GPU Implementation Visualized with 6 Clusters:
 
 Single GPU Implementation Visualized with 12 Clusters:
 
-![12 cluster single GPU](./images/GPU-200e-12c.png)
+![12 cluster single GPU](./images/Gpu-200e-12c.png)
