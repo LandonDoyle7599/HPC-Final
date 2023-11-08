@@ -23,10 +23,13 @@ void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids)
 
   vector<Point3D> centroids = initializeCentroids(numCentroids, points);
   // Repeat over epochs to converge the centroids
+  
   for (int i = 0; i < numEpochs; ++i)
   {
     // For each centroid, compute distance from centroid to each point
     // and update point's cluster if necessary
+
+    //TODO - parallelize this loop with openMP and distributed on MPI
     for (vector<Point3D>::iterator c = begin(centroids); c != end(centroids); ++c)
     {
       int clusterId = c - begin(centroids);
