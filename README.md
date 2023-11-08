@@ -128,3 +128,7 @@ As shown here above, fully using the threads per block did not make any noticeab
 Single GPU Implementation Visualized with 6 Clusters:
 
 ![6 cluster single GPU](./images/gpuProcessed.png)
+
+Single GPU Implementation Visualized with 12 Clusters:
+
+![12 cluster single GPU](./images/GPU-200e-12c.png)
