@@ -5,13 +5,6 @@
 
 using namespace std;
 
-
-
-
-
-
-
-
 /**
  * Perform k-means clustering
  * @param points - pointer to vector of points
@@ -20,10 +13,10 @@ using namespace std;
  */
 void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids)
 {
-
-  vector<Point3D> centroids = initializeCentroids(numCentroids, points);
-  // Repeat over epochs to converge the centroids
+  // create centroids
+  vector<Point3D> centroids = initializeCentroids(numCentroids, points, true);
   
+  // Repeat over epochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
   {
     // For each centroid, compute distance from centroid to each point
@@ -58,5 +51,5 @@ void performSerial(int numEpochs, int clusterCount)
   cout << "Entering the k means computation" << endl;
   kMeansClustering(&points, numEpochs, clusterCount); // K-means clustering on the points.
   cout << "Saving the output" << endl;
-  saveOutputs(&points, "serialOutput.csv");
+  saveOutputs(&points, "serial-cpu.csv");
 }

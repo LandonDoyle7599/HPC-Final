@@ -62,19 +62,24 @@ void performSerial(int numEpochs, int clusterCount);
  * Initializes the centroids
  * @param numCentroids - the number of initial centroids
  * @param points - pointer to vector of points
+ * @param random - decides whether to randomly initalize the centeroids or not
  * @return vector of centroids
  */
-vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points)
+vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points, bool random)
 {
   // Randomly initialize centroids
   // The index of the centroid within the centroids vector represents the cluster label.
-  //TODO: Test cpu and gpu without this random aspect
   vector<Point3D> centroids;
   srand(time(0));
   centroids.reserve(numCentroids); // create space in memory for specified number of centroids
   for (int i = 0; i < numCentroids; ++i)
   {
-    centroids.push_back(points->at(rand() % points->size()));
+    if (random) {
+      centroids.push_back(points->at(rand() % points->size()));
+    }
+    else {
+      centroids.push_back(points->at(0));
+    } 
   }
   return centroids;
 }
