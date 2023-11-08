@@ -50,3 +50,12 @@ python3 visualize.py
 ## Analysis
 
 TODO: Insert Images and table comparing times, epochs, and nodes here.
+
+### Serial Implementation
+
+|NumPoints|Time (s)|Epochs| Clusters|
+|----|----|------|--|
+| 1240425 | 25.816402 |  100 | 6 |
+| 1240425 | 48.143714 |  100 | 12|
+| 1240425 | 52.172065 |  200 | 6 |
+| 1240425 | 95.354178 |  200 | 12 |
