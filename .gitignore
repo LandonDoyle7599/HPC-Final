@@ -3,3 +3,5 @@ tracks_features.csv
 /build
 .idea
 .vscode
+main
+gpu
