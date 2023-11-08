@@ -2,15 +2,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <chrono>
+#include <ctime>
 
 using namespace std;
-
-
-
-
-
-
-
 
 /**
  * Perform k-means clustering
@@ -20,10 +15,10 @@ using namespace std;
  */
 void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids)
 {
-
-  vector<Point3D> centroids = initializeCentroids(numCentroids, points);
-  // Repeat over epochs to converge the centroids
+  // create centroids
+  vector<Point3D> centroids = initializeCentroids(numCentroids, points, true);
   
+  // Repeat over epochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
   {
     // For each centroid, compute distance from centroid to each point
@@ -51,12 +46,21 @@ void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids)
   }
 }
 
-void performSerial(int numEpochs, int clusterCount)
+void performSerial(int numEpochs, int numClusters)
 {
   cout << "Reading the csv" << endl;
   vector<Point3D> points = readcsv("song_data.csv");
+  cout << "Total points " << points.size() << endl;
+  cout << "Epochs " << numEpochs << endl;
+  cout << "Clusters: " << numClusters << endl;
   cout << "Entering the k means computation" << endl;
-  kMeansClustering(&points, numEpochs, clusterCount); // K-means clustering on the points.
+
+  // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
+  auto start_time = std::chrono::high_resolution_clock::now();
+  kMeansClustering(&points, numEpochs, numClusters); // K-means clustering on the points.
+  auto end_time = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+  cout << "Time: " << duration.count() << endl;
   cout << "Saving the output" << endl;
-  saveOutputs(&points, "serialOutput.csv");
+  saveOutputs(&points, "serial-cpu.csv");
 }
