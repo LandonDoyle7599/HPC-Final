@@ -7,6 +7,9 @@
 
 using namespace std;
 
+/**
+ * Represents a 3D point
+ */
 struct Point3D
 {
   double x, y, z; // coordinates
@@ -30,14 +33,6 @@ struct Point3D
 };
 
 /**
- * Perform k-means clustering
- * @param points - pointer to vector of points
- * @param epochs - number of k means iterations
- * @param k - the number of initial centroids
- */
-void kMeansClustering(vector<Point3D> *points, int epochs, int k);
-
-/**
  * Saves the points to a csv file
  * @param points - pointer to vector of points
  * @param filename - name of file to save to
@@ -56,8 +51,6 @@ void saveOutputs(vector<Point3D> *points, string filename)
   myfile.close();
 }
 
-void performSerial(int numEpochs, int numCentroids);
-
 /**
  * Initializes the centroids
  * @param numCentroids - the number of initial centroids
@@ -65,7 +58,7 @@ void performSerial(int numEpochs, int numCentroids);
  * @param random - decides whether to randomly initalize the centeroids or not
  * @return vector of centroids
  */
-vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points, bool random)
+vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points, bool random = true)
 {
   // Randomly initialize centroids
   // The index of the centroid within the centroids vector represents the cluster label.
@@ -92,7 +85,6 @@ vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points, b
  * @param centroids - pointer to vector of centroids
  * @param numCentroids - the number of initial centroids
  */
-
 void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int numCentroids)
 {
   // Create vectors to keep track of data needed to compute means
@@ -123,6 +115,12 @@ void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int
   }
 }
 
+/**
+ *  Compares two files to see if they are equal
+ * @param filename1 - name of first file
+ * @param filename2 - name of second file
+ * @param showDiff - whether to show the differences or not
+ */
 bool areFilesEqual(string filename1, string filename2, bool showDiff)
 {
   // Open the first CSV file
