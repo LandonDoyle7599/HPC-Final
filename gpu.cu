@@ -1,4 +1,3 @@
-// #include "serial.hpp"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -98,9 +97,5 @@ void performGPU(int numEpochs, int numCentroids, vector<Point3D> *centroids, vec
     saveOutputs(points, filename);
 }
 
-// Use this to run the program and compare outputs
-// int main() {
-//   performGPUKMeans(100, 6);
-// }
 
 

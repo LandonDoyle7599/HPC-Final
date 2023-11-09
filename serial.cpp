@@ -54,6 +54,7 @@ void performSerial(int numEpochs, int numCentroids, vector<Point3D> *centroids, 
   saveOutputs(points, filename);
 }
 
+// Uncomment this to run the serial code standalone
 // int main()
 // {
 //   // Read in the data

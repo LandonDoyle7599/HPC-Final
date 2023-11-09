@@ -2,9 +2,13 @@
 
 ## How to Run
 
+We defaulted the setup on this repository to validate each implementation against the serial one. Because of the need for _random_ initialization in the k clusters, we need to share data depending on the number of clusters and epochs selected. To do this, we setup several files to compare against the serial implementation. For example, when running the single GPU implementation, we execute `main.cu` which runs the implementation serially, then the GPU implementation, so that the data can be validated.
+
 ### Serial CPU
 
-To run the serial code, run the following commands in the terminal:
+Note: We implicity run the serial implementation for every other one as comparison. However, if you would like to run it standalone:
+
+Uncomment the main function at the bottom of `serial.cpp`, and then run the following in the terminal:
 
 ```bash
 g++ serial.cpp -o serial
@@ -26,8 +30,8 @@ module load cuda/12
 Now we can compile and execute:
 
 ```bash
-nvcc gpu.cu -o gpu
-./gpu
+nvcc main.cu -o main
+./main
 ```
 
 ### Distributed GPU
@@ -36,11 +40,11 @@ nvcc gpu.cu -o gpu
 
 In serial.hpp we wrote a function, areFilesEqual, to validate two csv files against eachother. It will return true if the are, false if not. We will check every file against the ground truth, defined by the serial implementation.
 
-In order to test the truth we need to compare two sets of data, however, to properly do the kmeans algorithm we randomly initalize data points and then take the average of each point from the input data and these random points. Because of this, we will never have the same results between CPU and GPU, or even 1 CPU run and the next CPU run.
+In order to test the truth we need to compare two sets of data, however, to properly do the kmeans algorithm we randomly initalize data points and then take the average of each point from the input data and these random points.
+
+Because of the randomness inherent to the K-means algorithm, and the varying number of clusters and epochs, we need to generate the initial set of data based on clusters and epochs, then share that data between serial CPU and the other implementations.
 
 However, to still show that the algorithm is working, we tested both the CPU and GPU implementations against eachother _without_ the random initaliztion, which does give the same output between the implementations, but it does not do a true k-means algorithm.
-
-Our validation does check whether the files are the same length to ensure they processed the same set of points, but other than that it does not check the contents of the files.
 
 ## Running the Python Visualization
 
