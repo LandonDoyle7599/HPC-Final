@@ -17,9 +17,11 @@ using namespace std;
  */
 void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
 {
+  int NUM_THREADS = 4;
+  // Repeat over epochs to converge the centroids
   for (int epoch = 0; epoch < numEpochs; ++epoch)
   {
-#pragma omp parallel for
+#pragma omp parallel for num_threads(NUM_THREADS)
     for (int i = 0; i < points->size(); ++i)
     {
       Point3D &p = (*points)[i];
@@ -36,6 +38,7 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
         }
       }
 
+// Update the cluster id and minimum distance. This is critical because we don't want the threads to overlap as they are writing to the same memory location
 #pragma omp critical
       {
         p.minDist = minDist;
