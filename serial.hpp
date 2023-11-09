@@ -89,14 +89,10 @@ vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points, b
 void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int numCentroids)
 {
   // Create vectors to keep track of data needed to compute means
-  vector<int> nPoints;
-  vector<double> sumX, sumY;
-  for (int j = 0; j < numCentroids; ++j)
-  {
-    nPoints.push_back(0);
-    sumX.push_back(0.0);
-    sumY.push_back(0.0);
-  }
+  vector<int> nPoints(numCentroids, 0);
+  vector<double> sumX(numCentroids, 0.0);
+  vector<double> sumY(numCentroids, 0.0);
+
   // Iterate over points to append data to centroids
   for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
   {
