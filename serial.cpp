@@ -61,6 +61,8 @@ int main()
   vector<Point3D> points = readcsv("song_data.csv");
   int numEpochs = 100;
   int numCentroids = 6;
+  // Initialize the centroids
   vector<Point3D> centroids = initializeCentroids(numCentroids, &points, true);
+  // Perform it
   performSerial(numEpochs, numCentroids, &centroids, &points, "serial-cpu.csv");
 }

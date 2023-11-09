@@ -1,6 +1,6 @@
 
 #include "serial.cpp"
-#include "gpu.cu"
+// #include "gpu.cu"
 #include <iostream>
 using namespace std;
 int main()
@@ -14,6 +14,6 @@ int main()
     string f1 = "serial-cpu.csv";
     string f2 = "gpu.csv";
     performSerial(numEpochs, numCentroids, &centroids, &points, f1);
-    performGPU(numEpochs, numCentroids, &centroids, &points, f2);
-    cout << "Files Equal" << areFilesEqual(f1, f2) << endl;
+    // performGPU(numEpochs, numCentroids, &centroids, &points, f2);
+    // cout << "Files Equal" << areFilesEqual(f1, f2) << endl;
 }
