@@ -21,7 +21,7 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
   for (int i = 0; i < numEpochs; ++i)
   {
 // Parallelize this loop
-#pragma omp parallel for num_threads(threads)
+#pragma omp parallel for num_threads(threads) default(none) shared(points, centroids)
     for (int clusterId = 0; clusterId < centroids->size(); ++clusterId)
     {
       for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
@@ -33,13 +33,16 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
           p.minDist = dist;
           p.cluster = clusterId;
         }
+// we only want one thread updating the points at a time
+#pragma omp critical {
         *it = p;
       }
     }
-
-    // Update the centroids
-    updateCentroidData(points, centroids, centroids->size());
   }
+
+  // Update the centroids
+  updateCentroidData(points, centroids, centroids->size());
+}
 }
 
 void performParallel(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
