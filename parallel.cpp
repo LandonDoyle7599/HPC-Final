@@ -15,7 +15,7 @@ using namespace std;
  * @param numEpochs - number of k means iterations
  * @param centroids - pointer to vector of centroids
  */
-void kMeansClusteringParallel(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
+void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
 {
   for (int epoch = 0; epoch < numEpochs; ++epoch)
   {
