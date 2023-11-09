@@ -39,6 +39,7 @@ struct Point3D
  */
 void saveOutputs(vector<Point3D> *points, string filename)
 {
+  cout << "Saving Output" << endl;
   ofstream myfile;
   myfile.open(filename);
   myfile << "x,y,z,c" << endl;
@@ -228,10 +229,11 @@ vector<Point3D> readcsv(string filename)
  */
 void printStats(int numEpochs, int numCentroids, vector<Point3D> *points, long duration)
 {
-  cout << "\nSTATS" << endl;
+  cout << "\n---- STATS ----" << endl;
   cout << "Points: " << points->size() << endl;
   cout << "Epochs " << numEpochs << endl;
   cout << "Clusters: " << numCentroids << endl;
   cout << "Time: " << duration << endl;
-  cout << "Saving the output" << endl;
+  cout << "--------------\n"
+       << endl;
 }

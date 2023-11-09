@@ -12,11 +12,11 @@ int main()
     // Because this is random initialization we need to share it between the serial and GPU to ensure they are valid
     vector<Point3D> centroids = initializeCentroids(numCentroids, &points);
     vector<Point3D> parallelCentroidCopy = centroids; // Copies the data, not the reference to ensure we are validating correctly https://www.geeksforgeeks.org/ways-copy-vector-c/
-    string f1 = "serial-cpu.csv";
-    string f2 = "gpu.csv";
-    cout << "Performing serial" << endl;
-    performSerial(numEpochs, numCentroids, &centroids, &points, f1);
-    cout << "\nPerforming GPU" << endl;
-    performParallel(numEpochs, &parallelCentroidCopy, &points, f2);
-    cout << "Files Equal: " << areFilesEqual(f1, f2) << endl;
+    string serialFilename = "serial-cpu.csv";
+    string parallelFilename = "parallel-cpu.csv";
+    cout << "Performing Serial CPU" << endl;
+    performSerial(numEpochs, numCentroids, &centroids, &points, serialFilename);
+    cout << "\nPerforming Parallel CPU" << endl;
+    performParallel(numEpochs, &parallelCentroidCopy, &points, parallelFilename);
+    cout << "Files Equal: " << areFilesEqual(serialFilename, parallelFilename) << endl;
 }
