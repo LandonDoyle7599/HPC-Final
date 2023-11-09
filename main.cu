@@ -17,7 +17,7 @@ int main()
     string f2 = "gpu.csv";
     cout << "Performing serial" << endl;
     performSerial(numEpochs, numCentroids, &centroids, &points, f1);
-    cout << "Performing GPU" << endl;
+    cout << "\nPerforming GPU" << endl;
     performGPU(numEpochs, numCentroids, &gpuCentroidCopy, &points, f2);
     cout << "Files Equal: " << areFilesEqual(f1, f2) << endl;
 }
