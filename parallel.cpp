@@ -44,24 +44,18 @@ void parallelUpdateCentroidData(vector<Point3D> *points, vector<Point3D> *centro
   }
 }
 
-
-
-
-
-
 /**
  * Perform k-means clustering
  * @param points - pointer to vector of points
  * @param numEpochs - number of k means iterations
  * @param centroids - pointer to vector of centroids
  */
-void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
+void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids, int numThreads)
 {
-  int NUM_THREADS = 4;
   // Repeat over epochs to converge the centroids
   for (int epoch = 0; epoch < numEpochs; ++epoch)
   {
-#pragma omp parallel for num_threads(NUM_THREADS)
+#pragma omp parallel for num_threads(numThreads)
     for (int i = 0; i < points->size(); ++i)
     {
       Point3D &p = (*points)[i]; // Get the point
@@ -90,15 +84,13 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
   }
 }
 
-
-
-void performParallel(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
+void performParallel(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename, int numThreads)
 {
   // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
   // create centroids
   cout << "Entering the k means computation" << endl;
   auto start_time = std::chrono::high_resolution_clock::now();
-  kMeansClusteringParallelCPU(points, numEpochs, centroids); // K-means clustering on the points.
+  kMeansClusteringParallelCPU(points, numEpochs, centroids, numThreads); // K-means clustering on the points.
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
   printStats(numEpochs, centroids->size(), points, duration.count());
