@@ -1,4 +1,4 @@
-#include "serial.hpp"
+// #include "serial.hpp" // uncomment this to run individually
 #include <iostream>
 #include <fstream>
 #include <string>
