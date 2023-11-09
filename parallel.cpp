@@ -66,22 +66,24 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
 
 // Iterate over points to append data to centroids
 #pragma omp for
-      for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
+      for (int j = 0; j < points->size(); ++j)
       {
-        int clusterId = it->cluster;
+        int clusterId = points->at(j).cluster;
         nPoints[clusterId] += 1;
-        sumX[clusterId] += it->x;
-        sumY[clusterId] += it->y;
+        sumX[clusterId] += points->at(j).x;
+        sumY[clusterId] += points->at(j).y;
 
-        it->minDist = numeric_limits<float>::max(); // reset distance
+        points->at(j).minDist = numeric_limits<float>::max(); // reset distance
       }
+
       // Compute the new centroids
+
 #pragma omp for
-      for (vector<Point3D>::iterator c = centroids->begin(); c != centroids->end(); ++c)
+      for (int j = 0; j < centroids->size(); ++j)
       {
-        int clusterId = c - centroids->begin();
-        c->x = sumX[clusterId] / nPoints[clusterId];
-        c->y = sumY[clusterId] / nPoints[clusterId];
+        int clusterId = j;
+        centroids->at(j).x = sumX[clusterId] / nPoints[clusterId];
+        centroids->at(j).y = sumY[clusterId] / nPoints[clusterId];
       }
     }
   }
