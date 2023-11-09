@@ -121,7 +121,7 @@ void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int
  * @param filename2 - name of second file
  * @param showDiff - whether to show the differences or not
  */
-bool areFilesEqual(string filename1, string filename2, bool showDiff)
+bool areFilesEqual(string filename1, string filename2, bool showDiff = false)
 {
   // Open the first CSV file
   std::ifstream file1(filename1);

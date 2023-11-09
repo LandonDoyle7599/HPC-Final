@@ -57,15 +57,15 @@ void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, int numCentroid
   // Run k-means clustering over number of numEpochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
   {
-    // Allocate memory on GPU
+    // Allocate memory on 
     Point3D *d_points;
     Point3D *d_centroids;
     cudaMalloc(&d_points, points->size() * sizeof(Point3D));
-    cudaMalloc(&d_centroids, centroids.size() * sizeof(Point3D));
+    cudaMalloc(&d_centroids, centroids->size() * sizeof(Point3D));
 
     // Copy data to GPU
     cudaMemcpy(d_points, points->data(), points->size() * sizeof(Point3D), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_centroids, centroids.data(), centroids->size() * sizeof(Point3D), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_centroids, centroids->data(), centroids->size() * sizeof(Point3D), cudaMemcpyHostToDevice);
 
     // Run kernel to compute distance from centroid to each point
     int threadsPerBlock = 1024;
@@ -75,7 +75,7 @@ void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, int numCentroid
 
     // Copy data back to CPU
     cudaMemcpy(points->data(), d_points, points->size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
-    cudaMemcpy(centroids.data(), d_centroids, centroids->size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
+    cudaMemcpy(centroids->data(), d_centroids, centroids->size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
 
     // Free memory on GPU
     cudaFree(d_points);
@@ -91,11 +91,11 @@ void performGPU(int numEpochs, int numCentroids, vector<Point3D> *centroids, vec
     cout << "Entering the k means computation" << endl;
     // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
     auto start_time = std::chrono::high_resolution_clock::now();
-    kMeansClusteringGPU(&points, numEpochs, numCentroids, *centroids);
+    kMeansClusteringGPU(points, numEpochs, numCentroids, *centroids);
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
     printStats(numEpochs, numCentroids, points, duration.count());
-    saveOutputs(&points, filename);
+    saveOutputs(points, filename);
 }
 
 // Use this to run the program and compare outputs
