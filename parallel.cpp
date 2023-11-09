@@ -28,7 +28,7 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
     {
       for (int pointIndex = points->begin(); pointIndex != points->size(); ++pointIndex)
       {
-        Point3D p = points->(pointIndex - points->begin());
+        Point3D p = points->at(pointIndex - points->begin());
         double dist = centroids->at(j).distance(p);
         if (dist < p.minDist)
         {
