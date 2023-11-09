@@ -16,33 +16,40 @@ using namespace std;
 void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
 {
   int NUM_THREADS = 4;
-#pragma omp parallel num_threads(NUM_THREADS) default(none) private(c, clusterId, it, p, dist) shared(points, centroids, numCentroids)
+  vector<Point3D>::iterator c;
+  int clusterId;
+  Point3D p;
+  double dist;
 
-  // Repeat over epochs to converge the centroids
-  for (int i = 0; i < numEpochs; ++i)
+  // Create a parallel region to operate in
+#pragma omp parallel num_threads(NUM_THREADS) default(none) private(c, clusterId, p, dist) shared(points, centroids)
   {
-    // For each centroid, compute distance from centroid to each point
-    // and update point's cluster if necessary
+    // Repeat over epochs to converge the centroids
+    for (int i = 0; i < numEpochs; ++i)
+    {
+      // For each centroid, compute distance from centroid to each point
+      // and update point's cluster if necessary
 
 #pragma omp for // parallelize this to let each thread work on a different centroid
-    for (vector<Point3D>::iterator c = begin(*centroids); c != end(*centroids); ++c)
-    {
-      int clusterId = c - begin(*centroids);
-
-      for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
+      for (vector<Point3D>::iterator c = begin(*centroids); c != end(*centroids); ++c)
       {
-        Point3D p = *it;
-        double dist = c->distance(p);
-        if (dist < p.minDist)
+        int clusterId = c - begin(*centroids);
+
+        for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
         {
-          p.minDist = dist;
-          p.cluster = clusterId;
+          Point3D p = *it;
+          double dist = c->distance(p);
+          if (dist < p.minDist)
+          {
+            p.minDist = dist;
+            p.cluster = clusterId;
+          }
+          *it = p;
         }
-        *it = p;
       }
+      // Update the centroids
+      updateCentroidData(points, centroids, centroids->size());
     }
-    // Update the centroids
-    updateCentroidData(points, centroids, centroids->size());
   }
 }
 
