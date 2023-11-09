@@ -30,8 +30,8 @@ module load cuda/12
 Now we can compile and execute:
 
 ```bash
-nvcc main.cu -o main
-./main
+nvcc serial-to-single-gpu.cu -o gpu
+./gpu
 ```
 
 ### Distributed GPU
