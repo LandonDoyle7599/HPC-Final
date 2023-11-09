@@ -7,8 +7,8 @@
 To run the serial code, run the following commands in the terminal:
 
 ```bash
-g++ main.cpp -o main
-./main
+g++ serial.cpp -o serial
+./serial
 ```
 
 ### Parallel CPU

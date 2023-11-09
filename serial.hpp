@@ -56,7 +56,7 @@ void saveOutputs(vector<Point3D> *points, string filename)
   myfile.close();
 }
 
-void performSerial(int numEpochs, int clusterCount);
+void performSerial(int numEpochs, int numCentroids);
 
 /**
  * Initializes the centroids
@@ -74,12 +74,14 @@ vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points, b
   centroids.reserve(numCentroids); // create space in memory for specified number of centroids
   for (int i = 0; i < numCentroids; ++i)
   {
-    if (random) {
+    if (random)
+    {
       centroids.push_back(points->at(rand() % points->size()));
     }
-    else {
+    else
+    {
       centroids.push_back(points->at(0));
-    } 
+    }
   }
   return centroids;
 }
@@ -160,7 +162,6 @@ bool areFilesEqual(string filename1, string filename2, bool showDiff)
       std::cout << "Difference in line " << lineNum << ":\n";
       std::cout << "File 1: " << line1 << "\n";
       std::cout << "File 2: " << line2 << "\n\n";
-      
     }
     lineNum++;
   }
@@ -218,4 +219,21 @@ vector<Point3D> readcsv(string filename)
     points.push_back(Point3D(x, y, z));
   }
   return points;
+}
+
+/**
+ * Prints the stats of the program
+ * @param numEpochs - number of k means iterations
+ * @param numCentroids - the number of initial centroids
+ * @param points - pointer to vector of points
+ * @param duration - the time it took to run the program
+ */
+void printStats(int numEpochs, int numCentroids, vector<Point3D> *points, chrono::microseconds duration)
+{
+  cout << "\nSTATS" << endl;
+  cout << "Points: " << points->size() << endl;
+  cout << "Epochs " << numEpochs << endl;
+  cout << "Clusters: " << numCentroids << endl;
+  cout << "Time: " << duration.count() << endl;
+  cout << "Saving the output" << endl;
 }

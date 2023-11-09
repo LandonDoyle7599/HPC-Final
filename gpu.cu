@@ -89,7 +89,7 @@ void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, int numCentroid
   }
 }
 
-void performGPUKMeans(int numEpochs, int numClusters)
+void performGPUKMeans(int numEpochs, int numCentroids)
 {
     // First we use the same readcsv function as in serial.cpp. TODO: Use the parallel version of this to read in the values
     cout << "Reading the csv" << endl;
@@ -98,13 +98,13 @@ void performGPUKMeans(int numEpochs, int numClusters)
     cout << "Entering the k means computation" << endl;
     // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
     auto start_time = std::chrono::high_resolution_clock::now();
-    kMeansClusteringGPU(&points, numEpochs, numClusters);
+    kMeansClusteringGPU(&points, numEpochs, numCentroids);
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
     cout << "\nSTATS: " << endl;
     cout << "Total points " << points.size() << endl;
     cout << "Epochs " << numEpochs << endl;
-    cout << "Clusters: " << numClusters << endl;
+    cout << "Clusters: " << numCentroids << endl;
     cout << "Time: " << duration.count() << endl;
     cout << endl;
     cout << "Saving the output" << endl;
