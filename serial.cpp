@@ -11,9 +11,9 @@ using namespace std;
  * Perform k-means clustering
  * @param points - pointer to vector of points
  * @param numEpochs - number of k means iterations
- * @param numCentroids - the number of initial centroids
+ * @param centroids - pointer to vector of centroids
  */
-void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids, vector<Point3D> *centroids)
+void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
 {
   // Repeat over epochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
@@ -37,7 +37,7 @@ void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids, 
       }
     }
     // Update the centroids
-    updateCentroidData(points, centroids, numCentroids);
+    updateCentroidData(points, centroids, centroids->size());
   }
 }
 
@@ -47,7 +47,7 @@ void performSerial(int numEpochs, int numCentroids, vector<Point3D> *centroids, 
   // create centroids
   cout << "Entering the k means computation" << endl;
   auto start_time = std::chrono::high_resolution_clock::now();
-  kMeansClustering(points, numEpochs, numCentroids, centroids); // K-means clustering on the points.
+  kMeansClusteringParallelCPU(points, numEpochs, centroids); // K-means clustering on the points.
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
   printStats(numEpochs, numCentroids, points, duration.count());

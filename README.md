@@ -17,7 +17,18 @@ g++ serial.cpp -o serial
 
 ### Parallel CPU
 
+```bash
+g++ -fopenmp serial-to-parallel.cpp -o parallel
+./parallel
+```
+
 ### Distributed CPU
+
+Running on CHPC first we need to load the module:
+
+```bash
+module load openmpi
+```
 
 ### Parallel GPU
 

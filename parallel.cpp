@@ -13,13 +13,18 @@ using namespace std;
  * @param numEpochs - number of k means iterations
  * @param numCentroids - the number of initial centroids
  */
-void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids, vector<Point3D> *centroids)
+void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
 {
+  int NUM_THREADS = 4;
+#pragma omp parallel num_threads(NUM_THREADS) default(none) private(c, clusterId, it, p, dist) shared(points, centroids, numCentroids)
+
   // Repeat over epochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
   {
     // For each centroid, compute distance from centroid to each point
     // and update point's cluster if necessary
+
+#pragma omp for // parallelize this to let each thread work on a different centroid
     for (vector<Point3D>::iterator c = begin(*centroids); c != end(*centroids); ++c)
     {
       int clusterId = c - begin(*centroids);
@@ -37,33 +42,33 @@ void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids, 
       }
     }
     // Update the centroids
-    updateCentroidData(points, centroids, numCentroids);
+    updateCentroidData(points, centroids, centroids->size());
   }
 }
 
-void performSerial(int numEpochs, int numCentroids, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
+void performParallel(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
 {
   // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
   // create centroids
   cout << "Entering the k means computation" << endl;
   auto start_time = std::chrono::high_resolution_clock::now();
-  kMeansClustering(points, numEpochs, numCentroids, centroids); // K-means clustering on the points.
+  kMeansClusteringParallelCPU(points, numEpochs, centroids); // K-means clustering on the points.
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-  printStats(numEpochs, numCentroids, points, duration.count());
+  printStats(numEpochs, centroids->size(), points, duration.count());
   saveOutputs(points, filename);
 }
 
 // Uncomment this to run the serial code standalone
-// int main()
-// {
-//   // Read in the data
-//   cout << "Reading the csv" << endl;
-//   vector<Point3D> points = readcsv("song_data.csv");
-//   int numEpochs = 100;
-//   int numCentroids = 6;
-//   // Initialize the centroids
-//   vector<Point3D> centroids = initializeCentroids(numCentroids, &points, true);
-//   // Perform it
-//   performSerial(numEpochs, numCentroids, &centroids, &points, "serial-cpu.csv");
-// }
+int main()
+{
+  // Read in the data
+  cout << "Reading the csv" << endl;
+  vector<Point3D> points = readcsv("song_data.csv");
+  int numEpochs = 100;
+  int numCentroids = 6;
+  // Initialize the centroids
+  vector<Point3D> centroids = initializeCentroids(numCentroids, &points, true);
+  // Perform it
+  performParallel(numEpochs, &centroids, &points, "parallel-cpu.csv");
+}

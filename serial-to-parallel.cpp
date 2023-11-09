@@ -1,4 +1,3 @@
-
 #include "serial.cpp"
 #include "parallel.cpp"
 #include <iostream>
@@ -18,6 +17,6 @@ int main()
     cout << "Performing serial" << endl;
     performSerial(numEpochs, numCentroids, &centroids, &points, f1);
     cout << "\nPerforming GPU" << endl;
-    performParallel(numEpochs, numCentroids, &parallelCentroidCopy, &points, f2);
+    performParallel(numEpochs, &parallelCentroidCopy, &points, f2);
     cout << "Files Equal: " << areFilesEqual(f1, f2) << endl;
 }
