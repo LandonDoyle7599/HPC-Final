@@ -30,6 +30,7 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
       // Check the distance from each point to the centroid and update each point if necessary
       for (int pointIndex = 0; pointIndex < points->size(); ++pointIndex)
       {
+        // https://stackoverflow.com/questions/49938999/stdvector-at-does-it-return-a-reference-or-a-copy
         Point3D p = points->at(pointIndex);
         double dist = centroids->at(j).distance(p);
         // we only want one thread updating the points at a time
