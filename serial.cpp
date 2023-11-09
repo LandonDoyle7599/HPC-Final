@@ -13,21 +13,16 @@ using namespace std;
  * @param numEpochs - number of k means iterations
  * @param numCentroids - the number of initial centroids
  */
-void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids)
+void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids, vector<Point3D> *centroids)
 {
-  // create centroids
-  vector<Point3D> centroids = initializeCentroids(numCentroids, points, true);
-  
   // Repeat over epochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
   {
     // For each centroid, compute distance from centroid to each point
     // and update point's cluster if necessary
-
-    //TODO - parallelize this loop with openMP and distributed on MPI
-    for (vector<Point3D>::iterator c = begin(centroids); c != end(centroids); ++c)
+    for (vector<Point3D>::iterator c = begin(*centroids); c != end(*centroids); ++c)
     {
-      int clusterId = c - begin(centroids);
+      int clusterId = c - begin(*centroids);
 
       for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
       {
@@ -42,25 +37,33 @@ void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids)
       }
     }
     // Update the centroids
-    updateCentroidData(points, &centroids, numCentroids);
+    updateCentroidData(points, centroids, numCentroids);
   }
 }
 
-void performSerial(int numEpochs, int numClusters)
+void performSerial(int numEpochs, int numCentroids, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
 {
-  cout << "Reading the csv" << endl;
-  vector<Point3D> points = readcsv("song_data.csv");
-  cout << "Total points " << points.size() << endl;
-  cout << "Epochs " << numEpochs << endl;
-  cout << "Clusters: " << numClusters << endl;
-  cout << "Entering the k means computation" << endl;
-
   // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
+  // create centroids
+  cout << "Entering the k means computation" << endl;
   auto start_time = std::chrono::high_resolution_clock::now();
-  kMeansClustering(&points, numEpochs, numClusters); // K-means clustering on the points.
+  kMeansClustering(points, numEpochs, numCentroids, centroids); // K-means clustering on the points.
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-  cout << "Time: " << duration.count() << endl;
-  cout << "Saving the output" << endl;
-  saveOutputs(&points, "serial-cpu.csv");
+  printStats(numEpochs, numCentroids, points, duration.count());
+  saveOutputs(points, filename);
 }
+
+// Uncomment this to run the serial code standalone
+// int main()
+// {
+//   // Read in the data
+//   cout << "Reading the csv" << endl;
+//   vector<Point3D> points = readcsv("song_data.csv");
+//   int numEpochs = 100;
+//   int numCentroids = 6;
+//   // Initialize the centroids
+//   vector<Point3D> centroids = initializeCentroids(numCentroids, &points, true);
+//   // Perform it
+//   performSerial(numEpochs, numCentroids, &centroids, &points, "serial-cpu.csv");
+// }

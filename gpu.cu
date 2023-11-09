@@ -1,4 +1,3 @@
-#include "serial.hpp"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -52,11 +51,8 @@ __global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids, int 
  * @param numEpochs - number of k means iterations
  * @param k - the number of initial centroids
  */
-void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, int numCentroids)
+void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
 {
-  // Initialize centroids
-  vector<Point3D> centroids = initializeCentroids(numCentroids, points, true);
-
   // Run k-means clustering over number of numEpochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
   {
@@ -64,64 +60,42 @@ void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, int numCentroid
     Point3D *d_points;
     Point3D *d_centroids;
     cudaMalloc(&d_points, points->size() * sizeof(Point3D));
-    cudaMalloc(&d_centroids, centroids.size() * sizeof(Point3D));
+    cudaMalloc(&d_centroids, centroids->size() * sizeof(Point3D));
 
     // Copy data to GPU
     cudaMemcpy(d_points, points->data(), points->size() * sizeof(Point3D), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_centroids, centroids.data(), centroids.size() * sizeof(Point3D), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_centroids, centroids->data(), centroids->size() * sizeof(Point3D), cudaMemcpyHostToDevice);
 
     // Run kernel to compute distance from centroid to each point
-    int threadsPerBlock = 1024;
+    int threadsPerBlock = 256;
     int blocksPerGrid = (int)ceil((float)points->size() / threadsPerBlock);
     // cout << "Blocks per Grid " << blocksPerGrid << endl;
-    kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, points->size(), numCentroids);
+    kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, points->size(), centroids->size());
 
     // Copy data back to CPU
     cudaMemcpy(points->data(), d_points, points->size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
-    cudaMemcpy(centroids.data(), d_centroids, centroids.size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
+    cudaMemcpy(centroids->data(), d_centroids, centroids->size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
 
     // Free memory on GPU
     cudaFree(d_points);
     cudaFree(d_centroids);
 
     // Update centroids
-    updateCentroidData(points, &centroids, numCentroids);
+    updateCentroidData(points, centroids, centroids->size());
   }
 }
 
-void performGPUKMeans(int numEpochs, int numClusters)
+void performGPU(int numEpochs, int numCentroids, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
 {
-    // First we use the same readcsv function as in serial.cpp. TODO: Use the parallel version of this to read in the values
-    cout << "Reading the csv" << endl;
-    vector<Point3D> points = readcsv("song_data.csv");
-
     cout << "Entering the k means computation" << endl;
     // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
     auto start_time = std::chrono::high_resolution_clock::now();
-    kMeansClusteringGPU(&points, numEpochs, numClusters);
+    kMeansClusteringGPU(points, numEpochs, centroids);
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-    cout << "\nSTATS: " << endl;
-    cout << "Total points " << points.size() << endl;
-    cout << "Epochs " << numEpochs << endl;
-    cout << "Clusters: " << numClusters << endl;
-    cout << "Time: " << duration.count() << endl;
-    cout << endl;
-    cout << "Saving the output" << endl;
-    saveOutputs(&points, "single-gpu-output.csv");
+    printStats(numEpochs, numCentroids, points, duration.count());
+    saveOutputs(points, filename);
 }
 
-// Use this to run the program and compare outputs
-int main() {
-  // performGPUKMeans(100, 6);
-  // performGPUKMeans(200, 6);
-  // performGPUKMeans(100, 12);
-  performGPUKMeans(200, 12);
-  // performGPUKMeans(600, 12);
-  // performGPUKMeans(1200, 12);
-
-  // bool res = areFilesEqual("single-gpu-output.csv", "serialOutput.csv", true);
-  // std::cout << "Testing: " <<  res << std::endl;
-}
 
 
