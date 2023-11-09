@@ -12,16 +12,17 @@ using namespace std;
  * Perform k-means clustering
  * @param points - pointer to vector of points
  * @param numEpochs - number of k means iterations
- * @param numCentroids - the number of initial centroids
+ * @param centroids - pointer to vector of centroids
  */
-void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, int numCentroids, vector<Point3D> *centroids)
+void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
 {
+  int threads = 4;
   // Repeat over epochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
   {
 // Parallelize this loop
-#pragma omp parallel for
-    for (int clusterId = 0; clusterId < numCentroids; ++clusterId)
+#pragma omp parallel for num_threads(threads) default(none) shared(points, centroids) private(i)
+    for (int clusterId = 0; clusterId < centroids->size(); ++clusterId)
     {
       for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
       {
@@ -37,7 +38,7 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, int num
     }
 
     // Update the centroids
-    updateCentroidData(points, centroids, numCentroids);
+    updateCentroidData(points, centroids, centroids->size());
   }
 }
 
