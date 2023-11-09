@@ -20,23 +20,24 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
   // Repeat over epochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
   {
-// Parallelize this loop
-#pragma omp parallel for num_threads(threads) default(none) shared(points, centroids)
-    for (int clusterId = 0; clusterId < centroids->size(); ++clusterId)
+    Point3D p;
+    // For each centroid, compute distance from centroid to each point and update point's cluster if necessary
+#pragma omp parallel for num_threads(threads) default(none) shared(points, centroids) private(p)
+    for (int j = 0; j < centroids->size(); ++j)
     {
-      for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
+      for (int pointIndex = points->begin(); pointIndex != points->size(); ++pointIndex)
       {
-        Point3D p = *it;
-        double dist = centroids->at(clusterId).distance(p);
+        Point3D p = points->(pointIndex - points->begin());
+        double dist = centroids->at(j).distance(p);
         if (dist < p.minDist)
         {
           p.minDist = dist;
-          p.cluster = clusterId;
+          p.cluster = j;
         }
 // we only want one thread updating the points at a time
 #pragma omp critical
         {
-          *it = p;
+          points->(at(pointIndex)) = p;
         }
       }
     }
