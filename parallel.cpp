@@ -26,7 +26,7 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
 #pragma omp parallel for num_threads(threads) default(none) shared(points, centroids) private(p)
     for (int j = 0; j < centroids->size(); ++j)
     {
-      for (int pointIndex = points->begin(); pointIndex != points->size(); ++pointIndex)
+      for (int pointIndex = 0; pointIndex < points->size(); ++pointIndex)
       {
         Point3D p = points->at(pointIndex);
         double dist = centroids->at(j).distance(p);
