@@ -37,7 +37,7 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
 // we only want one thread updating the points at a time
 #pragma omp critical
         {
-          points->(at(pointIndex)) = p;
+          points->at(pointIndex) = p;
         }
       }
     }
