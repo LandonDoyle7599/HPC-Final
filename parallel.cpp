@@ -35,10 +35,12 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
         double dist = centroids->at(j).distance(p);
         // we only want one thread updating the points at a time
         if (dist < p.minDist)
-#pragma omp critical
         {
           p.minDist = dist;
           p.cluster = j;
+        }
+        // #pragma omp critical
+        {
           points->at(pointIndex) = p;
         }
       }
