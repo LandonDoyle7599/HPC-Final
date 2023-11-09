@@ -19,6 +19,7 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
   vector<Point3D>::iterator c;
   int clusterId;
   Point3D p;
+  int j;
   double dist;
 
   // Create a parallel region to operate in
