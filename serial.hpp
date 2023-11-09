@@ -152,18 +152,23 @@ bool areFilesEqual(string filename1, string filename2, bool showDiff = false)
       counter++;
       flag = false;
       // Exit out early if we don't want to see the debugging of 5 lines
-      if (!showDiff || counter > 5)
+      if (!showDiff)
       {
         file1.close();
         file2.close();
         return false;
       }
-      std::cout << "Difference in line " << lineNum << ":\n";
-      std::cout << "File 1: " << line1 << "\n";
-      std::cout << "File 2: " << line2 << "\n\n";
+      else if (counter < 5)
+      {
+        std::cout << "Difference in line " << lineNum << ":\n";
+        std::cout << "File 1: " << line1 << "\n";
+        std::cout << "File 2: " << line2 << "\n\n";
+      }
     }
     lineNum++;
   }
+
+  std::cout << "Total differences: " << counter << "\n\n";
 
   // Check if one file has extra lines
   if (getline(file1, line1))

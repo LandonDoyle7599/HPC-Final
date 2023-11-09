@@ -5,7 +5,7 @@ using namespace std;
 int main()
 {
     // Read in the data
-    cout << "Reading the csv" << endl;
+    cout << "Reading in Song Data" << endl;
     vector<Point3D> points = readcsv("song_data.csv");
     int numEpochs = 100;
     int numCentroids = 6;
@@ -18,5 +18,5 @@ int main()
     performSerial(numEpochs, numCentroids, &centroids, &points, serialFilename);
     cout << "\nPerforming Parallel CPU" << endl;
     performParallel(numEpochs, &parallelCentroidCopy, &points, parallelFilename);
-    cout << "Files Equal: " << areFilesEqual(serialFilename, parallelFilename) << endl;
+    cout << "Files Equal: " << areFilesEqual(serialFilename, parallelFilename, true) << endl;
 }
