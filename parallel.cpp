@@ -10,6 +10,46 @@
 using namespace std;
 
 /**
+ * Updates the centroid data based on the points
+ * @param points - pointer to vector of points
+ * @param centroids - pointer to vector of centroids
+ * @param numCentroids - the number of initial centroids
+ */
+void parallelUpdateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int numCentroids)
+{
+  // Create vectors to keep track of data needed to compute means
+  vector<int> nPoints(numCentroids, 0);
+  vector<double> sumX(numCentroids, 0.0);
+  vector<double> sumY(numCentroids, 0.0);
+
+  // Parallelize the loop to accumulate data for centroid updates
+#pragma omp parallel for
+  for (int i = 0; i < points->size(); ++i)
+  {
+    int clusterId = (*points)[i].cluster;
+#pragma omp atomic
+    nPoints[clusterId] += 1;
+#pragma omp atomic
+    sumX[clusterId] += (*points)[i].x;
+#pragma omp atomic
+    sumY[clusterId] += (*points)[i].y;
+    (*points)[i].minDist = numeric_limits<float>::max(); // reset distance
+  }
+
+  // Compute the new centroids
+  for (int clusterId = 0; clusterId < numCentroids; ++clusterId)
+  {
+    centroids->at(clusterId).x = sumX[clusterId] / nPoints[clusterId];
+    centroids->at(clusterId).y = sumY[clusterId] / nPoints[clusterId];
+  }
+}
+
+
+
+
+
+
+/**
  * Perform k-means clustering
  * @param points - pointer to vector of points
  * @param numEpochs - number of k means iterations
@@ -50,40 +90,7 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
   }
 }
 
-/**
- * Updates the centroid data based on the points
- * @param points - pointer to vector of points
- * @param centroids - pointer to vector of centroids
- * @param numCentroids - the number of initial centroids
- */
-void parallelUpdateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int numCentroids)
-{
-  // Create vectors to keep track of data needed to compute means
-  vector<int> nPoints(numCentroids, 0);
-  vector<double> sumX(numCentroids, 0.0);
-  vector<double> sumY(numCentroids, 0.0);
 
-  // Parallelize the loop to accumulate data for centroid updates
-#pragma omp parallel for
-  for (int i = 0; i < points->size(); ++i)
-  {
-    int clusterId = (*points)[i].cluster;
-#pragma omp atomic
-    nPoints[clusterId] += 1;
-#pragma omp atomic
-    sumX[clusterId] += (*points)[i].x;
-#pragma omp atomic
-    sumY[clusterId] += (*points)[i].y;
-    (*points)[i].minDist = numeric_limits<float>::max(); // reset distance
-  }
-
-  // Compute the new centroids
-  for (int clusterId = 0; clusterId < numCentroids; ++clusterId)
-  {
-    centroids->at(clusterId).x = sumX[clusterId] / nPoints[clusterId];
-    centroids->at(clusterId).y = sumY[clusterId] / nPoints[clusterId];
-  }
-}
 
 void performParallel(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
 {
