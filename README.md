@@ -154,14 +154,19 @@ Single GPU Implementation Visualized with 12 Clusters:
 
 This table displays scaling with an increasing number of threads while keeping the amount of data the same.
 
-| Threads | Time (s) | Epochs | Clusters |
-| ------- | -------- | ------ | -------- |
-| 4       | 27579025 | 100    | 6        |
-| 8       | 28141354 | 100    | 6        |
-| 12      | 27901411 | 100    | 6        |
-| 16      | 30336343 | 100    | 6        |
-| 24      | 29499232 | 100    | 6        |
+| Threads | Time (s)  | Epochs | Clusters |
+| ------- | --------- | ------ | -------- |
+| 4       | 27.579025 | 100    | 6        |
+| 8       | 28.141354 | 100    | 6        |
+| 12      | 27.901411 | 100    | 6        |
+| 16      | 30.336343 | 100    | 6        |
+| 24      | 29.499232 | 100    | 6        |
 
 This table displays scaling the data keeping the number of threads the same, but increaseing the amount of data (number of epochs).
 
-| Threads | Time (s) | Epochs | Clusters |
+| Threads | Time (s)   | Epochs | Clusters |
+| ------- | ---------- | ------ | -------- |
+| 12      | 27.901411  | 100    | 6        |
+| 12      | 61.109881  | 200    | 6        |
+| 12      | 124.803791 | 400    | 6        |
+| 12      | TODO       | 800    | 6        |
