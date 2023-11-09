@@ -14,79 +14,30 @@ using namespace std;
  * @param numEpochs - number of k means iterations
  * @param numCentroids - the number of initial centroids
  */
-void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
+void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, int numCentroids, vector<Point3D> *centroids)
 {
-  int NUM_THREADS = 4;
-  vector<Point3D>::iterator c;
-  int clusterId;
-  Point3D p;
-  int j;
-  double dist;
-  vector<int> nPoints;
-  vector<double> sumX, sumY;
-
-  // Create a parallel region to operate in
-#pragma omp parallel num_threads(NUM_THREADS) default(none) private(j, c, clusterId, p, dist, nPoints, sumX, sumY) shared(points, centroids, numEpochs)
+  // Repeat over epochs to converge the centroids
+  for (int i = 0; i < numEpochs; ++i)
   {
-    // Repeat over epochs to converge the centroids
-    for (int i = 0; i < numEpochs; ++i)
+// Parallelize this loop
+#pragma omp parallel for
+    for (int clusterId = 0; clusterId < numCentroids; ++clusterId)
     {
-      // For each centroid, compute distance from centroid to each point
-      // and update point's cluster if necessary
-
-#pragma omp for // parallelize this to let each thread work on a different centroid and all of the corresponding points
-      for (int j = 0; j < centroids->size(); ++j)
+      for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
       {
-        c = begin(*centroids) + j;
-        clusterId = c - begin(*centroids);
-
-        for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
+        Point3D p = *it;
+        double dist = centroids->at(clusterId).distance(p);
+        if (dist < p.minDist)
         {
-          p = *it;
-          dist = c->distance(p);
-          if (dist < p.minDist)
-          {
-            p.minDist = dist;
-            p.cluster = clusterId;
-          }
-          *it = p;
+          p.minDist = dist;
+          p.cluster = clusterId;
         }
-      }
-      // Update the centroids
-      // updateCentroidData(points, centroids, centroids->size());
-
-      // Parallel update the centroids
-      // Create vectors to keep track of data needed to compute means
-
-      for (int j = 0; j < centroids->size(); ++j)
-      {
-        nPoints.push_back(0);
-        sumX.push_back(0.0);
-        sumY.push_back(0.0);
-      }
-
-// Iterate over points to append data to centroids
-#pragma omp for
-      for (int j = 0; j < points->size(); ++j)
-      {
-        int clusterId = points->at(j).cluster;
-        nPoints[clusterId] += 1;
-        sumX[clusterId] += points->at(j).x;
-        sumY[clusterId] += points->at(j).y;
-
-        points->at(j).minDist = numeric_limits<float>::max(); // reset distance
-      }
-
-      // Compute the new centroids
-
-#pragma omp for
-      for (int j = 0; j < centroids->size(); ++j)
-      {
-        int clusterId = j;
-        centroids->at(j).x = sumX[clusterId] / nPoints[clusterId];
-        centroids->at(j).y = sumY[clusterId] / nPoints[clusterId];
+        *it = p;
       }
     }
+
+    // Update the centroids
+    updateCentroidData(points, centroids, numCentroids);
   }
 }
 
