@@ -17,7 +17,18 @@ g++ serial.cpp -o serial
 
 ### Parallel CPU
 
+```bash
+g++ -fopenmp serial-to-parallel.cpp -o parallel
+./parallel
+```
+
 ### Distributed CPU
+
+Running on CHPC first we need to load the module:
+
+```bash
+module load openmpi
+```
 
 ### Parallel GPU
 
@@ -59,18 +70,20 @@ python3 visualize.py
 
 ## Analysis
 
+In the data set there are 1240425 points, and the amount of data processed is equal to epochs \* numPoints. So for 100 epochs, we process 124042500 points. For 200 epochs, we process 248085000 points, etc.
+
 ### Unprocessed Data
 
 ![unprocessed data](./images/Unprocessed.png)
 
 ### Serial Implementation
 
-| NumPoints | Time (s)  | Epochs | Clusters |
-| --------- | --------- | ------ | -------- |
-| 1240425   | 25.816402 | 100    | 6        |
-| 1240425   | 48.143714 | 100    | 12       |
-| 1240425   | 52.172065 | 200    | 6        |
-| 1240425   | 95.354178 | 200    | 12       |
+| Time (s)  | Epochs | Clusters |
+| --------- | ------ | -------- |
+| 25.816402 | 100    | 6        |
+| 48.143714 | 100    | 12       |
+| 52.172065 | 200    | 6        |
+| 95.354178 | 200    | 12       |
 
 Serial Implementation Visualized with 6 Clusters:
 
@@ -105,14 +118,16 @@ Device 0: "Tesla T4"
 
 ```
 
-| NumPoints | Time (s)  | Epochs | Clusters | Threads per Block | Blocks per Grid |
-| --------- | --------- | ------ | -------- | ----------------- | --------------- |
-| 1240425   | 6.171497  | 100    | 6        | 256               | 4704            |
-| 1240425   | 11.557186 | 200    | 6        | 256               | 4704            |
-| 1240425   | 5.903793  | 100    | 12       | 256               | 4704            |
-| 1240425   | 11.755927 | 200    | 12       | 256               | 4704            |
-| 1240425   | 35.562620 | 600    | 12       | 256               | 4704            |
-| 1240425   | 70.860667 | 1200   | 12       | 256               | 4704            |
+<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
+
+| Time (s)  | Epochs | Clusters | Threads per Block | Blocks per Grid |
+| --------- | ------ | -------- | ----------------- | --------------- |
+| 6.171497  | 100    | 6        | 256               | 4704            |
+| 11.557186 | 200    | 6        | 256               | 4704            |
+| 5.903793  | 100    | 12       | 256               | 4704            |
+| 11.755927 | 200    | 12       | 256               | 4704            |
+| 35.562620 | 600    | 12       | 256               | 4704            |
+| 70.860667 | 1200   | 12       | 256               | 4704            |
 
 As you can see, compared to the serial implentation this is significantly faster. For 200 epochs on 12 clusters it took roughly 1/9th of the time.
 
@@ -120,12 +135,14 @@ This also shows that this algorithm is strongly scalable, because as we increase
 
 We can also change the number of threads per block to fully use the number of threads per block.
 
-| NumPoints | Time(s)   | Epochs | Clusters | Threads per Block | Blocks per Grid |
-| --------- | --------- | ------ | -------- | ----------------- | --------------- |
-| 1240425   | 6.224101  | 100    | 12       | 1024              | 1176            |
-| 1240425   | 11.819179 | 200    | 12       | 1024              | 1176            |
-| 1240425   | 35.537325 | 600    | 12       | 1024              | 1176            |
-| 1240425   | 70.771222 | 1200   | 12       | 1024              | 1176            |
+<!-- //TODO Check whether this is strongly scalable and/or weakly scalable -->
+
+| Time(s)   | Epochs | Clusters | Threads per Block | Blocks per Grid |
+| --------- | ------ | -------- | ----------------- | --------------- |
+| 6.224101  | 100    | 12       | 1024              | 1176            |
+| 11.819179 | 200    | 12       | 1024              | 1176            |
+| 35.537325 | 600    | 12       | 1024              | 1176            |
+| 70.771222 | 1200   | 12       | 1024              | 1176            |
 
 As shown here above, fully using the threads per block did not make any noticeable speedup in the compuation. All values are within .3 seconds of their computation at 256 threads per block.
 
@@ -136,3 +153,32 @@ Single GPU Implementation Visualized with 6 Clusters:
 Single GPU Implementation Visualized with 12 Clusters:
 
 ![12 cluster single GPU](./images/Gpu-200e-12c.png)
+
+### Parallel CPU Implementation
+
+This table displays scaling with an increasing number of threads while keeping the amount of data the same.
+
+| Threads | Time (s)  | Epochs | Clusters |
+| ------- | --------- | ------ | -------- |
+| 4       | 27.579025 | 100    | 6        |
+| 8       | 28.141354 | 100    | 6        |
+| 12      | 27.901411 | 100    | 6        |
+| 16      | 30.336343 | 100    | 6        |
+| 24      | 29.499232 | 100    | 6        |
+
+This table displays scaling the data keeping the number of threads the same, but increasing the amount of data (number of epochs).
+
+| Threads | Time (s)   | Epochs | Clusters |
+| ------- | ---------- | ------ | -------- |
+| 12      | 27.901411  | 100    | 6        |
+| 12      | 61.109881  | 200    | 6        |
+| 12      | 124.803791 | 400    | 6        |
+| 12      | 249.964666 | 800    | 6        |
+
+<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
+
+This data tells us that this is not a strongly scalable algorithm, because as we increase the number of threads, the time does not decrease. However, as we increase the amount of data, the time does increase proportionally.
+
+Parallel CPU Implementation Visualized with 6 Clusters:
+
+![Parallel CPU ](./images/parallel-cpu-800e-6c.png)

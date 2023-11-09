@@ -39,6 +39,7 @@ struct Point3D
  */
 void saveOutputs(vector<Point3D> *points, string filename)
 {
+  cout << "Saving Output" << endl;
   ofstream myfile;
   myfile.open(filename);
   myfile << "x,y,z,c" << endl;
@@ -88,14 +89,10 @@ vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points, b
 void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int numCentroids)
 {
   // Create vectors to keep track of data needed to compute means
-  vector<int> nPoints;
-  vector<double> sumX, sumY;
-  for (int j = 0; j < numCentroids; ++j)
-  {
-    nPoints.push_back(0);
-    sumX.push_back(0.0);
-    sumY.push_back(0.0);
-  }
+  vector<int> nPoints(numCentroids, 0);
+  vector<double> sumX(numCentroids, 0.0);
+  vector<double> sumY(numCentroids, 0.0);
+
   // Iterate over points to append data to centroids
   for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
   {
@@ -151,18 +148,23 @@ bool areFilesEqual(string filename1, string filename2, bool showDiff = false)
       counter++;
       flag = false;
       // Exit out early if we don't want to see the debugging of 5 lines
-      if (!showDiff || counter > 5)
+      if (!showDiff)
       {
         file1.close();
         file2.close();
         return false;
       }
-      std::cout << "Difference in line " << lineNum << ":\n";
-      std::cout << "File 1: " << line1 << "\n";
-      std::cout << "File 2: " << line2 << "\n\n";
+      else if (counter < 5)
+      {
+        std::cout << "Difference in line " << lineNum << ":\n";
+        std::cout << "File 1: " << line1 << "\n";
+        std::cout << "File 2: " << line2 << "\n\n";
+      }
     }
     lineNum++;
   }
+
+  std::cout << "Total differences: " << counter << "\n\n";
 
   // Check if one file has extra lines
   if (getline(file1, line1))
@@ -228,10 +230,11 @@ vector<Point3D> readcsv(string filename)
  */
 void printStats(int numEpochs, int numCentroids, vector<Point3D> *points, long duration)
 {
-  cout << "\nSTATS" << endl;
+  cout << "\n---- STATS ----" << endl;
   cout << "Points: " << points->size() << endl;
   cout << "Epochs " << numEpochs << endl;
   cout << "Clusters: " << numCentroids << endl;
   cout << "Time: " << duration << endl;
-  cout << "Saving the output" << endl;
+  cout << "--------------\n"
+       << endl;
 }
