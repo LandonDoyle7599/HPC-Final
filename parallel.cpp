@@ -21,7 +21,7 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
   for (int i = 0; i < numEpochs; ++i)
   {
 // Parallelize this loop
-#pragma omp parallel for num_threads(threads) default(none) shared(points, centroids) private(i)
+#pragma omp parallel for num_threads(threads)
     for (int clusterId = 0; clusterId < centroids->size(); ++clusterId)
     {
       for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
