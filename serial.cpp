@@ -41,7 +41,7 @@ void kMeansClustering(vector<Point3D> *points, int numEpochs, int numCentroids, 
   }
 }
 
-void performSerial(int numEpochs, int numCentroids, <vector<Point3D>> *centroids, <vector<Point3D>> *points, string filename)
+void performSerial(int numEpochs, int numCentroids, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
 {
   // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
   // create centroids
@@ -50,8 +50,8 @@ void performSerial(int numEpochs, int numCentroids, <vector<Point3D>> *centroids
   kMeansClustering(points, numEpochs, numCentroids, centroids); // K-means clustering on the points.
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-  printStats(numEpochs, numCentroids, &points, duration.count());
-  saveOutputs(&points, filename);
+  printStats(numEpochs, numCentroids, points, duration.count());
+  saveOutputs(points, filename);
 }
 
 int main()
