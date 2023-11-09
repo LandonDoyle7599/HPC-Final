@@ -16,7 +16,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # After clustering
 plt.figure()
-df = pd.read_csv("./persistedData/single-gpu-200e-12c.csv")
+df = pd.read_csv("./persistedData/parallel-cpu-800e-6c.csv")
 fig = plt.figure()
 ax = fig.add_subplot(111, projection="3d")
 scatter = ax.scatter(df.x, df.y, df.z, c=df.c, cmap="viridis")

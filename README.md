@@ -118,6 +118,8 @@ Device 0: "Tesla T4"
 
 ```
 
+<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
+
 | Time (s)  | Epochs | Clusters | Threads per Block | Blocks per Grid |
 | --------- | ------ | -------- | ----------------- | --------------- |
 | 6.171497  | 100    | 6        | 256               | 4704            |
@@ -132,6 +134,8 @@ As you can see, compared to the serial implentation this is significantly faster
 This also shows that this algorithm is strongly scalable, because as we increase the epochs (which is a multiplier on the data we use), the time increases proportionally.
 
 We can also change the number of threads per block to fully use the number of threads per block.
+
+<!-- //TODO Check whether this is strongly scalable and/or weakly scalable -->
 
 | Time(s)   | Epochs | Clusters | Threads per Block | Blocks per Grid |
 | --------- | ------ | -------- | ----------------- | --------------- |
@@ -162,11 +166,19 @@ This table displays scaling with an increasing number of threads while keeping t
 | 16      | 30.336343 | 100    | 6        |
 | 24      | 29.499232 | 100    | 6        |
 
-This table displays scaling the data keeping the number of threads the same, but increaseing the amount of data (number of epochs).
+This table displays scaling the data keeping the number of threads the same, but increasing the amount of data (number of epochs).
 
 | Threads | Time (s)   | Epochs | Clusters |
 | ------- | ---------- | ------ | -------- |
 | 12      | 27.901411  | 100    | 6        |
 | 12      | 61.109881  | 200    | 6        |
 | 12      | 124.803791 | 400    | 6        |
-| 12      | TODO       | 800    | 6        |
+| 12      | 249.964666 | 800    | 6        |
+
+<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
+
+This data tells us that this is not a strongly scalable algorithm, because as we increase the number of threads, the time does not decrease. However, as we increase the amount of data, the time does increase proportionally.
+
+Parallel CPU Implementation Visualized with 6 Clusters:
+
+![Parallel CPU ](./images/parallel-cpu-800e-6c.png)
