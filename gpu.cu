@@ -52,12 +52,12 @@ __global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids, int 
  * @param numEpochs - number of k means iterations
  * @param k - the number of initial centroids
  */
-void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, int numCentroids, vector<Point3D> *centroids)
+void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
 {
   // Run k-means clustering over number of numEpochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
   {
-    // Allocate memory on 
+    // Allocate memory on GPU
     Point3D *d_points;
     Point3D *d_centroids;
     cudaMalloc(&d_points, points->size() * sizeof(Point3D));
@@ -68,10 +68,10 @@ void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, int numCentroid
     cudaMemcpy(d_centroids, centroids->data(), centroids->size() * sizeof(Point3D), cudaMemcpyHostToDevice);
 
     // Run kernel to compute distance from centroid to each point
-    int threadsPerBlock = 1024;
+    int threadsPerBlock = 256;
     int blocksPerGrid = (int)ceil((float)points->size() / threadsPerBlock);
     // cout << "Blocks per Grid " << blocksPerGrid << endl;
-    kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, points->size(), numCentroids);
+    kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, points->size(), centroids->size());
 
     // Copy data back to CPU
     cudaMemcpy(points->data(), d_points, points->size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
@@ -82,7 +82,7 @@ void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, int numCentroid
     cudaFree(d_centroids);
 
     // Update centroids
-    updateCentroidData(points, centroids, numCentroids);
+    updateCentroidData(points, centroids, centroids->size());
   }
 }
 
@@ -91,7 +91,7 @@ void performGPU(int numEpochs, int numCentroids, vector<Point3D> *centroids, vec
     cout << "Entering the k means computation" << endl;
     // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
     auto start_time = std::chrono::high_resolution_clock::now();
-    kMeansClusteringGPU(points, numEpochs, numCentroids, *centroids);
+    kMeansClusteringGPU(points, numEpochs, centroids);
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
     printStats(numEpochs, numCentroids, points, duration.count());
