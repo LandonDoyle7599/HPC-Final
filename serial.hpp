@@ -226,12 +226,12 @@ vector<Point3D> readcsv(string filename)
  * @param points - pointer to vector of points
  * @param duration - the time it took to run the program
  */
-void printStats(int numEpochs, int numCentroids, vector<Point3D> *points, chrono::microseconds duration)
+void printStats(int numEpochs, int numCentroids, vector<Point3D> *points, long duration)
 {
   cout << "\nSTATS" << endl;
   cout << "Points: " << points->size() << endl;
   cout << "Epochs " << numEpochs << endl;
   cout << "Clusters: " << numCentroids << endl;
-  cout << "Time: " << duration.count() << endl;
+  cout << "Time: " << duration << endl;
   cout << "Saving the output" << endl;
 }
