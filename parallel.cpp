@@ -15,34 +15,31 @@ using namespace std;
  * @param numEpochs - number of k means iterations
  * @param centroids - pointer to vector of centroids
  */
-void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
+void kMeansClusteringParallel(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
 {
-  int threads = omp_get_max_threads();
-  // Repeat over epochs to converge the centroids
-
-  for (int i = 0; i < numEpochs; ++i)
+  for (int epoch = 0; epoch < numEpochs; ++epoch)
   {
-    Point3D p;
-    // For each centroid, compute distance from centroid to each point and update point's cluster if necessary
-#pragma omp parallel for num_threads(threads) default(none) shared(points, centroids) private(p)
-    for (int j = 0; j < centroids->size(); ++j)
+#pragma omp parallel for
+    for (int i = 0; i < points->size(); ++i)
     {
-      // Check the distance from each point to the centroid and update each point if necessary
-      for (int pointIndex = 0; pointIndex < points->size(); ++pointIndex)
+      Point3D &p = (*points)[i];
+      int clusterId = 0;
+      double minDist = centroids->at(0).distance(p);
+
+      for (int j = 1; j < centroids->size(); ++j)
       {
-        // https://stackoverflow.com/questions/49938999/stdvector-at-does-it-return-a-reference-or-a-copy
-        Point3D p = points->at(pointIndex);
         double dist = centroids->at(j).distance(p);
-        // we only want one thread updating the points at a time
-        if (dist < p.minDist)
+        if (dist < minDist)
         {
-          p.minDist = dist;
-          p.cluster = j;
+          minDist = dist;
+          clusterId = j;
         }
-        // #pragma omp critical
-        {
-          points->at(pointIndex) = p;
-        }
+      }
+
+#pragma omp critical
+      {
+        p.minDist = minDist;
+        p.cluster = clusterId;
       }
     }
 
