@@ -17,7 +17,7 @@ using namespace std;
  */
 void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
 {
-  int threads = 4;
+  int threads = omp_get_max_threads();
   // Repeat over epochs to converge the centroids
   for (int i = 0; i < numEpochs; ++i)
   {
