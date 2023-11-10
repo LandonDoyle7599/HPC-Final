@@ -121,7 +121,7 @@ int main(int argc, char **argv)
     // Now that it is finished executing, gather the data back toegerh to review
     if (rank == 0)
     {
-        printStats(numEpochs, centroids.size(), &basePoints, duration.count());
+        printStats(numEpochs, centroids.size(), &basePoints, 0);
         saveOutputs(&basePoints, distributedFilename);
         // Compare outputs to validate they computed the same values
         bool debug = true;
