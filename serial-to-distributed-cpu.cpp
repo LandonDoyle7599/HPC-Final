@@ -12,6 +12,11 @@ int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);
     int rank, size;
+    int numEpochs;
+    int numPoints;
+    vector<Point3D> centroids;
+    string serialFilename = "serial-cpu.csv";
+    string distributedFilename = "distributed-cpu.csv";
     // Get rank and get size
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -24,40 +29,39 @@ int main(int argc, char **argv)
             cout << "Usage: " << argv[0] << " <numEpochs> <numCentroids>" << endl;
             return 1;
         }
-        int numEpochs = atoi(argv[1]);
+        numEpochs = atoi(argv[1]);
         int numCentroids = atoi(argv[2]);
-        string serialFilename = "serial-cpu.csv";
-        string distributedFilename = "distributed-cpu.csv";
+
         cout << "Number of processes: " << size << endl;
         // Read in the data
         cout << "Reading in Song Data" << endl;
         vector<Point3D> points = readcsv("song_data.csv");
+        numPoints = points.size();
         // Run serial code with a copy of the song data
         vector<Point3D> serialPoints = points;
         // Because this is random initialization we need to share it between the serial and distributed implementations
-        vector<Point3D> centroids = initializeCentroids(numCentroids, &points);
+        centroids = initializeCentroids(numCentroids, &points);
         // Copies the data to ensure we are validating correctly https://www.geeksforgeeks.org/ways-copy-vector-c/
         vector<Point3D> serialCentroidCopy = centroids;
         // Execute the operations
         cout << "Performing Serial CPU" << endl;
         performSerial(numEpochs, &serialCentroidCopy, &serialPoints, serialFilename);
     }
-
     // Wait until the serial code is done before starting the distributed computation
     MPI_Barrier(MPI_COMM_WORLD);
     if (rank == 0)
     {
         cout << "Performing Distributed CPU" << endl;
         auto start_time = std::chrono::high_resolution_clock::now();
+        // Define how much each process will work on each epoch
     }
-    int numPoints = points.size();
-    // Define how much each process will work on each epoch
     int pointsPerProcess = numPoints / size;
     int startPoint = rank * pointsPerProcess;
     //  If 0 on the first iteration, then add the previous send count to the displacement
     int endPoint = (rank == size - 1) ? numPoints : startPoint + pointsPerProcess;
-    // Buffer to receive the local points for each node
     vector<Point3D> localPoints(pointsPerProcess);
+
+    // Buffer to receive the local points for each node
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
         // Broadcast centroids to all processes. We need to update each node of the current centroids for each epoch to ensure we are using the most up to date data and actually converging.
