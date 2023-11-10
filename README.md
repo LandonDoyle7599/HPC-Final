@@ -31,7 +31,7 @@ module load openmpi
 ```
 
 ```bash
-mpic++ serial-to-distributed.cpp -o distributed
+mpic++ serial-to-distributed-cpu.cpp -o distributed
 ./distributed
 ```
 

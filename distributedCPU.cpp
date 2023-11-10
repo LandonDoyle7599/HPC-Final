@@ -1,4 +1,3 @@
-// TODO// #include "serial.hpp" // uncomment this to run individually
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -48,7 +47,6 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *points, int numEpochs, vect
                     clusterId = j;
                 }
             }
-
             p.minDist = minDist;
             p.cluster = clusterId;
         }
@@ -64,13 +62,12 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *points, int numEpochs, vect
     }
 }
 
-void performDistributedCPU(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename, int numThreads)
+void performDistributedCPU(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
 {
     // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
-    // create centroids
     cout << "Entering the k means computation" << endl;
     auto start_time = std::chrono::high_resolution_clock::now();
-    kMeansClusteringDistributedCPU(points, numEpochs, centroids, numThreads); // K-means clustering on the points.
+    kMeansClusteringDistributedCPU(points, numEpochs, centroids); // K-means clustering on the points.
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
     printStats(numEpochs, centroids->size(), points, duration.count());
