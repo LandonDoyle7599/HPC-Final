@@ -101,7 +101,7 @@ int main(int argc, char **argv)
         // Update the centroids on the root process with the collected data
         if (rank == 0)
         {
-            updateCentroidData(&points, centroids, centroids.size());
+            updateCentroidData(&points, &centroids, centroids.size());
         }
     }
 
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
     {
         auto end_time = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-        printStats(numEpochs, centroids.size(), points, duration.count());
+        printStats(numEpochs, centroids.size(), &points, duration.count());
         saveOutputs(points, distributedFilename);
         // Compare outputs to validate they computed the same values
         bool debug = true;
