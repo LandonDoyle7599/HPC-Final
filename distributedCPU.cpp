@@ -31,11 +31,11 @@ void kMeansClusteringCPU(vector<Point3D> *points, vector<Point3D> *centroids, in
     for (int i = 0; i < nPoints; ++i)
     {
         // Initialize to first value
-        float minDist = points->at(i).distance(centroids[0]);
+        float minDist = points->at(i).distance(centroids->at(0));
         int clusterId = 0;
         for (int j = 1; j < numCentroids; ++j)
         {
-            float dist = points->at(i).distance(centroids[j]);
+            float dist = points->at(i).distance(centroids->at(j));
             if (dist < minDist)
             {
                 minDist = dist;
