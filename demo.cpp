@@ -171,9 +171,8 @@ int main(int argc, char *argv[])
     for (int i = 0; i < world_size; ++i)
     {
         send_counts[i] = (data_x_points.size() / world_size) + 1;
-        displacements[i] = i * (data_x_points.size() / world_size);
+        displacements[i] = i * send_counts[i];
     }
-
     cout << "Rank : " << world_rank << " scattering x points " << endl;
 
     // Scatterv for x points
