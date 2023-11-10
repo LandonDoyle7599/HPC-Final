@@ -11,8 +11,8 @@
 
 using namespace std;
 
-void distributedUpdateClusters(const vector<double> &k_x, const vector<double> &k_y, const vector<double> &k_z,
-                               const vector<double> &recv_x, const vector<double> &recv_y, const vector<double> &recv_z, vector<int> &assign)
+void calculateKMean(const vector<double> &k_x, const vector<double> &k_y, const vector<double> &k_z,
+                    const vector<double> &recv_x, const vector<double> &recv_y, const vector<double> &recv_z, vector<int> &assign)
 {
     for (size_t i = 0; i < recv_x.size(); ++i)
     {
@@ -36,16 +36,17 @@ void distributedUpdateClusters(const vector<double> &k_x, const vector<double> &
     }
 }
 
-void calcKmeans(vector<double> &k_means_x, vector<double> &k_means_y, vector<double> &k_means_z,
-                const vector<double> &data_x_points, const vector<double> &data_y_points, const vector<double> &data_z_points, const vector<int> &k_assignment)
+void updateCentroidDataDistributed(vector<double> &k_means_x, vector<double> &k_means_y, vector<double> &k_means_z,
+                                   const vector<double> &data_x_points, const vector<double> &data_y_points, const vector<double> &data_z_points, const vector<int> &k_assignment)
 {
+
     // Iterate over the centroids and compute the means for each value
     for (size_t i = 0; i < k_means_x.size(); ++i)
     {
+        int numOfpoints = 0;
         double total_x = 0.0;
         double total_y = 0.0;
-        double total_z = 0.0;
-        int numOfpoints = 0;
+        // double total_z = 0.0;
 
         for (size_t j = 0; j < data_x_points.size(); ++j)
         {
@@ -53,7 +54,7 @@ void calcKmeans(vector<double> &k_means_x, vector<double> &k_means_y, vector<dou
             {
                 total_x += data_x_points[j];
                 total_y += data_y_points[j];
-                total_z += data_z_points[j];
+                // total_z += data_z_points[j];
                 numOfpoints++;
             }
         }
@@ -63,7 +64,7 @@ void calcKmeans(vector<double> &k_means_x, vector<double> &k_means_y, vector<dou
         {
             k_means_x[i] = total_x / numOfpoints;
             k_means_y[i] = total_y / numOfpoints;
-            k_means_z[i] = total_z / numOfpoints;
+            // k_means_z[i] = total_z / numOfpoints;
         }
     }
 }
@@ -198,14 +199,14 @@ int main(int argc, char *argv[])
         MPI_Scatter(k_assignment.data(), (k_assignment.size() / world_size) + 1, MPI_INT,
                     recv_assign.data(), (k_assignment.size() / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        distributedUpdateClusters(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z, recv_assign);
+        calculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z, recv_assign);
 
         MPI_Gather(recv_assign.data(), (k_assignment.size() / world_size) + 1, MPI_INT,
                    k_assignment.data(), (k_assignment.size() / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         if (world_rank == 0)
         {
-            calcKmeans(k_means_x, k_means_y, k_means_z, data_x_points, data_y_points, data_z_points, k_assignment);
+            updateCentroidDataDistributed(k_means_x, k_means_y, k_means_z, data_x_points, data_y_points, data_z_points, k_assignment);
         }
 
         count++;
