@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
         if (rank == 0)
         {
             cout << "Updating Centroids from Rank 0" << endl;
-            updateDistributedCentroidData(*localPoints, *centroids, centroids.size());
+            updateDistributedCentroidData(localPoints, centroids, centroids.size());
         }
     }
 
@@ -94,8 +94,8 @@ int main(int argc, char *argv[])
     if (rank == 0)
     {
         cout << "Saving outputs..." << endl;
-        printStats(numEpochs, centroids.size(), points, 0);
-        saveOutputs(points, filename);
+        printStats(numEpochs, centroids.size(), &points, 0);
+        saveOutputs(&points, filename);
     }
 
     // Wrap everything up
