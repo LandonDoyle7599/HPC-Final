@@ -1,82 +1,107 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <chrono>
-#include <ctime>
-#include <vector>
 #include <mpi.h>
 
-using namespace std;
-
-/**
- * Perform k-means clustering using OpenMPI
- * @param points - pointer to vector of points
- * @param numEpochs - number of k-means iterations
- * @param centroids - pointer to vector of centroids
- */
-void kMeansClusteringDistributedCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids, int rank, int size)
+// Function to distribute points among processes
+// Function to distribute points among processes
+void distributePoints(vector<Point3D> *points, vector<Point3D> *localPoints)
 {
-    int numPoints = points->size();
+    int rank, size;
 
-    // Define how much each process will work on each epoch
-    int pointsPerProcess = numPoints / size;
-    int startPoint = rank * pointsPerProcess;
-    //  If 0 on the first iteration, then add the previous send count to the displacement
-    int endPoint = (rank == size - 1) ? numPoints : startPoint + pointsPerProcess;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    // Buffer to receive the local points for each node
-    vector<Point3D> localPoints(pointsPerProcess);
+    int pointsPerProcess = points->size() / size;
+    int remainder = points->size() % size;
 
-    // Now we begin processing the data
+    int localSize = (rank < remainder) ? (pointsPerProcess + 1) : pointsPerProcess;
+    int offset = rank * pointsPerProcess + min(rank, remainder);
+
+    localPoints->resize(localSize);
+    MPI_Scatter(points->data(), localSize * sizeof(Point3D), MPI_BYTE,
+                localPoints->data(), localSize * sizeof(Point3D), MPI_BYTE,
+                0, MPI_COMM_WORLD);
+}
+
+// Function to perform k-means clustering on a subset of points
+void kMeansClusteringDistributedCPU(vector<Point3D> *localPoints, int numEpochs, vector<Point3D> *centroids)
+{
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
-        // Broadcast centroids to all processes. We need to update each node of the current centroids for each epoch to ensure we are using the most up to date data and actually converging.
-        MPI_Bcast(&centroids->front(), centroids->size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
-
-        // Scatter the points to each process so they can work on them. Once again, we need to update the data each epoch in order to converge
-        MPI_Scatter(points->data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE,
-                    localPoints.data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
-
-        // Each process will compute the distance for its given set of points.
-        for (int i = 0; i < pointsPerProcess; ++i)
+        // Perform local k-means clustering on local points
+        for (auto &point : *localPoints)
         {
-            Point3D &p = localPoints[i];
-            int clusterId = 0;
-            double minDist = centroids->at(0).distance(p);
+            double minDist = numeric_limits<double>::max();
+            int clusterId = -1;
 
-            for (int j = 1; j < centroids->size(); ++j)
+            for (size_t i = 0; i < centroids->size(); ++i)
             {
-                double dist = centroids->at(j).distance(p);
+                double dist = point.distance(centroids->at(i));
                 if (dist < minDist)
                 {
                     minDist = dist;
-                    clusterId = j;
+                    clusterId = static_cast<int>(i);
                 }
             }
-            p.minDist = minDist;
-            p.cluster = clusterId;
+
+            point.minDist = minDist;
+            point.cluster = clusterId;
         }
 
-        // Gather updated points to the root process
-        MPI_Gather(localPoints.data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE,
-                   points->data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+        // Use MPI functions to exchange information between processes
+        // ...
 
-        // Update the centroids on the root process with the collected data
-        if (rank == 0)
-        {
-            updateCentroidData(points, centroids, centroids->size());
-        }
+        // Update centroids locally (use MPI_Reduce or similar for a global update)
+        updateCentroidData(localPoints, centroids, centroids->size());
+
+        // Use MPI functions to exchange updated centroids between processes
+        // ...
     }
 }
 
-// void performDistributedCPU(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
-// {
-//     // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
-//     cout << "\tEntering the k means computation" << endl;
-//     auto start_time = std::chrono::high_resolution_clock::now();
-//     kMeansClusteringDistributedCPU(points, numEpochs, centroids); // K-means clustering on the points.
-//     auto end_time = std::chrono::high_resolution_clock::now();
-//     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-//     printStats(numEpochs, centroids->size(), points, duration.count());
-//     saveOutputs(points, filename);
-// }
+// Function to gather and update centroids across all processes
+void gatherAndUpdateCentroids(vector<Point3D> *centroids, vector<Point3D> *localPoints)
+{
+    int rank, size;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    // Gather all local centroids to the root process
+    vector<Point3D> allCentroids(centroids->size() * size);
+    MPI_Gather(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE,
+               allCentroids.data(), centroids->size() * sizeof(Point3D), MPI_BYTE,
+               0, MPI_COMM_WORLD);
+
+    if (rank == 0)
+    {
+        // Update global centroids based on the gathered information
+        updateCentroidData(&allCentroids, centroids, centroids->size());
+    }
+
+    // Broadcast the updated centroids to all processes
+    MPI_Bcast(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+}
+
+// Main function for parallel k-means clustering using MPI
+void performDistributed(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
+{
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    // Distribute points among processes
+    vector<Point3D> localPoints;
+    distributePoints(points, &localPoints);
+
+    // Perform k-means clustering on local points
+    kMeansClusteringDistributedCPU(&localPoints, numEpochs, centroids);
+
+    // Gather and update centroids across all processes
+    gatherAndUpdateCentroids(centroids, &localPoints);
+
+    // Print and save results in the root process
+    if (rank == 0)
+    {
+        printStats(numEpochs, centroids->size(), points, duration.count());
+        saveOutputs(points, filename);
+    }
+}
