@@ -50,7 +50,7 @@ void updateCentroidDataDistributed(vector<double> &k_means_x, vector<double> &k_
         nPoints[clusterID] += 1;
         sumX[clusterID] += data_x_points[i];
         sumY[clusterID] += data_y_points[i];
-        // Reset the min distance ?
+        // Reset the min distance is not needed, we don't use it in the distributed version
     }
 
     // Compute the new centroids
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-    // Setup the Centeroids
+    // Setup the centroids
     vector<double> k_means_x;
     vector<double> k_means_y;
     vector<double> k_means_z;
@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
     vector<double> recv_y;
     vector<double> recv_z;
     vector<int> recv_assign;
+
+    // Files to store
     string serialFilename = "serial.csv";
     string distFilename = "distributed.csv";
 
@@ -181,7 +183,7 @@ int main(int argc, char *argv[])
     // cout << "Rank : " << world_rank << " Num Epochs " << numEpochs << endl;
 
     int count = 0;
-    // auto start = chrono::high_resolution_clock::now();
+    auto start = chrono::high_resolution_clock::now();
     while (count < numEpochs)
     {
         MPI_Bcast(k_means_x.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -206,7 +208,7 @@ int main(int argc, char *argv[])
 
     if (world_rank == 0)
     {
-        auto start = chrono::high_resolution_clock::now();
+        // auto start = chrono::high_resolution_clock::now();
         auto end = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
         vector<Point3D> pointData;
