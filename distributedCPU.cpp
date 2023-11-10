@@ -44,6 +44,29 @@ void distributePoints(vector<Point3D> *points, vector<Point3D> *localPoints)
                 0, MPI_COMM_WORLD);
 }
 
+// Function to update distributed centroids based on local information
+void updateDistributedCentroidData(vector<Point3D> *localPoints, vector<Point3D> *centroids, int numCentroids)
+{
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    // Gather local centroids from all processes to the root process
+    vector<Point3D> allCentroids(centroids->size() * size);
+    MPI_Gather(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE,
+               allCentroids.data(), centroids->size() * sizeof(Point3D), MPI_BYTE,
+               0, MPI_COMM_WORLD);
+
+    if (rank == 0)
+    {
+        // Update global centroids based on the gathered information
+        updateCentroidData(&allCentroids, centroids, numCentroids);
+    }
+
+    // Broadcast the updated centroids to all processes
+    MPI_Bcast(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+}
+
 // Function to perform k-means clustering on a subset of points
 void kMeansClusteringDistributedCPU(vector<Point3D> *localPoints, int numEpochs, vector<Point3D> *centroids)
 {
@@ -73,18 +96,10 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *localPoints, int numEpochs,
             point.cluster = clusterId;
         }
 
-        // Update centroids locally (use MPI_Reduce or similar for a global update)
-        updateCentroidData(localPoints, centroids, centroids->size());
-
-        // Gather and synchronize updated centroids
-        MPI_Gather(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE,
-                   allCentroids.data(), centroids->size() * sizeof(Point3D), MPI_BYTE,
-                   0, MPI_COMM_WORLD);
-
-        // Update centroids
+        // Update Distributed Centroids
         if (rank == 0)
         {
-            updateCentroidData(localPoints, centroids, centroids->size());
+            updateDistributedCentroidData(localPoints, centroids, centroids->size());
         }
 
         // Share those updates with the other processes
