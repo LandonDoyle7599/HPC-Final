@@ -8,10 +8,49 @@
 #include <mpi.h>
 using namespace std;
 
+void postComputation(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string serialFilename, string distributedFilename, auto start_time)
+{
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+    printStats(numEpochs, centroids.size(), points, duration.count());
+    saveOutputs(points, distributedFilename);
+    // Compare outputs to validate they computed the same values
+    bool debug = true;
+    if (debug)
+    {
+        areFilesEqual(serialFilename, distributedFilename, debug);
+    }
+    else
+    {
+        cout << "Files Equal: " << areFilesEqual(serialFilename, distributedFilename, debug) << endl;
+    }
+}
+
+void initialSetup(int &numEpochs, int &numPoints, vector<Point3D> &centroids, vector<Point3D> &points, string &serialFilename, string &distributedFilename, int &size)
+{
+    cout << "Number of processes: " << size << endl;
+    // Read in the data
+    cout << "Reading in Song Data" << endl;
+    points = readcsv("song_data.csv");
+    numPoints = points.size();
+    // Run serial code with a copy of the song data
+    vector<Point3D> serialPoints = points;
+    // Because this is random initialization we need to share it between the serial and distributed implementations
+    centroids = initializeCentroids(numCentroids, &points);
+    // Copies the data to ensure we are validating correctly https://www.geeksforgeeks.org/ways-copy-vector-c/
+    vector<Point3D> serialCentroidCopy = centroids;
+    // Execute the operations
+    cout << "Performing Serial CPU" << endl;
+    performSerial(numEpochs, &serialCentroidCopy, &serialPoints, serialFilename);
+}
+
 int main(int argc, char **argv)
 {
     int rank, size;
     MPI_Init(&argc, &argv);
+    MPI_Datatype MPI_POINT3D;
+    MPI_Type_contiguous(sizeOf(Point3D), MPI_BYTE, &MPI_POINT3D);
+    MPI_Type_commit(&MPI_POINT3D);
     // Get rank and get size
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -30,25 +69,11 @@ int main(int argc, char **argv)
         if (argc != 3)
         {
             cout << "Usage: " << argv[0] << " <numEpochs> <numCentroids>" << endl;
-            return 1;
+            MPI_Abort(MPI_COMM_WORLD, 1);
         }
         numEpochs = atoi(argv[1]);
         int numCentroids = atoi(argv[2]);
-
-        cout << "Number of processes: " << size << endl;
-        // Read in the data
-        cout << "Reading in Song Data" << endl;
-        points = readcsv("song_data.csv");
-        numPoints = points.size();
-        // Run serial code with a copy of the song data
-        vector<Point3D> serialPoints = points;
-        // Because this is random initialization we need to share it between the serial and distributed implementations
-        centroids = initializeCentroids(numCentroids, &points);
-        // Copies the data to ensure we are validating correctly https://www.geeksforgeeks.org/ways-copy-vector-c/
-        vector<Point3D> serialCentroidCopy = centroids;
-        // Execute the operations
-        cout << "Performing Serial CPU" << endl;
-        performSerial(numEpochs, &serialCentroidCopy, &serialPoints, serialFilename);
+        initialSetup(numEpochs, numPoints, centroids, points, serialFilename, distributedFilename, size);
     }
     // Wait until the serial code is done before starting the distributed computation
     MPI_Barrier(MPI_COMM_WORLD);
@@ -74,12 +99,12 @@ int main(int argc, char **argv)
             cout << "Epoch number: " << epoch << endl;
         }
         // Broadcast centroids to all processes. We need to update each node of the current centroids for each epoch to ensure we are using the most up to date data and actually converging.
-        MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
-
+        MPI_Bcast(centroids.data(), centroids.size(), MPI_Point3D, 0, MPI_COMM_WORLD);
         cout << "Rank: " << rank << "Received centroids: " << centroids.size() << endl;
+
         // Scatter the points to each process so they can work on them. Once again, we need to update the data each epoch in order to converge
-        MPI_Scatter(points.data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE,
-                    localPoints.data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+        MPI_Scatter(points.data(), pointsPerProcess, MPI_Point3D,
+                    localPoints.data(), pointsPerProcess, MPI_Point3D, 0, MPI_COMM_WORLD);
 
         // Each process will compute the distance for its given set of points.
         cout << "Rank: " << rank << " Start: " << startPoint << " End: " << endPoint << endl;
@@ -111,26 +136,12 @@ int main(int argc, char **argv)
             updateCentroidData(&points, &centroids, centroids.size());
         }
     }
-
     MPI_Barrier(MPI_COMM_WORLD);
     // Now we simply compare the outputs
     // Only want 1 process to compare the files
     if (rank == 0)
     {
-        auto end_time = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-        printStats(numEpochs, centroids.size(), &points, duration.count());
-        saveOutputs(&points, distributedFilename);
-        // Compare outputs to validate they computed the same values
-        bool debug = true;
-        if (debug)
-        {
-            areFilesEqual(serialFilename, distributedFilename, debug);
-        }
-        else
-        {
-            cout << "Files Equal: " << areFilesEqual(serialFilename, distributedFilename, debug) << endl;
-        }
+        postComputation(numEpochs, &centroids, &points, serialFilename, distributedFilename, start_time);
     }
     MPI_Finalize();
     return 0;
