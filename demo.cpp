@@ -3,6 +3,8 @@
 #include <vector>
 #include <mpi.h>
 
+using namespace std;
+
 void updateCentroidDataMPI(vector<Point3D> &localPoints, vector<Point3D> &centroids, int numCentroids)
 {
     // Create vectors to keep track of data needed to compute means locally
@@ -34,7 +36,7 @@ void updateCentroidDataMPI(vector<Point3D> &localPoints, vector<Point3D> &centro
     }
 }
 
-void kMeansClusteringParallelMPI(std::vector<Point3D> &points, int numEpochs, std::vector<Point3D> &centroids)
+void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<Point3D> &centroids)
 {
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -82,17 +84,22 @@ int main(int argc, char **argv)
     // Get rank and get size
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    std::vector<Point3D> basePoints;
-    std::vector<Point3D> centroids;
+    vector<Point3D> basePoints;
+    vector<Point3D> centroids;
     int numEpochs = 25;
     int numClusters = 6;
+    string serialFilename = "serial-cpu.csv";
     // Read in the data on rank 0
 
     if (rank == 0)
     {
-        std::cout << "Reading in Song Data" << std::endl;
+        cout << "Reading in Song Data" << endl;
         basePoints = readcsv("song_data.csv");
         centroids = initializeCentroids(6, &basePoints);
+        vector<Point3D> serialCentroidCopy = centroids;
+        vector<Point3D> serialPointsCopy = basePoints;
+        cout << "Performing Serial CPU" << endl;
+        performSerial(numEpochs, &serialCentroidCopy, &serialPointsCopy, serialFilename);
     }
 
     // Broadcast the size of the data to all ranks
@@ -100,7 +107,7 @@ int main(int argc, char **argv)
     MPI_Bcast(&dataSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     // Scatter the data among all ranks
-    std::vector<Point3D> localPoints(dataSize / size);
+    vector<Point3D> localPoints(dataSize / size);
     MPI_Scatter(basePoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
                 localPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
