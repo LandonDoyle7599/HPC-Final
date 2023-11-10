@@ -7,7 +7,8 @@
 #include <limits>
 #include <vector>
 #include <mpi.h>
-#include "serial.hpp"
+#include "serial.cpp"
+#include "distributedCPU.cpp"
 
 using namespace std;
 
@@ -62,7 +63,7 @@ int main(int argc, char *argv[])
     {
         // Now we validate the outputs
         cout << "Validating outputs..." << endl;
-        areFilesEqual(serialFilename, filename, true)
+        areFilesEqual(serialFilename, filename, true);
     }
 
     MPI_Finalize();
