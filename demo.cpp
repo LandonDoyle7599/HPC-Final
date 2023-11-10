@@ -101,6 +101,7 @@ int main(int argc, char **argv)
         vector<Point3D> serialPointsCopy = basePoints;
         cout << "Performing Serial CPU" << endl;
         performSerial(numEpochs, &serialCentroidCopy, &serialPointsCopy, serialFilename);
+        cout << "Performing Distributed CPU" << endl;
     }
 
     // Broadcast the size of the data to all ranks
@@ -115,6 +116,7 @@ int main(int argc, char **argv)
     // Broadcast centroids to all ranks
     MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
+    cout << "Rank " << rank << " has " << localPoints.size() << " points" << endl;
     // Execute k-means clustering
     kMeansClusteringParallelMPI(localPoints, numEpochs, centroids);
 
