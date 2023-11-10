@@ -65,8 +65,12 @@ void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<
             p.cluster = clusterId;
         }
 
+        cout << "Rank: " << rank << " Completed epoch: " << epoch << endl;
+
         // Perform a global reduction to update centroids
         updateCentroidDataMPI(points, centroids, centroids.size());
+
+        cout << "Rank: " << rank << " Updated Centroid Data " << endl;
 
         // Communicate updated centroids
         MPI_Allgather(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
