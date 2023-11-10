@@ -1,5 +1,4 @@
 #include <iostream>
-#include "serial.hpp"
 #include "serial.cpp"
 #include <vector>
 #include <mpi.h>
