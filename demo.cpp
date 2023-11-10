@@ -13,7 +13,7 @@ void updateCentroidDataMPI(vector<Point3D> &localPoints, vector<Point3D> &centro
     vector<double> sumY(numCentroids, 0.0);
 
     // Iterate over points to append data to centroids
-    for (vector<Point3D>::iterator it = localPoints->begin(); it != localPoints->end(); ++it)
+    for (vector<Point3D>::iterator it = localPoints.begin(); it != localPoints.end(); ++it)
     {
         int clusterId = it->cluster;
         nPoints[clusterId] += 1;
@@ -26,9 +26,9 @@ void updateCentroidDataMPI(vector<Point3D> &localPoints, vector<Point3D> &centro
     if (rank == 0)
     {
         // Compute the new centroids
-        for (vector<Point3D>::iterator c = centroids->begin(); c != centroids->end(); ++c)
+        for (vector<Point3D>::iterator c = centroids.begin(); c != centroids.end(); ++c)
         {
-            int clusterId = c - centroids->begin();
+            int clusterId = c - centroids.begin();
             c->x = sumX[clusterId] / nPoints[clusterId];
             c->y = sumY[clusterId] / nPoints[clusterId];
         }
