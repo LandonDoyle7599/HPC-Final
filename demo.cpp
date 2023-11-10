@@ -41,9 +41,9 @@ void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<
 {
 
     cout << "Rank: " << rank << " is part of kMeansClustering " << endl;
-    int localSize = points->size() / size;
+    int localSize = points.size() / size;
     int localStart = rank * localSize;
-    int localEnd = (rank == size - 1) ? points->size() : localStart + localSize;
+    int localEnd = (rank == size - 1) ? points.size() : localStart + localSize;
 
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
@@ -51,7 +51,7 @@ void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<
 
         for (int i = localStart; i < localEnd; ++i)
         {
-            Point3D &p = points->at(i);
+            Point3D &p = points[i];
             int clusterId = 0;
             double minDist = centroids[0].distance(p);
 
