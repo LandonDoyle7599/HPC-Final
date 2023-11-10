@@ -26,9 +26,9 @@ int main(int argc, char *argv[])
     vector<Point3D> points;
     vector<Point3D> centroids;
     vector<Point3D> localPoints;
+    int numPoints;
     int numCentroids;
     int numEpochs;
-    int numPoints;
 
     if (rank == 0)
     {
@@ -41,10 +41,15 @@ int main(int argc, char *argv[])
         }
         numEpochs = atoi(argv[1]);
         numCentroids = atoi(argv[2]);
+        MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
         // Read data on the root process
         cout << "Reading Data " << endl;
         points = readcsv("song_data.csv");
         numPoints = points.size();
+        MPI_Bcast(&numPoints, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
         // Initialize centroids on the root process
         centroids = initializeCentroids(numCentroids, &points);
         // Make copies and perfrom serial for later comparison
@@ -52,14 +57,13 @@ int main(int argc, char *argv[])
         vector<Point3D> serialCentroids = centroids;
         performSerial(numEpochs, &serialCentroids, &serialPoints, serialFilename);
     }
-
-    // Broadcast centroid and epoch data to all processes from thread 0
-    MPI_Bcast(centroids.data(), centroids.size(), mpi_point_type, 0, MPI_COMM_WORLD);
-    cout << "Broadcasted centroids " << rank << endl;
-    MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    cout << "Broadcasted numCentroids " << rank << endl;
-    MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    cout << "Broadcasted numEpochs  " << rank << endl;
+    else
+    {
+        // Receive the number of epochs, centroids, and numPoints from the root process
+        MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&numPoints, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    }
 
     // Distribute points among processes and compensate for uneven division
     int pointsPerProcess = points.size() / size;
@@ -79,32 +83,27 @@ int main(int argc, char *argv[])
     // Repeat over epochs to converge the centroids
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
-        MPI_Barrier(MPI_COMM_WORLD);
-        cout << " Rank: " << rank << " Epoch: " << epoch << " of " << numEpochs << endl;
-        // For the given processor's localPoints, compute the nearest centroid to it
+        // get the local centroids
+        MPI_Bcast(centroids.data(), centroids.size(), mpi_point_type, 0, MPI_COMM_WORLD);
+        // Scatter the points to all processes
+        MPI_Scatter(points.data(), localSize, mpi_point_type,
+                    localPoints.data(), localSize, mpi_point_type,
+                    0, MPI_COMM_WORLD);
+
         kMeansClusteringCPU(&localPoints, &centroids, localPoints.size(), centroids.size());
-        cout << " Rank: " << rank << " Completed Clustering " << endl;
+
+        // Now gather the local points from all processes to the root process
+        vector<Point3D> allLocalPoints(numPoints);
+        MPI_Gather(localPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
+                   allLocalPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
+                   0, MPI_COMM_WORLD);
+
         if (rank == 0)
         {
             cout << "Updating Centroids from Rank 0" << endl;
-            // Gather local centroids from all processes to the root process
-            vector<Point3D> allCentroids(numCentroids);
-            MPI_Gather(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
-                       allCentroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
-                       0, MPI_COMM_WORLD);
-
-            // // Gather local points from all processes to the root process
-            vector<Point3D> allPoints(numPoints);
-            MPI_Gather(localPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
-                       allPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
-                       0, MPI_COMM_WORLD);
-
             // Update global centroids based on the gathered information
             // We need all points and all centroids updated in order to properly update
             updateCentroidData(&allPoints, &allCentroids, numCentroids);
-
-            // Broadcast the updated centroids to all processes
-            MPI_Bcast(centroids.data(), centroids.size(), mpi_point_type, 0, MPI_COMM_WORLD);
         }
     }
 
