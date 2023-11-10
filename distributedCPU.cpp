@@ -16,23 +16,27 @@ using namespace std;
  */
 void kMeansClusteringDistributedCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
 {
-    MPI_Init();
-    int rank, size;
-    int numPoints = points->size();
 
+    int rank, size;
+    MPI_Init(NULL, NULL);
+    // Get rank and get size
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+    int numPoints = points->size();
+
+    // Define how much each process will work on each epoch
     int pointsPerProcess = numPoints / size;
-    // Need to assign points to each process
     int startPoint = rank * pointsPerProcess;
+    //  If 0 on the first iteration, then add the previous send count to the displacement
     int endPoint = (rank == size - 1) ? numPoints : startPoint + pointsPerProcess;
 
+    // Now we begin processing the data
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
-        // Broadcast centroids to all processes. We need to update each node of the current centroids for each epoch to ensure we are using the most up to date data
+        // Broadcast centroids to all processes. We need to update each node of the current centroids for each epoch to ensure we are using the most up to date data and actually converging.
         MPI_Bcast(&centroids->front(), centroids->size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
-        // Each process will compute the distance for its given set of points
+        // Each process will compute the distance for its given set of points.
         for (int i = startPoint; i < endPoint; ++i)
         {
             Point3D &p = (*points)[i];

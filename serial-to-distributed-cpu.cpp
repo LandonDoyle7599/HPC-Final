@@ -29,7 +29,7 @@ int main()
     vector<Point3D> basePoints = readcsv("song_data.csv");
     // Run The Code with the same data
     vector<Point3D> points1 = basePoints;
-    run(100, 6, &points1);
+    run(25, 6, &points1);
     // vector<Point3D> points2 = basePoints;
     // run(200, 6, &points2, 12);
     // vector<Point3D> points3 = basePoints;
