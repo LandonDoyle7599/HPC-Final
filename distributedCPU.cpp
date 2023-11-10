@@ -14,19 +14,8 @@ using namespace std;
  * @param numEpochs - number of k-means iterations
  * @param centroids - pointer to vector of centroids
  */
-void kMeansClusteringDistributedCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
+void kMeansClusteringDistributedCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids, int rank, int size)
 {
-
-    int rank, size;
-    MPI_Init(NULL, NULL);
-    // Get rank and get size
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-    if (rank == 0)
-    {
-        cout << "\tNumber of processes: " << size << endl;
-    }
     int numPoints = points->size();
 
     // Define how much each process will work on each epoch
@@ -78,17 +67,16 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *points, int numEpochs, vect
             updateCentroidData(points, centroids, centroids->size());
         }
     }
-    MPI_Finalize();
 }
 
-void performDistributedCPU(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
-{
-    // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
-    cout << "\tEntering the k means computation" << endl;
-    auto start_time = std::chrono::high_resolution_clock::now();
-    kMeansClusteringDistributedCPU(points, numEpochs, centroids); // K-means clustering on the points.
-    auto end_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-    printStats(numEpochs, centroids->size(), points, duration.count());
-    saveOutputs(points, filename);
-}
+// void performDistributedCPU(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
+// {
+//     // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
+//     cout << "\tEntering the k means computation" << endl;
+//     auto start_time = std::chrono::high_resolution_clock::now();
+//     kMeansClusteringDistributedCPU(points, numEpochs, centroids); // K-means clustering on the points.
+//     auto end_time = std::chrono::high_resolution_clock::now();
+//     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+//     printStats(numEpochs, centroids->size(), points, duration.count());
+//     saveOutputs(points, filename);
+// }

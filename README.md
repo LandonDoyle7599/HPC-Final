@@ -30,9 +30,11 @@ Running on CHPC first we need to load the module:
 module load openmpi
 ```
 
+When running this, you need to pass in two arguments: the number of epochs and the number of clusters. For example, to run 25 epochs with 6 clusters:
+
 ```bash
 mpic++ serial-to-distributed-cpu.cpp -o distributed
-./distributed
+mpirun -np 4 ./distributed 25 6
 ```
 
 ### Parallel GPU
