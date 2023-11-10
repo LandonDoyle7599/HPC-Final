@@ -56,8 +56,9 @@ int main(int argc, char **argv)
     if (rank == 0)
     {
         cout << "Performing Distributed CPU" << endl;
-        // Define how much each process will work on each epoch
     }
+    // Define how much each process will work on each epoch
+
     int pointsPerProcess = numPoints / size;
     int startPoint = rank * pointsPerProcess;
     //  If 0 on the first iteration, then add the previous send count to the displacement
@@ -67,6 +68,10 @@ int main(int argc, char **argv)
     // Buffer to receive the local points for each node
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
+        if (rank == 0)
+        {
+            cout << "Epoch number: " << epoch << endl;
+        }
         // Broadcast centroids to all processes. We need to update each node of the current centroids for each epoch to ensure we are using the most up to date data and actually converging.
         MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
@@ -80,7 +85,6 @@ int main(int argc, char **argv)
             Point3D &p = localPoints[i];
             int clusterId = 0;
             double minDist = centroids.at(0).distance(p);
-
             for (int j = 1; j < centroids.size(); ++j)
             {
                 double dist = centroids.at(j).distance(p);
