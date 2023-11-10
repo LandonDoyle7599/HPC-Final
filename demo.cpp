@@ -159,7 +159,6 @@ int main(int argc, char *argv[])
         recv_x.resize((data_x_points.size()) + 1);
         recv_y.resize((data_y_points.size()) + 1);
         recv_z.resize((data_y_points.size()) + 1);
-
         recv_assign.resize((k_assignment.size()) + 1);
     }
 

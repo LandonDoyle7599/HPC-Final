@@ -193,3 +193,12 @@ Parallel CPU Implementation Visualized with 6 Clusters:
 ### Distributed CPU
 
 ### Distributed GPU
+
+## References
+
+- [K-Means Clustering](https://en.wikipedia.org/wiki/K-means_clustering)
+- [Example 1](https://github.com/dzdao/k-means-clustering-mpi/blob/master/k-means.c)
+- [Example 2](https://arxiv.org/pdf/2203.01081.pdf)
+- [Lectures](https://cse.buffalo.edu/faculty/miller/Courses/CSE633/Gautam-Shende-Spring-2018.pdf)
+  - [Lecture Repo](https://github.com/thezodiac1994/Parallel-Alogrithms/blob/master/MPI/kmeans/allot_data_upd5.c)
+- [Another Example](https://github.com/evcu/kmeans-openmpi/blob/master/k_means.c)
