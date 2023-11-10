@@ -88,7 +88,7 @@ void performDistributed(int numEpochs, vector<Point3D> *centroids, vector<Point3
 
     localPoints.resize(localSize);
     MPI_Scatter(points->data(), localSize * sizeof(Point3D), MPI_BYTE,
-                localPoints->data(), localSize * sizeof(Point3D), MPI_BYTE,
+                localPoints.data(), localSize * sizeof(Point3D), MPI_BYTE,
                 0, MPI_COMM_WORLD);
 
     // Broadcast centroids to all processes
