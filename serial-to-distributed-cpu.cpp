@@ -20,10 +20,10 @@ void run(int numEpochs, int numCentroids, vector<Point3D> *points)
     performDistributedCPU(numEpochs, &distributedCentroidCopy, &distributedPointsCopy, distributedFilename);
 
     // Compare outputs to validate they computed the same values
-    bool debug = false;
+    bool debug = true;
     if (debug)
     {
-        areFilesEqual(serialFilename, distributedFilename, debug)
+        areFilesEqual(serialFilename, distributedFilename, debug);
     }
     else
     {
