@@ -112,7 +112,7 @@ int main(int argc, char **argv)
         auto end_time = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
         printStats(numEpochs, centroids.size(), &points, duration.count());
-        saveOutputs(points, distributedFilename);
+        saveOutputs(&points, distributedFilename);
         // Compare outputs to validate they computed the same values
         bool debug = true;
         if (debug)
