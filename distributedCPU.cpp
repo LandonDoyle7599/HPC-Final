@@ -73,15 +73,6 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *localPoints, int numEpochs,
             point.cluster = clusterId;
         }
 
-        // Gather information about local points to synchronize across processes
-        vector<Point3D> allPoints(points.size() * size);
-        MPI_Gather(localPoints->data(), localPoints->size() * sizeof(Point3D), MPI_BYTE,
-                   allPoints.data(), localPoints->size() * sizeof(Point3D), MPI_BYTE,
-                   0, MPI_COMM_WORLD);
-
-        // Synchronize all points across processes
-        MPI_Bcast(allPoints.data(), allPoints.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
-
         // Update centroids locally (use MPI_Reduce or similar for a global update)
         updateCentroidData(localPoints, centroids, centroids->size());
 
