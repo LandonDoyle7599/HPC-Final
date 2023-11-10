@@ -47,9 +47,11 @@ void distributePoints(vector<Point3D> *points, vector<Point3D> *localPoints)
 // Function to perform k-means clustering on a subset of points
 void kMeansClusteringDistributedCPU(vector<Point3D> *localPoints, int numEpochs, vector<Point3D> *centroids)
 {
-    int rank, size
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-        for (int epoch = 0; epoch < numEpochs; ++epoch)
+    for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
         // Perform local k-means clustering on local points
         for (auto &point : *localPoints)
@@ -119,7 +121,7 @@ void performDistributed(int numEpochs, vector<Point3D> *centroids, vector<Point3
     // Print and save results in the root process
     if (rank == 0)
     {
-        printStats(numEpochs, centroids->size(), points, duration.count());
+        printStats(numEpochs, centroids->size(), points, 0);
         saveOutputs(points, filename);
     }
 }
