@@ -39,7 +39,7 @@ struct Point3D
  */
 void saveOutputs(vector<Point3D> *points, string filename)
 {
-  cout << "Saving Output" << endl;
+  cout << "\tSaving Output" << endl;
   ofstream myfile;
   myfile.open(filename);
   myfile << "x,y,z,c" << endl;

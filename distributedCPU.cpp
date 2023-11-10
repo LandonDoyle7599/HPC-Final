@@ -22,6 +22,11 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *points, int numEpochs, vect
     // Get rank and get size
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if (rank == 0)
+    {
+        cout << "\tNumber of processes: " << size << endl;
+    }
     int numPoints = points->size();
 
     // Define how much each process will work on each epoch
