@@ -77,8 +77,11 @@ void kMeansClusteringParallelMPI(std::vector<Point3D> &points, int numEpochs, st
 
 int main(int argc, char **argv)
 {
+    int rank, size;
     MPI_Init(&argc, &argv);
-
+    // Get rank and get size
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
     std::vector<Point3D> basePoints;
     std::vector<Point3D> centroids;
     int numEpochs = 25;
