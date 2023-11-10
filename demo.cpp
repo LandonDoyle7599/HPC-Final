@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
         MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        cout << "Rank : " << world_rank << " has the size of " << world_size << endl;
+        // cout << "Rank : " << world_rank << " has the size of " << world_size << endl;
 
         k_means_x.resize(numCentroids);
         k_means_y.resize(numCentroids);
@@ -183,8 +183,10 @@ int main(int argc, char *argv[])
     MPI_Scatter(data_z_points.data(), (data_z_points.size() / world_size) + 1, MPI_DOUBLE,
                 recv_z.data(), (data_z_points.size() / world_size) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
+    cout << "Rank : " << world_rank << " Num Epochs " << numEpochs << endl;
+
     int count = 0;
-    auto start = chrono::high_resolution_clock::now();
+    // auto start = chrono::high_resolution_clock::now();
     while (count < numEpochs)
     {
         MPI_Bcast(k_means_x.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
