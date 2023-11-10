@@ -34,7 +34,7 @@ When running this, you need to pass in two arguments: the number of epochs and t
 
 ```bash
 mpic++ serial-to-distributed-cpu.cpp -o distributed
-mpirun -n 2 ./distributed 25 6
+mpirun -np 2 ./distributed 25 6
 ```
 
 ### Parallel GPU

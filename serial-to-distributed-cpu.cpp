@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Datatype mpi_point_type = createPoint3DType();
     string filename = "distributed-cpu.csv";
     string serialFilename = "serial.csv";
     vector<Point3D> points;
@@ -50,8 +51,8 @@ int main(int argc, char *argv[])
         performSerial(numEpochs, &serialCentroids, &serialPoints, serialFilename);
     }
 
-    // Broadcast centroid and epoch data to all processes
-    MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+    // Broadcast centroid and epoch data to all processes from thread 0
+    MPI_Bcast(centroids.data(), centroids.size(), mpi_point_type, 0, MPI_COMM_WORLD);
     cout << "Broadcasted centroids " << rank << endl;
     MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
     cout << "Broadcasted numCentroids " << rank << endl;
@@ -66,8 +67,8 @@ int main(int argc, char *argv[])
     localPoints.resize(localSize);
 
     // Distribute the points to all processes
-    MPI_Scatter(points.data(), localSize * sizeof(Point3D), MPI_BYTE,
-                localPoints.data(), localSize * sizeof(Point3D), MPI_BYTE,
+    MPI_Scatter(points.data(), localSize, mpi_point_type,
+                localPoints.data(), localSize, mpi_point_type,
                 0, MPI_COMM_WORLD);
 
     cout << "Performing Distributed CPU from rank: " << rank << endl;
