@@ -34,9 +34,8 @@ int main(int argc, char **argv)
         vector<Point3D> points = readcsv("song_data.csv");
         // Run serial code with a copy of the song data
         vector<Point3D> serialPoints = points;
-
         // Because this is random initialization we need to share it between the serial and distributed implementations
-        vector<Point3D> centroids = initializeCentroids(numCentroids, points);
+        vector<Point3D> centroids = initializeCentroids(numCentroids, &points);
         // Copies the data to ensure we are validating correctly https://www.geeksforgeeks.org/ways-copy-vector-c/
         vector<Point3D> serialCentroidCopy = centroids;
         // Execute the operations
@@ -50,13 +49,13 @@ int main(int argc, char **argv)
     {
         cout << "Performing Distributed CPU" << endl;
         auto start_time = std::chrono::high_resolution_clock::now();
-        int numPoints = points.size();
-        // Define how much each process will work on each epoch
-        int pointsPerProcess = numPoints / size;
-        int startPoint = rank * pointsPerProcess;
-        //  If 0 on the first iteration, then add the previous send count to the displacement
-        int endPoint = (rank == size - 1) ? numPoints : startPoint + pointsPerProcess;
     }
+    int numPoints = points.size();
+    // Define how much each process will work on each epoch
+    int pointsPerProcess = numPoints / size;
+    int startPoint = rank * pointsPerProcess;
+    //  If 0 on the first iteration, then add the previous send count to the displacement
+    int endPoint = (rank == size - 1) ? numPoints : startPoint + pointsPerProcess;
     // Buffer to receive the local points for each node
     vector<Point3D> localPoints(pointsPerProcess);
     for (int epoch = 0; epoch < numEpochs; ++epoch)
