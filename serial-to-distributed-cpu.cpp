@@ -81,7 +81,8 @@ int main(int argc, char **argv)
                     localPoints.data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
         // Each process will compute the distance for its given set of points.
-        for (int i = 0; i < pointsPerProcess; ++i)
+        cout << "Rank: " << rank << " Start: " << startPoint << " End: " << endPoint << endl;
+        for (int i = startPoint; i < pointsPerProcess; ++i)
         {
             Point3D &p = localPoints[i];
             int clusterId = 0;
