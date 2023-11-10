@@ -14,12 +14,11 @@ using namespace std;
 void calculateKMean(const vector<double> &k_x, const vector<double> &k_y, const vector<double> &k_z,
                     const vector<double> &recv_x, const vector<double> &recv_y, const vector<double> &recv_z, vector<int> &assign)
 {
-    for (size_t i = 0; i < recv_x.size(); ++i)
+    for (int i = 0; i < recv_x.size(); ++i)
     {
         double min_dist = numeric_limits<double>::max();
-        int k_min_index = 0;
-
-        for (size_t j = 0; j < k_x.size(); ++j)
+        int clusterID = 0;
+        for (int j = 0; j < k_x.size(); ++j)
         {
             double x = abs(recv_x[i] - k_x[j]);
             double y = abs(recv_y[i] - k_y[j]);
@@ -29,43 +28,38 @@ void calculateKMean(const vector<double> &k_x, const vector<double> &k_y, const 
             if (temp_dist < min_dist)
             {
                 min_dist = temp_dist;
-                k_min_index = j;
+                clusterID = j;
             }
         }
-        assign[i] = k_min_index;
+        assign[i] = clusterID;
     }
 }
 
 void updateCentroidDataDistributed(vector<double> &k_means_x, vector<double> &k_means_y, vector<double> &k_means_z,
                                    const vector<double> &data_x_points, const vector<double> &data_y_points, const vector<double> &data_z_points, const vector<int> &k_assignment)
 {
+    int numK = k_means_x.size();
+    vector<int> nPoints(numCentroids, 0);
+    vector<double> sumX(numK, 0.0);
+    vector<double> sumY(numK, 0.0);
 
     // Iterate over the centroids and compute the means for each value
-    for (size_t i = 0; i < k_means_x.size(); ++i)
+    for (int i = 0; i < data_x_points.size(); ++i)
     {
-        int numOfpoints = 0;
-        double total_x = 0.0;
-        double total_y = 0.0;
-        // double total_z = 0.0;
 
-        for (size_t j = 0; j < data_x_points.size(); ++j)
-        {
-            if (k_assignment[j] == static_cast<int>(i))
-            {
-                total_x += data_x_points[j];
-                total_y += data_y_points[j];
-                // total_z += data_z_points[j];
-                numOfpoints++;
-            }
-        }
+        int clusterID = k_assignment[i];
+        nPoints[clusterID] += 1;
+        sumX[clusterID] += data_x_points[i];
+        sumY[clusterID] += data_y_points[i];
 
-        // Update centroid with the mean values
-        if (numOfpoints != 0)
-        {
-            k_means_x[i] = total_x / numOfpoints;
-            k_means_y[i] = total_y / numOfpoints;
-            // k_means_z[i] = total_z / numOfpoints;
-        }
+        // Reset the min distance ?
+    }
+
+    // Compute the new centroids
+    for (int clusterId = 0; clusterId < numK; ++clusterId)
+    {
+        k_means_x[clusterId] = sumX[clusterId] / nPoints[clusterId];
+        k_means_y[clusterId] = sumY[clusterId] / nPoints[clusterId];
     }
 }
 

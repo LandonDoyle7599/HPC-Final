@@ -23,7 +23,6 @@ void kMeansClusteringSerial(vector<Point3D> *points, int numEpochs, vector<Point
     for (vector<Point3D>::iterator c = begin(*centroids); c != end(*centroids); ++c)
     {
       int clusterId = c - begin(*centroids);
-
       for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
       {
         Point3D p = *it;
