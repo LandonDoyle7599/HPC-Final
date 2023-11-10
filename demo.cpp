@@ -36,11 +36,8 @@ void updateCentroidDataMPI(vector<Point3D> &localPoints, vector<Point3D> &centro
     }
 }
 
-void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<Point3D> &centroids)
+void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<Point3D> &centroids, int rank, int size)
 {
-    int rank, size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     int localSize = points.size() / size;
     int localStart = rank * localSize;
@@ -99,7 +96,6 @@ int main(int argc, char **argv)
         centroids = initializeCentroids(6, &basePoints);
         vector<Point3D> serialCentroidCopy = centroids;
         vector<Point3D> serialPointsCopy = basePoints;
-        cout << "Performing Serial CPU" << endl;
         performSerial(numEpochs, &serialCentroidCopy, &serialPointsCopy, serialFilename);
         cout << "Performing Distributed CPU" << endl;
     }
@@ -118,7 +114,7 @@ int main(int argc, char **argv)
 
     cout << "Rank " << rank << " has " << localPoints.size() << " points" << endl;
     // Execute k-means clustering
-    kMeansClusteringParallelMPI(localPoints, numEpochs, centroids);
+    kMeansClusteringParallelMPI(localPoints, numEpochs, centroids, rank, size);
 
     // Now that it is finished executing, gather the data back toegerh to review
     if (rank == 0)
