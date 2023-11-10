@@ -165,20 +165,28 @@ int main(int argc, char *argv[])
 
     // Scatter data across processes
 
+    vector<int> send_counts(world_size);
+    vector<int> displacements(world_size);
+
+    for (int i = 0; i < world_size; ++i)
+    {
+        send_counts[i] = (data_x_points.size() / world_size) + 1;
+        displacements[i] = i * (data_x_points.size() / world_size);
+    }
+
     cout << "Rank : " << world_rank << " scattering x points " << endl;
 
-    MPI_Scatter(data_x_points.data(), (data_x_points.size() / world_size) + 1, MPI_DOUBLE,
-                recv_x.data(), (data_x_points.size() / world_size) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    // Scatterv for x points
+    MPI_Scatterv(data_x_points.data(), send_counts.data(), displacements.data(), MPI_DOUBLE,
+                 recv_x.data(), recv_x.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    cout << "Rank : " << world_rank << " scattering y points " << endl;
+    // Scatterv for y points
+    MPI_Scatterv(data_y_points.data(), send_counts.data(), displacements.data(), MPI_DOUBLE,
+                 recv_y.data(), recv_y.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    MPI_Scatter(data_y_points.data(), (data_y_points.size() / world_size) + 1, MPI_DOUBLE,
-                recv_y.data(), (data_y_points.size() / world_size) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
-    cout << "Rank : " << world_rank << " scattering z points " << endl;
-
-    MPI_Scatter(data_z_points.data(), (data_z_points.size() / world_size) + 1, MPI_DOUBLE,
-                recv_z.data(), (data_z_points.size() / world_size) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    // Scatterv for z points
+    MPI_Scatterv(data_z_points.data(), send_counts.data(), displacements.data(), MPI_DOUBLE,
+                 recv_z.data(), recv_z.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // cout << "Rank : " << world_rank << " Num Epochs " << numEpochs << endl;
 
