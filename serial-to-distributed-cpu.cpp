@@ -49,9 +49,14 @@ int main(int argc, char *argv[])
         vector<Point3D> serialPoints = points;
         vector<Point3D> serialCentroids = centroids;
         performSerial(numEpochs, &serialCentroids, &serialPoints, serialFilename);
+        performDistributed(numEpochs, &centroids, &points, filename);
     }
-    // Perform parallel k-means clustering using MPI
-    performDistributed(numEpochs, &centroids, &points, filename);
+    else
+    {
+        // Perform parallel k-means clustering using MPI
+        performDistributed(numEpochs, &centroids, &points, filename);
+    }
+
     if (rank == 0)
     {
         // Now we validate the outputs
