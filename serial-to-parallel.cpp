@@ -7,14 +7,17 @@ void run(int numEpochs, int numCentroids, vector<Point3D> *points, int numThread
 {
     // Because this is random initialization we need to share it between the serial and GPU to ensure they are valid
     vector<Point3D> centroids = initializeCentroids(numCentroids, points);
-    vector<Point3D> parallelCentroidCopy = centroids; // Copies the data, not the reference to ensure we are validating correctly https://www.geeksforgeeks.org/ways-copy-vector-c/
+    // Copies the data, not the reference to ensure we are validating correctly https://www.geeksforgeeks.org/ways-copy-vector-c/
+    vector<Point3D> parallelCentroidCopy = centroids;
+    vector<Point3D> paralellPointsCopy = *points;
     string serialFilename = "serial-cpu.csv";
     string parallelFilename = "parallel-cpu.csv";
-    // cout << "Performing Serial CPU" << endl;
-    // performSerial(numEpochs, numCentroids, &centroids, points, serialFilename);
+    // Execute operations
+    cout << "Performing Serial CPU" << endl;
+    performSerial(numEpochs, numCentroids, &centroids, points, serialFilename);
     cout << "\nPerforming Parallel CPU with " << numThreads << " threads" << endl;
-    performParallel(numEpochs, &parallelCentroidCopy, points, parallelFilename, numThreads);
-    // cout << "Files Equal: " << areFilesEqual(serialFilename, parallelFilename, true) << endl;
+    performParallel(numEpochs, &parallelCentroidCopy, &paralellPointsCopy, parallelFilename, numThreads);
+    cout << "Files Equal: " << areFilesEqual(serialFilename, parallelFilename, true) << endl;
 }
 
 int main()
@@ -25,10 +28,4 @@ int main()
     // Run The Code with the same data
     vector<Point3D> points1 = basePoints;
     run(100, 6, &points1, 12);
-    vector<Point3D> points2 = basePoints;
-    run(200, 6, &points2, 12);
-    vector<Point3D> points3 = basePoints;
-    run(400, 6, &points3, 12);
-    vector<Point3D> points4 = basePoints;
-    run(800, 6, &points4, 12);
 }

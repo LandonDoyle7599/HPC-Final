@@ -85,7 +85,7 @@ void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, vector<Point3D>
   }
 }
 
-void performGPU(int numEpochs, int numCentroids, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
+void performGPU(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
 {
     cout << "Entering the k means computation" << endl;
     // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
@@ -93,7 +93,7 @@ void performGPU(int numEpochs, int numCentroids, vector<Point3D> *centroids, vec
     kMeansClusteringGPU(points, numEpochs, centroids);
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-    printStats(numEpochs, numCentroids, points, duration.count());
+    printStats(numEpochs, centroids->size(), points, duration.count());
     saveOutputs(points, filename);
 }
 
