@@ -57,11 +57,14 @@ void updateDistributedCentroidData(vector<Point3D> *localPoints, vector<Point3D>
                allCentroids.data(), centroids->size() * sizeof(Point3D), MPI_BYTE,
                0, MPI_COMM_WORLD);
 
-    if (rank == 0)
-    {
-        // Update global centroids based on the gathered information
-        updateCentroidData(&allCentroids, centroids, numCentroids);
-    }
+    // Gather local points from all processes to the root process
+    vector<Point3D> allPoints(localPoints->size() * size);
+    MPI_Gather(localPoints->data(), localPoints->size() * sizeof(Point3D), MPI_BYTE,
+               allPoints.data(), localPoints->size() * sizeof(Point3D), MPI_BYTE,
+               0, MPI_COMM_WORLD);
+
+    // Update global centroids based on the gathered information
+    updateCentroidData(&allPoints, &allCentroids, numCentroids);
 
     // Broadcast the updated centroids to all processes
     MPI_Bcast(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
@@ -79,19 +82,19 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *localPoints, int numEpochs,
         // Perform local k-means clustering on local points
         for (auto &point : *localPoints)
         {
+            int clusterId = 0;
             double minDist = numeric_limits<double>::max();
-            int clusterId = -1;
 
             for (size_t i = 0; i < centroids->size(); ++i)
             {
-                double dist = point.distance(centroids->at(i));
+                double dist = centroids->at(i).distance(point);
                 if (dist < minDist)
                 {
                     minDist = dist;
-                    clusterId = static_cast<int>(i);
+                    clusterId = i;
                 }
             }
-
+            // Update the point's cluster and distance
             point.minDist = minDist;
             point.cluster = clusterId;
         }
@@ -118,15 +121,18 @@ void performDistributed(int numEpochs, vector<Point3D> *centroids, vector<Point3
     vector<Point3D> localPoints;
     distributePoints(points, &localPoints);
 
+    cout << "Performing Distributed CPU from rank: " << rank << endl;
+
     // Perform k-means clustering on local points
     kMeansClusteringDistributedCPU(&localPoints, numEpochs, centroids);
 
     // Gather and update centroids across all processes
-    gatherAndUpdateCentroids(centroids, &localPoints);
+    // gatherAndUpdateCentroids(centroids, &localPoints);
 
     // Print and save results in the root process
     if (rank == 0)
     {
+        cout << "Saving outputs..." << endl;
         printStats(numEpochs, centroids->size(), points, 0);
         saveOutputs(points, filename);
     }
