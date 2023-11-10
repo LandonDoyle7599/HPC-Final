@@ -72,14 +72,28 @@ int main(int argc, char *argv[])
 {
     MPI_Init(NULL, NULL);
 
-    int world_size, world_rank, numEpochs, numCentroids;
+    int world_size;
+    int world_rank;
+    int numEpochs;
+    int numCentroids;
+
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-    vector<double> k_means_x, k_means_y, k_means_z, data_x_points, data_y_points, data_z_points;
-    vector<int> k_assignment;
+    vector<double> k_means_x;
+    vector<double> k_means_y;
+    vector<double> k_means_z;
+    vector<int> k_assignment; // the cluster assignment for each point
 
-    vector<double> recv_x, recv_y, recv_z;
+    // The data points
+    vector<double> data_x_points;
+    vector<double> data_y_points;
+    vector<double> data_z_points;
+
+    // The received data points
+    vector<double> recv_x;
+    vector<double> recv_y;
+    vector<double> recv_z;
     vector<int> recv_assign;
     string serialFilename = "serial.csv";
     string distFilename = "distributed.csv";
@@ -116,8 +130,6 @@ int main(int argc, char *argv[])
         // With pointData and centeroids we can run the serial implementation
         // performSerial(numEpochs, &centeroids, &pointData, serialFilename);
 
-        srand(static_cast<unsigned>(time(NULL)));
-        int random;
         k_means_x.resize(numCentroids);
         k_means_y.resize(numCentroids);
         k_means_z.resize(numCentroids);
@@ -141,8 +153,7 @@ int main(int argc, char *argv[])
         MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        int world_size;
-        MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+        cout << "Rank : " << world_rank << " has the size of " << world_size << endl;
 
         k_means_x.resize(numCentroids);
         k_means_y.resize(numCentroids);
@@ -190,11 +201,10 @@ int main(int argc, char *argv[])
         count++;
     }
 
-    auto end = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
-
     if (world_rank == 0)
     {
+        auto end = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
         vector<Point3D> pointData;
         for (size_t i = 0; i < data_x_points.size(); ++i)
         {
