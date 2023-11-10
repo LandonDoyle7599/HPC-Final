@@ -22,16 +22,17 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     // Verify correct number of arguments
-    if (argc != 3)
+    if (rank == 0)
     {
-        if (rank == 0)
+        if (argc != 3)
+        {
             cout << "Usage: " << argv[0] << " <numEpochs> <numCentroids>\n";
-        MPI_Finalize();
-        return 1;
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
     }
     string filename = "distributed-cpu.csv";
     string serialFilename = "serial.csv";
-    int numEpochs = toi(argv[1]);
+    int numEpochs = atoi(argv[1]);
     int numCentroids = atoi(argv[2]);
     vector<Point3D> points;
     vector<Point3D> centroids;
