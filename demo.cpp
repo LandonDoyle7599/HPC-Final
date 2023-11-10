@@ -23,17 +23,26 @@ void updateCentroidDataMPI(vector<Point3D> &localPoints, vector<Point3D> &centro
         point.minDist = numeric_limits<float>::max(); // reset distance
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);
     // Perform a global reduction to update centroids
     MPI_Allreduce(MPI_IN_PLACE, nPoints.data(), numCentroids, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(MPI_IN_PLACE, sumX.data(), numCentroids, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(MPI_IN_PLACE, sumY.data(), numCentroids, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
-    // Compute the new centroids based on the global data
-    for (int clusterId = 0; clusterId < numCentroids; ++clusterId)
+    if (rank == 0)
     {
-        centroids[clusterId].x = sumX[clusterId] / nPoints[clusterId];
-        centroids[clusterId].y = sumY[clusterId] / nPoints[clusterId];
+        cout << "Rank: " << rank << " has " << localPoints.size() << " points" << endl;
+
+        // Compute the new centroids based on the global data
+        for (int clusterId = 0; clusterId < numCentroids; ++clusterId)
+        {
+            centroids[clusterId].x = sumX[clusterId] / nPoints[clusterId];
+            centroids[clusterId].y = sumY[clusterId] / nPoints[clusterId];
+        }
     }
+
+    // Broadcast the updated centroids to all processes
+    MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 }
 
 void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<Point3D> &centroids, int rank, int size)
@@ -67,15 +76,8 @@ void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<
         }
 
         cout << "Rank: " << rank << " Completed epoch: " << epoch << endl;
-
         // Perform a global reduction to update centroids
         updateCentroidDataMPI(points, centroids, centroids.size());
-
-        cout << "Rank: " << rank << " Updated Centroid Data " << endl;
-
-        // Communicate updated centroids
-        MPI_Allgather(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
-                      centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, MPI_COMM_WORLD);
     }
 }
 
