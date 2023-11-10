@@ -16,7 +16,7 @@ void run(int numEpochs, int numCentroids, vector<Point3D> *points)
     // Execute the operations
     cout << "Performing Serial CPU" << endl;
     performSerial(numEpochs, numCentroids, &centroids, points, serialFilename);
-    cout << "\nPerforming Distributed CPU with " << numThreads << " threads" << endl;
+    cout << "\nPerforming Distributed CPU " << endl;
     performDistributedCPU(numEpochs, &centroids, &distributedPointsCopy, distributedFilename);
     // Compare outputs to validate they computed the same values
     cout << "Files Equal: " << areFilesEqual(serialFilename, distributedFilename, true) << endl;
