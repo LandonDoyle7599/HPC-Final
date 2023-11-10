@@ -26,7 +26,7 @@ void updateDistributedCentroidData(vector<Point3D> &localPoints, vector<Point3D>
     MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 }
 
-void kMeansClusteringCPU(Point3D *points, Point3D *centroids, int nPoints, int numCentroids)
+void kMeansClusteringCPU(vector<Point3D> *points, vector<Point3D> *centroids, int nPoints, int numCentroids)
 {
     for (int i = 0; i < nPoints; ++i)
     {
@@ -86,7 +86,7 @@ void performDistributed(int numEpochs, vector<Point3D> *centroids, vector<Point3
     int localSize = (rank < remainder) ? (pointsPerProcess + 1) : pointsPerProcess;
     int offset = rank * pointsPerProcess + min(rank, remainder);
 
-    localPoints->resize(localSize);
+    localPoints.resize(localSize);
     MPI_Scatter(points->data(), localSize * sizeof(Point3D), MPI_BYTE,
                 localPoints->data(), localSize * sizeof(Point3D), MPI_BYTE,
                 0, MPI_COMM_WORLD);
