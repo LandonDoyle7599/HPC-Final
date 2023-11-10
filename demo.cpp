@@ -156,11 +156,11 @@ int main(int argc, char *argv[])
         k_means_y.resize(numCentroids);
         k_means_z.resize(numCentroids);
 
-        recv_x.resize((data_x_points.size() / world_size) + 1);
-        recv_y.resize((data_y_points.size() / world_size) + 1);
-        recv_z.resize((data_y_points.size() / world_size) + 1);
+        recv_x.resize((data_x_points.size()) + 1);
+        recv_y.resize((data_y_points.size()) + 1);
+        recv_z.resize((data_y_points.size()) + 1);
 
-        recv_assign.resize((k_assignment.size() / world_size) + 1);
+        recv_assign.resize((k_assignment.size()) + 1);
     }
 
     // Scatter data across processes
