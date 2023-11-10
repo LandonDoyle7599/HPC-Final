@@ -1,29 +1,5 @@
 #include <mpi.h>
 
-// Function to gather and update centroids across all processes
-void gatherAndUpdateCentroids(vector<Point3D> *centroids, vector<Point3D> *localPoints)
-{
-    int rank, size;
-
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-    // Gather all local centroids to the root process
-    vector<Point3D> allCentroids(centroids->size() * size);
-    MPI_Gather(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE,
-               allCentroids.data(), centroids->size() * sizeof(Point3D), MPI_BYTE,
-               0, MPI_COMM_WORLD);
-
-    if (rank == 0)
-    {
-        // Update global centroids based on the gathered information
-        updateCentroidData(&allCentroids, centroids, centroids->size());
-    }
-
-    // Broadcast the updated centroids to all processes
-    MPI_Bcast(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
-}
-
 // Function to distribute points among processes
 void distributePoints(vector<Point3D> *points, vector<Point3D> *localPoints)
 {
@@ -45,33 +21,33 @@ void distributePoints(vector<Point3D> *points, vector<Point3D> *localPoints)
 }
 
 // Function to update distributed centroids based on local information
-void updateDistributedCentroidData(vector<Point3D> *localPoints, vector<Point3D> *centroids, int numCentroids)
+void updateDistributedCentroidData(vector<Point3D> &localPoints, vector<Point3D> &centroids, int numCentroids)
 {
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     // Gather local centroids from all processes to the root process
-    vector<Point3D> allCentroids(centroids->size() * size);
-    MPI_Gather(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE,
-               allCentroids.data(), centroids->size() * sizeof(Point3D), MPI_BYTE,
+    vector<Point3D> allCentroids(centroids.size() * size);
+    MPI_Gather(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
+               allCentroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
                0, MPI_COMM_WORLD);
 
     // Gather local points from all processes to the root process
-    vector<Point3D> allPoints(localPoints->size() * size);
-    MPI_Gather(localPoints->data(), localPoints->size() * sizeof(Point3D), MPI_BYTE,
-               allPoints.data(), localPoints->size() * sizeof(Point3D), MPI_BYTE,
+    vector<Point3D> allPoints(localPoints.size() * size);
+    MPI_Gather(localPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
+               allPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
                0, MPI_COMM_WORLD);
 
     // Update global centroids based on the gathered information
     updateCentroidData(&allPoints, &allCentroids, numCentroids);
 
     // Broadcast the updated centroids to all processes
-    MPI_Bcast(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 }
 
 // Function to perform k-means clustering on a subset of points
-void kMeansClusteringDistributedCPU(vector<Point3D> *localPoints, int numEpochs, vector<Point3D> *centroids)
+void kMeansClusteringDistributedCPU(vector<Point3D> &localPoints, int numEpochs, vector<Point3D> &centroids)
 {
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -85,9 +61,9 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *localPoints, int numEpochs,
             int clusterId = 0;
             double minDist = numeric_limits<double>::max();
 
-            for (size_t i = 0; i < centroids->size(); ++i)
+            for (size_t i = 0; i < centroids.size(); ++i)
             {
-                double dist = centroids->at(i).distance(point);
+                double dist = centroids.at(i).distance(point);
                 if (dist < minDist)
                 {
                     minDist = dist;
@@ -102,11 +78,11 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *localPoints, int numEpochs,
         // Update Distributed Centroids
         if (rank == 0)
         {
-            updateDistributedCentroidData(localPoints, centroids, centroids->size());
+            updateDistributedCentroidData(localPoints, centroids, centroids.size());
         }
 
         // Share those updates with the other processes
-        MPI_Bcast(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+        MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
     }
 }
 
@@ -119,7 +95,9 @@ void performDistributed(int numEpochs, vector<Point3D> *centroids, vector<Point3
 
     // Distribute points among processes
     vector<Point3D> localPoints;
-    distributePoints(points, &localPoints);
+    distributePoints(points, &localPoints); // Scatter points data
+    // Broadcast centroids to all processes
+    MPI_Bcast(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
     cout << "Performing Distributed CPU from rank: " << rank << endl;
 

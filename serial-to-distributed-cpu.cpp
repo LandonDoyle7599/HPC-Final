@@ -35,29 +35,25 @@ int main(int argc, char *argv[])
     int numEpochs = stoi(argv[2]);
     int numCentroids = stoi(argv[3]);
     vector<Point3D> points;
+    vector<Point3D> centroids;
 
     // Rank 0 reads in the file and initializes the centroids
     if (rank == 0)
     {
+        cout << "Reading Data " << endl;
         // Read data on the root process
         points = readcsv("song_data.csv");
         // Initialize centroids on the root process
-        vector<Point3D> centroids = initializeCentroids(numCentroids, &points);
+        centroids = initializeCentroids(numCentroids, &points);
 
         // Make copies and perfrom serial for later comparison
         vector<Point3D> serialPoints = points;
         vector<Point3D> serialCentroids = centroids;
         performSerial(numEpochs, &serialCentroids, &serialPoints, serialFilename);
-
-        // Perform parallel k-means clustering using MPI
-        performDistributed(numEpochs, &centroids, &points, filename);
     }
-    else
-    {
-        // Other processes only participate in MPI communications
-        performDistributed(numEpochs, nullptr, nullptr, filename);
-    }
-
+    MPI_Barrier(MPI_COMM_WORLD);
+    // Perform parallel k-means clustering using MPI
+    performDistributed(numEpochs, &centroids, &points, filename);
     MPI_Barrier(MPI_COMM_WORLD);
     if (rank == 0)
     {
