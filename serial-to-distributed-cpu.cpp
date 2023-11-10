@@ -76,6 +76,7 @@ int main(int argc, char **argv)
         // Broadcast centroids to all processes. We need to update each node of the current centroids for each epoch to ensure we are using the most up to date data and actually converging.
         MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
+        cout << "Rank: " << rank << "Received centroids: " << centroids.size() << endl;
         // Scatter the points to each process so they can work on them. Once again, we need to update the data each epoch in order to converge
         MPI_Scatter(points.data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE,
                     localPoints.data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
