@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
         {
             Point3D p = Point3D(data_x_points[i], data_y_points[i], data_z_points[i]);
             p.cluster = k_assignment[i];
-            pointData.push_back(p)
+            pointData.push_back(p);
         }
 
         saveOutputs(&pointData, distFilename);
