@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
             cout << "Updating Centroids from Rank 0" << endl;
             // Update global centroids based on the gathered information
             // We need all points and all centroids updated in order to properly update
-            updateCentroidData(&allLocalPoints, &allCentroids, numCentroids);
+            updateCentroidData(&allLocalPoints, &centroids, numCentroids);
         }
     }
 
