@@ -39,19 +39,17 @@ void updateCentroidDataDistributed(vector<double> &k_means_x, vector<double> &k_
                                    const vector<double> &data_x_points, const vector<double> &data_y_points, const vector<double> &data_z_points, const vector<int> &k_assignment)
 {
     int numK = k_means_x.size();
-    vector<int> nPoints(numCentroids, 0);
+    vector<int> nPoints(numK, 0);
     vector<double> sumX(numK, 0.0);
     vector<double> sumY(numK, 0.0);
 
     // Iterate over the centroids and compute the means for each value
     for (int i = 0; i < data_x_points.size(); ++i)
     {
-
         int clusterID = k_assignment[i];
         nPoints[clusterID] += 1;
         sumX[clusterID] += data_x_points[i];
         sumY[clusterID] += data_y_points[i];
-
         // Reset the min distance ?
     }
 
