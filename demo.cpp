@@ -140,10 +140,10 @@ int main(int argc, char *argv[])
 
         cout << "Running k-means algorithm for " << numEpochs << " iterations...\n";
 
-        recv_x.resize((data_x_points.size() / world_size) + 1);
-        recv_y.resize((data_y_points.size() / world_size) + 1);
-        recv_z.resize((data_z_points.size() / world_size) + 1);
-        recv_assign.resize((k_assignment.size() / world_size) + 1);
+        recv_x.resize((data_x_points.size()) + 1);
+        recv_y.resize((data_y_points.size()) + 1);
+        recv_z.resize((data_z_points.size()) + 1);
+        recv_assign.resize((k_assignment.size()) + 1);
     }
     else
     {
