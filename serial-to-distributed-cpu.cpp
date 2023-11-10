@@ -50,10 +50,8 @@ int main(int argc, char *argv[])
         vector<Point3D> serialCentroids = centroids;
         performSerial(numEpochs, &serialCentroids, &serialPoints, serialFilename);
     }
-    MPI_Barrier(MPI_COMM_WORLD);
     // Perform parallel k-means clustering using MPI
     performDistributed(numEpochs, &centroids, &points, filename);
-    MPI_Barrier(MPI_COMM_WORLD);
     if (rank == 0)
     {
         // Now we validate the outputs

@@ -48,7 +48,7 @@ void kMeansClusteringCPU(vector<Point3D> *points, vector<Point3D> *centroids, in
 }
 
 // Function to perform k-means clustering on a subset of points
-void kMeansClusteringMPI(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids)
+void kMeansClusteringMPI(vector<Point3D> *localPoints, int numEpochs, vector<Point3D> *centroids)
 {
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -57,17 +57,17 @@ void kMeansClusteringMPI(vector<Point3D> *points, int numEpochs, vector<Point3D>
     // Repeat over epochs to converge the centroids
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
-        cout << " Rank: " << rank << " Epoch: " << epoch << endl;
-        // For each centroid, compute distance from centroid to each point
-        // and update point's cluster if necessary
-        kMeansClusteringCPU(points, centroids, points->size(), centroids->size());
+        cout << " Rank: " << rank << " Epoch: " << epoch << " of " << numEpochs << endl;
+        // For the given processor's localPoints, compute the nearest centroid to it
+        kMeansClusteringCPU(localPoints, centroids, localPoints->size(), centroids->size());
         cout << " Rank: " << rank << " Completed Clustering " << endl;
 
         // Update the centroids
         MPI_Barrier(MPI_COMM_WORLD);
         if (rank == 0)
         {
-            updateDistributedCentroidData(*points, *centroids, centroids->size());
+            cout << "Updating Centroids from Rank 0" << endl;
+            updateDistributedCentroidData(*localPoints, *centroids, centroids->size());
         }
     }
 }
@@ -79,16 +79,15 @@ void performDistributed(int numEpochs, vector<Point3D> *centroids, vector<Point3
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    // Distribute points among processes
+    // Distribute points among processes and compensate for uneven division
     vector<Point3D> localPoints;
-
     int pointsPerProcess = points->size() / size;
     int remainder = points->size() % size;
-
     int localSize = (rank < remainder) ? (pointsPerProcess + 1) : pointsPerProcess;
     int offset = rank * pointsPerProcess + min(rank, remainder);
-
     localPoints.resize(localSize);
+
+    // Distribute the points to all processes
     MPI_Scatter(points->data(), localSize * sizeof(Point3D), MPI_BYTE,
                 localPoints.data(), localSize * sizeof(Point3D), MPI_BYTE,
                 0, MPI_COMM_WORLD);
@@ -96,6 +95,7 @@ void performDistributed(int numEpochs, vector<Point3D> *centroids, vector<Point3
     // Broadcast centroids to all processes
     MPI_Bcast(centroids->data(), centroids->size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
+    cout << "Number of processes: " << size << endl;
     cout << "Performing Distributed CPU from rank: " << rank << endl;
 
     // Perform k-means clustering on local points
