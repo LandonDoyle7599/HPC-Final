@@ -24,9 +24,9 @@ MPI_Datatype createPoint3DType()
 {
     const int nitems = 5;                                                              // Number of items in the structure
     int blocklengths[5] = {1, 1, 1, 1, 1};                                             // Number of elements for each item
-    MPI_Datatype types[4] = {MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_INT, MPI_DOUBLE}; // Datatypes of each item
+    MPI_Datatype types[5] = {MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_INT, MPI_DOUBLE}; // Datatypes of each item
 
-    MPI_Aint offsets[4]; // Offsets of each item in the structure
+    MPI_Aint offsets[5]; // Offsets of each item in the structure
     offsets[0] = offsetof(Point3D, x);
     offsets[1] = offsetof(Point3D, y);
     offsets[2] = offsetof(Point3D, z);
