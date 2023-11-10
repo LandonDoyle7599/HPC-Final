@@ -24,23 +24,20 @@ int main(int argc, char *argv[])
     string serialFilename = "serial.csv";
     vector<Point3D> points;
     vector<Point3D> centroids;
+    int numCentroids;
+    int numEpochs;
 
-    // Read Input
     if (rank == 0)
     {
+        // Read input
         cout << "Number of processes: " << size << endl;
         if (argc != 3)
         {
             cout << "Usage: " << argv[0] << " <numEpochs> <numCentroids>\n";
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
-        int numEpochs = atoi(argv[1]);
-        int numCentroids = atoi(argv[2]);
-    }
-
-    // Rank 0 reads in the file and initializes the centroids
-    if (rank == 0)
-    {
+        numEpochs = atoi(argv[1]);
+        numCentroids = atoi(argv[2]);
         // Read data on the root process
         cout << "Reading Data " << endl;
         points = readcsv("song_data.csv");
@@ -99,6 +96,7 @@ int main(int argc, char *argv[])
                        0, MPI_COMM_WORLD);
 
             // Update global centroids based on the gathered information
+            // We need all points and all centroids updated in order to properly update
             updateCentroidData(&allPoints, &allCentroids, numCentroids);
 
             // Broadcast the updated centroids to all processes
