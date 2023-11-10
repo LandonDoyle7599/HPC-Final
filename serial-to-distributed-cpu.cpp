@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
     // Repeat over epochs to converge the centroids
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
+        cout << "Rank: " << rank << " Epoch: " << epoch << endl;
         // get the local centroids
         MPI_Bcast(centroids.data(), centroids.size(), mpi_point_type, 0, MPI_COMM_WORLD);
         // Scatter the points to all processes
