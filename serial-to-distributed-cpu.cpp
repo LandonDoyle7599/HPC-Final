@@ -99,6 +99,7 @@ int main(int argc, char *argv[])
                    allLocalPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
                    0, MPI_COMM_WORLD);
 
+        MPI_Barrier(MPI_COMM_WORLD);
         if (rank == 0)
         {
             cout << "Updating Centroids from Rank 0" << endl;
