@@ -7,7 +7,7 @@
 #include <ctime>
 #include <chrono>
 #include <mpi.h>
-#include "serial.hpp"
+#include "serial.cpp"
 
 using namespace std;
 
@@ -44,6 +44,7 @@ void calcKmeans(vector<double> &k_means_x, vector<double> &k_means_y, vector<dou
     {
         double total_x = 0.0;
         double total_y = 0.0;
+        double total_z = 0.0;
         int numOfpoints = 0;
 
         for (size_t j = 0; j < data_x_points.size(); ++j)
@@ -71,7 +72,7 @@ int main(int argc, char *argv[])
 {
     MPI_Init(NULL, NULL);
 
-    int world_size, world_rank, numEpochs;
+    int world_size, world_rank, numEpochs, numCentroids;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
@@ -90,8 +91,8 @@ int main(int argc, char *argv[])
             cout << "Usage: " << argv[0] << " <numEpochs> <numCentroids>\n";
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
-        int numEpochs = atoi(argv[1]);
-        int numCentroids = atoi(argv[2]);
+        numEpochs = atoi(argv[1]);
+        numCentroids = atoi(argv[2]);
 
         MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -202,7 +203,7 @@ int main(int argc, char *argv[])
             pointData.push_back(p)
         }
 
-        saveOutputs(&pointData, "output.csv");
+        saveOutputs(&pointData, distFilename);
         printStats(numEpochs, numCentroids, &pointData, duration.count());
         areFilesEqual(serialFilename, distFilename, true);
     }
