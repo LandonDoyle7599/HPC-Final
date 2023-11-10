@@ -22,7 +22,6 @@ int main(int argc, char **argv)
     vector<Point3D> points;
     string serialFilename = "serial-cpu.csv";
     string distributedFilename = "distributed-cpu.csv";
-    long start_time;
 
     // Rank 0 executes the serial code
     if (rank == 0)
@@ -53,10 +52,10 @@ int main(int argc, char **argv)
     }
     // Wait until the serial code is done before starting the distributed computation
     MPI_Barrier(MPI_COMM_WORLD);
+    auto start_time = std::chrono::high_resolution_clock::now();
     if (rank == 0)
     {
         cout << "Performing Distributed CPU" << endl;
-        start_time = std::chrono::high_resolution_clock::now();
         // Define how much each process will work on each epoch
     }
     int pointsPerProcess = numPoints / size;
@@ -69,7 +68,7 @@ int main(int argc, char **argv)
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
         // Broadcast centroids to all processes. We need to update each node of the current centroids for each epoch to ensure we are using the most up to date data and actually converging.
-        MPI_Bcast(centroids.front(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+        MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
         // Scatter the points to each process so they can work on them. Once again, we need to update the data each epoch in order to converge
         MPI_Scatter(points.data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE,
@@ -102,7 +101,7 @@ int main(int argc, char **argv)
         // Update the centroids on the root process with the collected data
         if (rank == 0)
         {
-            updateCentroidData(points, centroids, centroids.size());
+            updateCentroidData(&points, centroids, centroids.size());
         }
     }
 
@@ -113,7 +112,7 @@ int main(int argc, char **argv)
         auto end_time = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
         printStats(numEpochs, centroids.size(), points, duration.count());
-        saveOutputs(points, filename);
+        saveOutputs(points, distributedFilename);
         // Compare outputs to validate they computed the same values
         bool debug = true;
         if (debug)
