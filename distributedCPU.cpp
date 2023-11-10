@@ -71,7 +71,7 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *points, int numEpochs, vect
 void performDistributedCPU(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
 {
     // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
-    cout << "Entering the k means computation" << endl;
+    cout << "\tEntering the k means computation" << endl;
     auto start_time = std::chrono::high_resolution_clock::now();
     kMeansClusteringDistributedCPU(points, numEpochs, centroids); // K-means clustering on the points.
     auto end_time = std::chrono::high_resolution_clock::now();
