@@ -7,40 +7,32 @@ using namespace std;
 
 void updateCentroidDataMPI(vector<Point3D> &localPoints, vector<Point3D> &centroids, int numCentroids, int rank)
 {
-    // Create vectors to keep track of data needed to compute means locally
+    // Create vectors to keep track of data needed to compute means
     vector<int> nPoints(numCentroids, 0);
     vector<double> sumX(numCentroids, 0.0);
     vector<double> sumY(numCentroids, 0.0);
 
-    // Iterate over local points to append data to local centroids
-    for (auto &point : localPoints)
+    // Iterate over points to append data to centroids
+    for (vector<Point3D>::iterator it = localPoints->begin(); it != localPoints->end(); ++it)
     {
-        int clusterId = point.cluster;
+        int clusterId = it->cluster;
         nPoints[clusterId] += 1;
-        sumX[clusterId] += point.x;
-        sumY[clusterId] += point.y;
+        sumX[clusterId] += it->x;
+        sumY[clusterId] += it->y;
 
-        point.minDist = numeric_limits<float>::max(); // reset distance
+        it->minDist = numeric_limits<float>::max(); // reset distance
     }
-
-    MPI_Barrier(MPI_COMM_WORLD);
-    // Perform a global reduction to update centroids
-    MPI_Allreduce(MPI_IN_PLACE, nPoints.data(), numCentroids, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, sumX.data(), numCentroids, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, sumY.data(), numCentroids, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     if (rank == 0)
     {
-        cout << "Rank: " << rank << " has " << localPoints.size() << " points" << endl;
-
-        // Compute the new centroids based on the global data
-        for (int clusterId = 0; clusterId < numCentroids; ++clusterId)
+        // Compute the new centroids
+        for (vector<Point3D>::iterator c = centroids->begin(); c != centroids->end(); ++c)
         {
-            centroids[clusterId].x = sumX[clusterId] / nPoints[clusterId];
-            centroids[clusterId].y = sumY[clusterId] / nPoints[clusterId];
+            int clusterId = c - centroids->begin();
+            c->x = sumX[clusterId] / nPoints[clusterId];
+            c->y = sumY[clusterId] / nPoints[clusterId];
         }
     }
-
     // Broadcast the updated centroids to all processes
     MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 }
@@ -49,15 +41,17 @@ void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<
 {
 
     cout << "Rank: " << rank << " is part of kMeansClustering " << endl;
-    int localSize = points.size() / size;
+    int localSize = points->size() / size;
     int localStart = rank * localSize;
-    int localEnd = (rank == size - 1) ? points.size() : localStart + localSize;
+    int localEnd = (rank == size - 1) ? points->size() : localStart + localSize;
 
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
+        cout << "Rank: " << rank << " on epoch: " << epoch << endl;
+
         for (int i = localStart; i < localEnd; ++i)
         {
-            Point3D &p = points[i];
+            Point3D &p = points->at(i);
             int clusterId = 0;
             double minDist = centroids[0].distance(p);
 
@@ -78,6 +72,7 @@ void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<
         cout << "Rank: " << rank << " Completed epoch: " << epoch << endl;
         // Perform a global reduction to update centroids
         updateCentroidDataMPI(points, centroids, centroids.size(), rank);
+        MPI_Barrier(MPI_COMM_WORLD);
     }
 }
 
