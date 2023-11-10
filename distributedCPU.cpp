@@ -30,16 +30,23 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *points, int numEpochs, vect
     //  If 0 on the first iteration, then add the previous send count to the displacement
     int endPoint = (rank == size - 1) ? numPoints : startPoint + pointsPerProcess;
 
+    // Buffer to receive the local points for each node
+    vector<Point3D> localPoints(pointsPerProcess);
+
     // Now we begin processing the data
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
         // Broadcast centroids to all processes. We need to update each node of the current centroids for each epoch to ensure we are using the most up to date data and actually converging.
         MPI_Bcast(&centroids->front(), centroids->size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
+        // Scatter the points to each process so they can work on them. Once again, we need to update the data each epoch in order to converge
+        MPI_Scatter(points->data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE,
+                    localPoints.data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+
         // Each process will compute the distance for its given set of points.
-        for (int i = startPoint; i < endPoint; ++i)
+        for (int i = 0; i < pointsPerProcess; ++i)
         {
-            Point3D &p = (*points)[i];
+            Point3D &p = localPoints[i];
             int clusterId = 0;
             double minDist = centroids->at(0).distance(p);
 
@@ -57,7 +64,8 @@ void kMeansClusteringDistributedCPU(vector<Point3D> *points, int numEpochs, vect
         }
 
         // Gather updated points to the root process
-        MPI_Gather(&points->at(startPoint), pointsPerProcess * sizeof(Point3D), MPI_BYTE, &points->front(), pointsPerProcess * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+        MPI_Gather(localPoints.data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE,
+                   points->data(), pointsPerProcess * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
         // Update the centroids on the root process with the collected data
         if (rank == 0)
