@@ -68,6 +68,7 @@ int main(int argc, char **argv)
     // Buffer to receive the local points for each node
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
+        MPI_Barrier(MPI_COMM_WORLD);
         if (rank == 0)
         {
             cout << "Epoch number: " << epoch << endl;
@@ -109,6 +110,7 @@ int main(int argc, char **argv)
         }
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);
     // Now we simply compare the outputs
     // Only want 1 process to compare the files
     if (rank == 0)
@@ -129,6 +131,5 @@ int main(int argc, char **argv)
         }
     }
     MPI_Finalize();
-
     return 0;
 }
