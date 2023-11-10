@@ -89,6 +89,7 @@ int main(int argc, char **argv)
     int numEpochs = 25;
     int numClusters = 6;
     string serialFilename = "serial-cpu.csv";
+    string distributedFilename = "distributed-cpu.csv";
     // Read in the data on rank 0
 
     if (rank == 0)
@@ -116,6 +117,23 @@ int main(int argc, char **argv)
 
     // Execute k-means clustering
     kMeansClusteringParallelMPI(localPoints, numEpochs, centroids);
+
+    // Now that it is finished executing, gather the data back toegerh to review
+    if (rank == 0)
+    {
+        printStats(numEpochs, centroids.size(), &basePoints, duration.count());
+        saveOutputs(&basePoints, distributedFilename);
+        // Compare outputs to validate they computed the same values
+        bool debug = true;
+        if (debug)
+        {
+            areFilesEqual(serialFilename, distributedFilename, debug);
+        }
+        else
+        {
+            cout << "Files Equal: " << areFilesEqual(serialFilename, distributedFilename, debug) << endl;
+        }
+    }
 
     MPI_Finalize();
     return 0;
