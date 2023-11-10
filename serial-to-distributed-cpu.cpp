@@ -20,31 +20,32 @@ int main(int argc, char *argv[])
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+    string filename = "distributed-cpu.csv";
+    string serialFilename = "serial.csv";
+    vector<Point3D> points;
+    vector<Point3D> centroids;
 
-    // Verify correct number of arguments
+    // Read Input
     if (rank == 0)
     {
+        cout << "Number of processes: " << size << endl;
         if (argc != 3)
         {
             cout << "Usage: " << argv[0] << " <numEpochs> <numCentroids>\n";
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
+        int numEpochs = atoi(argv[1]);
+        int numCentroids = atoi(argv[2]);
     }
-    string filename = "distributed-cpu.csv";
-    string serialFilename = "serial.csv";
-    int numEpochs = atoi(argv[1]);
-    int numCentroids = atoi(argv[2]);
-    vector<Point3D> points;
-    vector<Point3D> centroids;
+
     // Rank 0 reads in the file and initializes the centroids
     if (rank == 0)
     {
-        cout << "Reading Data " << endl;
         // Read data on the root process
+        cout << "Reading Data " << endl;
         points = readcsv("song_data.csv");
         // Initialize centroids on the root process
         centroids = initializeCentroids(numCentroids, &points);
-
         // Make copies and perfrom serial for later comparison
         vector<Point3D> serialPoints = points;
         vector<Point3D> serialCentroids = centroids;
@@ -69,7 +70,6 @@ int main(int argc, char *argv[])
                 localPoints.data(), localSize * sizeof(Point3D), MPI_BYTE,
                 0, MPI_COMM_WORLD);
 
-    cout << "Number of processes: " << size << endl;
     cout << "Performing Distributed CPU from rank: " << rank << endl;
 
     // Perform k-means clustering on local points
@@ -81,12 +81,28 @@ int main(int argc, char *argv[])
         kMeansClusteringCPU(&localPoints, &centroids, localPoints.size(), centroids.size());
         cout << " Rank: " << rank << " Completed Clustering " << endl;
 
-        // Update the centroids
+        // Update the centroids for the next epoch
         MPI_Barrier(MPI_COMM_WORLD);
         if (rank == 0)
         {
             cout << "Updating Centroids from Rank 0" << endl;
-            updateDistributedCentroidData(localPoints, centroids, centroids.size());
+            // Gather local centroids from all processes to the root process
+            vector<Point3D> allCentroids(centroids.size() * size);
+            MPI_Gather(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
+                       allCentroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
+                       0, MPI_COMM_WORLD);
+
+            // Gather local points from all processes to the root process
+            vector<Point3D> allPoints(localPoints.size() * size);
+            MPI_Gather(localPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
+                       allPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
+                       0, MPI_COMM_WORLD);
+
+            // Update global centroids based on the gathered information
+            updateCentroidData(&allPoints, &allCentroids, numCentroids);
+
+            // Broadcast the updated centroids to all processes
+            MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
         }
     }
 
