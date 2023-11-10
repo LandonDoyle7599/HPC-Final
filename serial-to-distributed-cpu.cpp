@@ -17,6 +17,7 @@ int main(int argc, char **argv)
     vector<Point3D> centroids;
     string serialFilename = "serial-cpu.csv";
     string distributedFilename = "distributed-cpu.csv";
+    auto start_time;
     // Get rank and get size
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -52,7 +53,7 @@ int main(int argc, char **argv)
     if (rank == 0)
     {
         cout << "Performing Distributed CPU" << endl;
-        auto start_time = std::chrono::high_resolution_clock::now();
+        start_time = std::chrono::high_resolution_clock::now();
         // Define how much each process will work on each epoch
     }
     int pointsPerProcess = numPoints / size;
