@@ -88,23 +88,24 @@ int main(int argc, char *argv[])
         {
             cout << "Updating Centroids from Rank 0" << endl;
             // Gather local centroids from all processes to the root process
-            vector<Point3D> allCentroids(numCentroids);
-            MPI_Gather(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
-                       allCentroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
-                       0, MPI_COMM_WORLD);
+            // vector<Point3D> allCentroids(numCentroids);
+            // MPI_Gather(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
+            //            allCentroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
+            //            0, MPI_COMM_WORLD);
 
-            // Gather local points from all processes to the root process
-            vector<Point3D> allPoints(numPoints);
-            MPI_Gather(localPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
-                       allPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
-                       0, MPI_COMM_WORLD);
+            // // Gather local points from all processes to the root process
+            // vector<Point3D> allPoints(numPoints);
+            // MPI_Gather(localPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
+            //            allPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
+            //            0, MPI_COMM_WORLD);
 
             // Update global centroids based on the gathered information
             // We need all points and all centroids updated in order to properly update
-            updateCentroidData(&allPoints, &allCentroids, numCentroids);
+            // updateCentroidData(&allPoints, &allCentroids, numCentroids);
+            updateCentroidData(&points, &centroids, numCentroids);
 
             // Broadcast the updated centroids to all processes
-            MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+            MPI_Bcast(centroids.data(), centroids.size(), mpi_point_type, 0, MPI_COMM_WORLD);
         }
     }
 
