@@ -14,7 +14,7 @@ void run(int numEpochs, int numCentroids, vector<Point3D> *points, int numThread
     string parallelFilename = "parallel-cpu.csv";
     // Execute operations
     cout << "Performing Serial CPU" << endl;
-    performSerial(numEpochs, numCentroids, &centroids, points, serialFilename);
+    performSerial(numEpochs, &centroids, points, serialFilename);
     cout << "\nPerforming Parallel CPU with " << numThreads << " threads" << endl;
     performParallel(numEpochs, &parallelCentroidCopy, &paralellPointsCopy, parallelFilename, numThreads);
     cout << "Files Equal: " << areFilesEqual(serialFilename, parallelFilename, true) << endl;

@@ -15,7 +15,7 @@ void run(int numEpochs, int numCentroids, vector<Point3D> *points)
     string distributedFilename = "distributed-cpu.csv";
     // Execute the operations
     cout << "Performing Serial CPU" << endl;
-    performSerial(numEpochs, numCentroids, &centroids, points, serialFilename);
+    performSerial(numEpochs, &centroids, points, serialFilename);
     cout << "\nPerforming Distributed CPU " << endl;
     performDistributedCPU(numEpochs, &centroids, &distributedPointsCopy, distributedFilename);
     // Compare outputs to validate they computed the same values

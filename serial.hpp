@@ -164,7 +164,7 @@ bool areFilesEqual(string filename1, string filename2, bool showDiff = false)
     lineNum++;
   }
 
-  std::cout << "Total differences: " << counter << "\n\n";
+  std::cout << "\n\tTotal differences: " << counter << "\n\n";
 
   // Check if one file has extra lines
   if (getline(file1, line1))
