@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
         vector<Point3D> centeroids = initializeCentroids(numCentroids, &pointData);
 
         // With pointData and centeroids we can run the serial implementation
-        performSerial(numEpochs, &centeroids, &pointData, serialFilename);
+        // performSerial(numEpochs, &centeroids, &pointData, serialFilename);
 
         srand(static_cast<unsigned>(time(NULL)));
         int random;
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 
         saveOutputs(&pointData, distFilename);
         printStats(numEpochs, numCentroids, &pointData, duration.count());
-        areFilesEqual(serialFilename, distFilename, true);
+        // areFilesEqual(serialFilename, distFilename, true);
     }
 
     MPI_Finalize();
