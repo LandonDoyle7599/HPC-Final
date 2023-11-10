@@ -5,7 +5,7 @@
 
 using namespace std;
 
-void updateCentroidDataMPI(vector<Point3D> &localPoints, vector<Point3D> &centroids, int numCentroids)
+void updateCentroidDataMPI(vector<Point3D> &localPoints, vector<Point3D> &centroids, int numCentroids, int rank)
 {
     // Create vectors to keep track of data needed to compute means locally
     vector<int> nPoints(numCentroids, 0);
@@ -77,7 +77,7 @@ void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<
 
         cout << "Rank: " << rank << " Completed epoch: " << epoch << endl;
         // Perform a global reduction to update centroids
-        updateCentroidDataMPI(points, centroids, centroids.size());
+        updateCentroidDataMPI(points, centroids, centroids.size(), rank);
     }
 }
 
