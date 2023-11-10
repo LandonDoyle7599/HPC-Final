@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
     string serialFilename = "serial.csv";
     vector<Point3D> points;
     vector<Point3D> centroids;
+    vector<Point3D> localPoints;
     int numCentroids;
     int numEpochs;
 
@@ -51,11 +52,13 @@ int main(int argc, char *argv[])
 
     // Broadcast centroid and epoch data to all processes
     MPI_Bcast(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+    cout << "Broadcasted centroids " << rank << endl;
     MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    cout << "Broadcasted numCentroids " << rank << endl;
     MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    cout << "Broadcasted numEpochs  " << rank << endl;
 
     // Distribute points among processes and compensate for uneven division
-    vector<Point3D> localPoints;
     int pointsPerProcess = points.size() / size;
     int remainder = points.size() % size;
     int localSize = (rank < remainder) ? (pointsPerProcess + 1) : pointsPerProcess;
@@ -78,7 +81,7 @@ int main(int argc, char *argv[])
         kMeansClusteringCPU(&localPoints, &centroids, localPoints.size(), centroids.size());
         cout << " Rank: " << rank << " Completed Clustering " << endl;
 
-        // Update the centroids for the next epoch
+        // Gather everything together and update the centroids for the next epoch
         MPI_Barrier(MPI_COMM_WORLD);
         if (rank == 0)
         {
