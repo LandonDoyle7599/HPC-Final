@@ -57,10 +57,11 @@ void kMeansClusteringMPI(vector<Point3D> *points, int numEpochs, vector<Point3D>
     // Repeat over epochs to converge the centroids
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
-        cout << "Epoch: " << epoch << " from rank: " << rank << endl;
+        cout << " Rank: " << rank << " Epoch: " << epoch << endl;
         // For each centroid, compute distance from centroid to each point
         // and update point's cluster if necessary
         kMeansClusteringCPU(points, centroids, points->size(), centroids->size());
+        cout << " Rank: " << rank << " Completed Clustering " << endl;
 
         // Update the centroids
         MPI_Barrier(MPI_COMM_WORLD);
