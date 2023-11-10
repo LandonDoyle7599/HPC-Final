@@ -17,7 +17,6 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
-
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -32,11 +31,10 @@ int main(int argc, char *argv[])
     }
     string filename = "distributed-cpu.csv";
     string serialFilename = "serial.csv";
-    int numEpochs = stoi(argv[2]);
-    int numCentroids = stoi(argv[3]);
+    int numEpochs = toi(argv[1]);
+    int numCentroids = atoi(argv[2]);
     vector<Point3D> points;
     vector<Point3D> centroids;
-
     // Rank 0 reads in the file and initializes the centroids
     if (rank == 0)
     {
