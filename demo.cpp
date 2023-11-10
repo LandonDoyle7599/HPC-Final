@@ -39,6 +39,7 @@ void updateCentroidDataMPI(vector<Point3D> &localPoints, vector<Point3D> &centro
 void kMeansClusteringParallelMPI(vector<Point3D> &points, int numEpochs, vector<Point3D> &centroids, int rank, int size)
 {
 
+    cout << "Rank: " << rank << " is part of kMeansClustering " << endl;
     int localSize = points.size() / size;
     int localStart = rank * localSize;
     int localEnd = (rank == size - 1) ? points.size() : localStart + localSize;
