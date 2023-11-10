@@ -30,6 +30,11 @@ Running on CHPC first we need to load the module:
 module load openmpi
 ```
 
+```bash
+mpic++ serial-to-distributed.cpp -o distributed
+./distributed
+```
+
 ### Parallel GPU
 
 Running on CHPC first we need to load the module:
@@ -135,7 +140,7 @@ This also shows that this algorithm is strongly scalable, because as we increase
 
 We can also change the number of threads per block to fully use the number of threads per block.
 
-<!-- //TODO Check whether this is strongly scalable and/or weakly scalable -->
+<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
 
 | Time(s)   | Epochs | Clusters | Threads per Block | Blocks per Grid |
 | --------- | ------ | -------- | ----------------- | --------------- |
@@ -182,3 +187,7 @@ This data tells us that this is not a strongly scalable algorithm, because as we
 Parallel CPU Implementation Visualized with 6 Clusters:
 
 ![Parallel CPU ](./images/parallel-cpu-800e-6c.png)
+
+### Distributed CPU
+
+### Distributed GPU

@@ -1,7 +1,0 @@
-C:/Users/lando/CLionProjects/HPCFinal/cmake-build-debug-visual-studio/CMakeFiles/HPCFinal.dir
-C:/Users/lando/CLionProjects/HPCFinal/cmake-build-debug-visual-studio/CMakeFiles/ClangFormat.dir
-C:/Users/lando/CLionProjects/HPCFinal/cmake-build-debug-visual-studio/CMakeFiles/edit_cache.dir
-C:/Users/lando/CLionProjects/HPCFinal/cmake-build-debug-visual-studio/CMakeFiles/rebuild_cache.dir
-C:/Users/lando/CLionProjects/HPCFinal/cmake-build-debug-visual-studio/_deps/fmt-build/CMakeFiles/fmt.dir
-C:/Users/lando/CLionProjects/HPCFinal/cmake-build-debug-visual-studio/_deps/fmt-build/CMakeFiles/edit_cache.dir
-C:/Users/lando/CLionProjects/HPCFinal/cmake-build-debug-visual-studio/_deps/fmt-build/CMakeFiles/rebuild_cache.dir
