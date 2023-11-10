@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
     vector<Point3D> localPoints;
     int numCentroids;
     int numEpochs;
+    int numPoints;
 
     if (rank == 0)
     {
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
         // Read data on the root process
         cout << "Reading Data " << endl;
         points = readcsv("song_data.csv");
+        numPoints = points.size();
         // Initialize centroids on the root process
         centroids = initializeCentroids(numCentroids, &points);
         // Make copies and perfrom serial for later comparison
@@ -77,24 +79,22 @@ int main(int argc, char *argv[])
     // Repeat over epochs to converge the centroids
     for (int epoch = 0; epoch < numEpochs; ++epoch)
     {
+        MPI_Barrier(MPI_COMM_WORLD);
         cout << " Rank: " << rank << " Epoch: " << epoch << " of " << numEpochs << endl;
         // For the given processor's localPoints, compute the nearest centroid to it
         kMeansClusteringCPU(&localPoints, &centroids, localPoints.size(), centroids.size());
         cout << " Rank: " << rank << " Completed Clustering " << endl;
-
-        // Gather everything together and update the centroids for the next epoch
-        MPI_Barrier(MPI_COMM_WORLD);
         if (rank == 0)
         {
             cout << "Updating Centroids from Rank 0" << endl;
             // Gather local centroids from all processes to the root process
-            vector<Point3D> allCentroids(centroids.size() * size);
+            vector<Point3D> allCentroids(numCentroids);
             MPI_Gather(centroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
                        allCentroids.data(), centroids.size() * sizeof(Point3D), MPI_BYTE,
                        0, MPI_COMM_WORLD);
 
             // Gather local points from all processes to the root process
-            vector<Point3D> allPoints(localPoints.size() * size);
+            vector<Point3D> allPoints(numPoints);
             MPI_Gather(localPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
                        allPoints.data(), localPoints.size() * sizeof(Point3D), MPI_BYTE,
                        0, MPI_COMM_WORLD);
