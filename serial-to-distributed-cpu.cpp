@@ -97,26 +97,25 @@ int main(int argc, char **argv)
             updateCentroidData(points, centroids, centroids.size());
         }
     }
+    MPI_Finalize();
 
     // Now we simply compare the outputs
     // Only want 1 process to compare the files
-    if (rank == 0)
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+    printStats(numEpochs, centroids.size(), points, duration.count());
+    saveOutputs(points, filename);
+    // Compare outputs to validate they computed the same values
+    bool debug = true;
+    if (debug)
     {
-        auto end_time = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-        printStats(numEpochs, centroids->size(), points, duration.count());
-        saveOutputs(points, filename);
-        // Compare outputs to validate they computed the same values
-        bool debug = true;
-        if (debug)
-        {
-            areFilesEqual(serialFilename, distributedFilename, debug);
-        }
-        else
-        {
-            cout << "Files Equal: " << areFilesEqual(serialFilename, distributedFilename, debug) << endl;
-        }
+        areFilesEqual(serialFilename, distributedFilename, debug);
     }
-    MPI_Finalize();
+    else
+    {
+        cout << "Files Equal: " << areFilesEqual(serialFilename, distributedFilename, debug) << endl;
+    }
+
     return 0;
 }
