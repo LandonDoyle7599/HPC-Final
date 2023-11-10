@@ -10,17 +10,20 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-    MPI_Init(&argc, &argv);
     int rank, size;
-    int numEpochs;
-    int numPoints;
-    vector<Point3D> centroids;
-    string serialFilename = "serial-cpu.csv";
-    string distributedFilename = "distributed-cpu.csv";
-    auto start_time;
+    MPI_Init(&argc, &argv);
     // Get rank and get size
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+    // Initialize variables
+    int numEpochs;
+    int numPoints;
+    vector<Point3D> centroids;
+    vector<Point3D> points;
+    string serialFilename = "serial-cpu.csv";
+    string distributedFilename = "distributed-cpu.csv";
+    long start_time;
+
     // Rank 0 executes the serial code
     if (rank == 0)
     {
@@ -36,7 +39,7 @@ int main(int argc, char **argv)
         cout << "Number of processes: " << size << endl;
         // Read in the data
         cout << "Reading in Song Data" << endl;
-        vector<Point3D> points = readcsv("song_data.csv");
+        points = readcsv("song_data.csv");
         numPoints = points.size();
         // Run serial code with a copy of the song data
         vector<Point3D> serialPoints = points;
@@ -102,25 +105,27 @@ int main(int argc, char **argv)
             updateCentroidData(points, centroids, centroids.size());
         }
     }
-    MPI_Finalize();
 
     // Now we simply compare the outputs
     // Only want 1 process to compare the files
-
-    auto end_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-    printStats(numEpochs, centroids.size(), points, duration.count());
-    saveOutputs(points, filename);
-    // Compare outputs to validate they computed the same values
-    bool debug = true;
-    if (debug)
+    if (rank == 0)
     {
-        areFilesEqual(serialFilename, distributedFilename, debug);
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+        printStats(numEpochs, centroids.size(), points, duration.count());
+        saveOutputs(points, filename);
+        // Compare outputs to validate they computed the same values
+        bool debug = true;
+        if (debug)
+        {
+            areFilesEqual(serialFilename, distributedFilename, debug);
+        }
+        else
+        {
+            cout << "Files Equal: " << areFilesEqual(serialFilename, distributedFilename, debug) << endl;
+        }
     }
-    else
-    {
-        cout << "Files Equal: " << areFilesEqual(serialFilename, distributedFilename, debug) << endl;
-    }
+    MPI_Finalize();
 
     return 0;
 }
