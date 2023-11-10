@@ -165,17 +165,17 @@ int main(int argc, char *argv[])
 
     // Scatter data across processes
 
-    // cout << "Rank : " << world_rank << " scattering x points " << endl;
+    cout << "Rank : " << world_rank << " scattering x points " << endl;
 
     MPI_Scatter(data_x_points.data(), (data_x_points.size() / world_size) + 1, MPI_DOUBLE,
                 recv_x.data(), (data_x_points.size() / world_size) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    // cout << "Rank : " << world_rank << " scattering y points " << endl;
+    cout << "Rank : " << world_rank << " scattering y points " << endl;
 
     MPI_Scatter(data_y_points.data(), (data_y_points.size() / world_size) + 1, MPI_DOUBLE,
                 recv_y.data(), (data_y_points.size() / world_size) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    // cout << "Rank : " << world_rank << " scattering z points " << endl;
+    cout << "Rank : " << world_rank << " scattering z points " << endl;
 
     MPI_Scatter(data_z_points.data(), (data_z_points.size() / world_size) + 1, MPI_DOUBLE,
                 recv_z.data(), (data_z_points.size() / world_size) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
