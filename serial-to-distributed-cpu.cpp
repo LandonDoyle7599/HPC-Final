@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
             updateCentroidData(&points, &centroids, numCentroids);
 
             // Broadcast the updated centroids to all processes
-            MPI_Bcast(centroids.data(), centroids.size(), mpi_point_type, 0, MPI_COMM_WORLD);
+            // MPI_Bcast(centroids.data(), centroids.size(), mpi_point_type, 0, MPI_COMM_WORLD);
         }
     }
 
