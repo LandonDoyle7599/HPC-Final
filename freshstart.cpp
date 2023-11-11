@@ -5,6 +5,8 @@
 #include <limits>
 #include <algorithm>
 
+using namespace std;
+
 struct Point3D
 {
     double x, y, z;
@@ -55,7 +57,7 @@ int main(int argc, char **argv)
     if (rank == 0)
     {
         // Master process reads data and distributes it to other processes
-        std::string filename = "your_file.csv";
+        std::string filename = "song_data.csv";
         std::vector<Point3D> all_points = readcsv(filename);
 
         if (all_points.size() < k * size)
