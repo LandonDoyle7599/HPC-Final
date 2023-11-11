@@ -21,7 +21,13 @@ struct Point3D
     }
 };
 
-vector<Point3D> readcsv(const string filename)
+/**
+ * Reads in the data.csv file into a vector of points
+ * @param filename - the name of the file to read
+ * @return vector of points
+ *
+ */
+vector<Point3D> readcsv(string filename)
 {
     vector<Point3D> points;
     string line;
