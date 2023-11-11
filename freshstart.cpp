@@ -21,17 +21,17 @@ struct Point3D
     }
 };
 
-std::vector<Point3D> readcsv(const std::string &filename)
+vector<Point3D> readcsv(const string filename)
 {
-    std::vector<Point3D> points;
-    std::string line;
-    std::ifstream file(filename);
+    vector<Point3D> points;
+    string line;
+    ifstream file(filename);
     if (!file.is_open())
-        std::cout << "Failed to open file\n";
+        cout << "Failed to open file\n";
     while (getline(file, line))
     {
-        std::stringstream lineStream(line);
-        std::string bit;
+        stringstream lineStream(line);
+        string bit;
         double x, y, z;
         getline(lineStream, bit, ',');
         x = stof(bit);
@@ -57,22 +57,22 @@ int main(int argc, char **argv)
     if (rank == 0)
     {
         // Master process reads data and distributes it to other processes
-        std::string filename = "song_data.csv";
-        std::vector<Point3D> all_points = readcsv(filename);
+        string filename = "song_data.csv";
+        vector<Point3D> all_points = readcsv(filename);
 
         if (all_points.size() < k * size)
         {
-            std::cerr << "Error: Insufficient data points for the specified number of processes and clusters.\n";
+            cerr << "Error: Insufficient data points for the specified number of processes and clusters.\n";
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
 
         // Scatter data to all processes
-        std::vector<Point3D> local_points(all_points.size() / size);
+        vector<Point3D> local_points(all_points.size() / size);
         MPI_Scatter(all_points.data(), local_points.size() * sizeof(Point3D), MPI_BYTE,
                     local_points.data(), local_points.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
         // Perform K-means clustering
-        std::vector<Point3D> centroids(k);
+        vector<Point3D> centroids(k);
         // Initialize centroids (you can choose a better initialization method)
         for (int i = 0; i < k; ++i)
         {
@@ -83,11 +83,11 @@ int main(int argc, char **argv)
         while (!converged)
         {
             // Assign each point to the nearest centroid
-            std::vector<std::vector<Point3D>> clusters(k);
+            vector<vector<Point3D>> clusters(k);
             for (const auto &point : local_points)
             {
                 int closest_centroid = 0;
-                double min_distance = std::numeric_limits<double>::max();
+                double min_distance = numeric_limits<double>::max();
                 for (int i = 0; i < k; ++i)
                 {
                     double distance = point.distance(centroids[i]);
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
             }
 
             // Calculate new centroids
-            std::vector<Point3D> new_centroids(k);
+            vector<Point3D> new_centroids(k);
             for (int i = 0; i < k; ++i)
             {
                 if (!clusters[i].empty())
@@ -147,21 +147,21 @@ int main(int argc, char **argv)
         // Output final centroids
         if (rank == 0)
         {
-            std::cout << "Final centroids:\n";
+            cout << "Final centroids:\n";
             for (int i = 0; i < k; ++i)
             {
-                std::cout << "Centroid " << i + 1 << ": (" << centroids[i].x << ", " << centroids[i].y << ", " << centroids[i].z << ")\n";
+                cout << "Centroid " << i + 1 << ": (" << centroids[i].x << ", " << centroids[i].y << ", " << centroids[i].z << ")\n";
             }
         }
     }
     else
     {
         // Worker processes receive local data and perform clustering until convergence
-        std::vector<Point3D> local_points(all_points.size() / size);
+        vector<Point3D> local_points(all_points.size() / size);
         MPI_Scatter(nullptr, local_points.size() * sizeof(Point3D), MPI_BYTE,
                     local_points.data(), local_points.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
-        std::vector<Point3D> centroids(k);
+        vector<Point3D> centroids(k);
         // Initialize centroids (you can choose a better initialization method)
         for (int i = 0; i < k; ++i)
         {
@@ -172,11 +172,11 @@ int main(int argc, char **argv)
         while (!converged)
         {
             // Assign each point to the nearest centroid
-            std::vector<std::vector<Point3D>> clusters(k);
+            vector<vector<Point3D>> clusters(k);
             for (const auto &point : local_points)
             {
                 int closest_centroid = 0;
-                double min_distance = std::numeric_limits<double>::max();
+                double min_distance = numeric_limits<double>::max();
                 for (int i = 0; i < k; ++i)
                 {
                     double distance = point.distance(centroids[i]);
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
             }
 
             // Calculate new centroids
-            std::vector<Point3D> new_centroids(k);
+            vector<Point3D> new_centroids(k);
             for (int i = 0; i < k; ++i)
             {
                 if (!clusters[i].empty())
