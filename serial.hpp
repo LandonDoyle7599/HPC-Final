@@ -59,23 +59,16 @@ void saveOutputs(vector<Point3D> *points, string filename)
  * @param random - decides whether to randomly initalize the centeroids or not
  * @return vector of centroids
  */
-vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points, bool random = true)
+vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points)
 {
   // Randomly initialize centroids
   // The index of the centroid within the centroids vector represents the cluster label.
   vector<Point3D> centroids;
-  srand(time(0));
+  srand(10);                       // seed the random number generator
   centroids.reserve(numCentroids); // create space in memory for specified number of centroids
   for (int i = 0; i < numCentroids; ++i)
   {
-    if (random)
-    {
-      centroids.push_back(points->at(rand() % points->size()));
-    }
-    else
-    {
-      centroids.push_back(points->at(0));
-    }
+    centroids.push_back(points->at(rand() % points->size()));
   }
   return centroids;
 }
