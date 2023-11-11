@@ -78,7 +78,7 @@ int main(int argc, char **argv)
         }
 
         // Scatter data to all processes
-        vector<Point3D> local_points(all_points.size() / size);
+        std::vector<Point3D> local_points(all_points.size() / size);
         MPI_Scatter(all_points.data(), local_points.size() * sizeof(Point3D), MPI_BYTE,
                     local_points.data(), local_points.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
 
@@ -168,10 +168,10 @@ int main(int argc, char **argv)
     else
     {
         // Worker processes receive local data and perform clustering until convergence
-        vector<Point3D> local_points(all_points.size() / size);
-        MPI_Scatter(nullptr, local_points.size() * sizeof(Point3D), MPI_BYTE,
-                    local_points.data(), local_points.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
+        std::vector<Point3D> local_points; // Corrected this line
 
+        MPI_Scatter(nullptr, 0, MPI_BYTE, // Corrected this line
+                    local_points.data(), local_points.size() * sizeof(Point3D), MPI_BYTE, 0, MPI_COMM_WORLD);
         vector<Point3D> centroids(k);
         // Initialize centroids (you can choose a better initialization method)
         for (int i = 0; i < k; ++i)
