@@ -7,7 +7,7 @@
 #include<errno.h>
 #include<mpi.h>
 
-
+// WORKING COMMIT "CHange asserts to if statements"
 int numEpochs = 100;
 int numOfClusters = 4;
 int numOfElements = 0;

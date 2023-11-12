@@ -186,15 +186,15 @@ int main(int argc, char *argv[])
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
     // Assert that the recv vectors are at least as big as the k assignment vector
-    if (recv_assign.size < k_assignment.size())
+    if (recv_assign.size() < k_assignment.size())
     {
         cout << "Recv assignment vector is not at least as big as the k assignment vector" << endl;
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
     // Scatter data across processes but use displacements
-    [int] send_counts(world_size);
-    [int] displacements(world_size);
+    int send_counts[world_size];
+    int displacements[world_size];
 
     // Break up the data into chunks accouting for evenly dividing the data
     for (int i = 0; i < world_size; ++i)
