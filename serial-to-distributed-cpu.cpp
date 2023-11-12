@@ -50,7 +50,7 @@ void updateCentroidDataDistributed(vector<double> &k_means_x, vector<double> &k_
         nPoints[clusterID] += 1;
         sumX[clusterID] += data_x_points[i];
         sumY[clusterID] += data_y_points[i];
-        // Reset the min distance is not needed, we don't use it in the distributed version
+        // Reset the min distance is not needed, we don't use it in the distributed version. We take this into account when calculating the k mean
     }
 
     // Compute the new centroids
@@ -144,6 +144,15 @@ int main(int argc, char *argv[])
         recv_y.resize((data_y_points.size()) + (double)world_size);
         recv_z.resize((data_z_points.size()) + (double)world_size);
         recv_assign.resize((k_assignment.size()) + (double)world_size);
+
+        // Assert the x y and z data vectors have same size
+        static_assert(sizeof(data_x_points) == sizeof(data_y_points), "data_x_points and data_y_points are not the same size");
+        static_assert(sizeof(data_x_points) == sizeof(data_z_points), "data_x_points and data_z_points are not the same size");
+
+        // Assert that the recv x y and z are at least as big as the data vectors
+        static_assert(sizeof(recv_x) >= sizeof(data_x_points), "recv_x is not at least as big as data_x_points");
+        static_assert(sizeof(recv_y) >= sizeof(data_y_points), "recv_y is not at least as big as data_y_points");
+        static_assert(sizeof(recv_z) >= sizeof(data_z_points), "recv_z is not at least as big as data_z_points");
     }
     else
     {
@@ -162,6 +171,11 @@ int main(int argc, char *argv[])
         recv_z.resize((data_z_points.size()) + (double)world_size);
         recv_assign.resize((k_assignment.size()) + (double)world_size);
     }
+
+    // Assert recv vectors are the same size
+    static_assert(sizeof(recv_x) == sizeof(recv_y), "recv_x and recv_y are not the same size");
+    static_assert(sizeof(recv_x) == sizeof(recv_z), "recv_x and recv_z are not the same size");
+    static_assert(sizeof(recv_assign) == sizeof(k_assignment), "recv_x and k_assignment are not the same size");
 
     // Scatter data across processes
     vector<int> send_counts(world_size);
