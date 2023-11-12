@@ -158,13 +158,6 @@ int main(int argc, char *argv[])
             cout << "Data vectors are not the same size" << endl;
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
-
-        // Assert that the recv x y and z are at least as big as the data vectors
-        if (recv_x.size() < data_x_points.size() || recv_y.size() < data_y_points.size() || recv_z.size() < data_z_points.size() || recv_assign.size() < data_x_points.size())
-        {
-            cout << "Recv vectors are not at least as big as the data vectors" << endl;
-            MPI_Abort(MPI_COMM_WORLD, 1);
-        }
     }
     else
     {
@@ -188,7 +181,7 @@ int main(int argc, char *argv[])
     // Assert recv vectors are at least as big as numElements
     if (recv_x.size() < numElements / world_size || recv_y.size() < numElements / world_size || recv_z.size() < numElements / world_size || recv_assign.size() < numElements / world_size)
     {
-        cout << "Recv vectors are not at least as big as numElements" << endl;
+        cout << "Recv vectors are not at least as big as their proportion" << endl;
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
