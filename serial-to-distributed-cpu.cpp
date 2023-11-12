@@ -126,12 +126,13 @@ int main(int argc, char *argv[])
 
         // Now we initialize the centroids
         vector<Point3D> centeroids = initializeCentroids(numCentroids, &pointData);
+        vector<Point3D> serialCentroidCopy = centeroids;
+        vector<Point3D> serialPointCopy = pointData;
 
         // With pointData and centeroids we can run the serial implementation
-        performSerial(numEpochs, &centeroids, &pointData, serialFilename);
+        performSerial(numEpochs, &serialCentroidCopy, &serialPointCopy, serialFilename);
 
         startTime = MPI_Wtime();
-
         // Setup the k_means vectors to proper sizes
         k_means_x.resize(numCentroids);
         k_means_y.resize(numCentroids);
@@ -280,14 +281,9 @@ int main(int argc, char *argv[])
         long duration = (long)((finishTime - startTime) * 100000);
         double v = finishTime - startTime;
         cout << "Time: " << v << " ms" << endl;
-        vector<Point3D> pointData;
-        // Validate xpoints, ypints, zpoints and k_assignment are the same size
-        if (data_x_points.size() != data_y_points.size() || data_x_points.size() != data_z_points.size() || data_x_points.size() != k_assignment.size())
-        {
-            cout << "Data vectors are not the same size" << endl;
-            MPI_Abort(MPI_COMM_WORLD, 1);
-        }
 
+        vector<Point3D> pointData;
+        pointData.reserve(numElements); // reserve space for the vector to avoid reallocation
         for (int i = 0; i < numElements; i++)
         {
             Point3D p = Point3D(data_x_points[i], data_y_points[i], data_z_points[i]);
@@ -296,7 +292,7 @@ int main(int argc, char *argv[])
         }
         saveOutputs(&pointData, distFilename);
         printStats(numEpochs, numCentroids, &pointData, duration);
-        // areFilesEqual(serialFilename, distFilename, true);
+        areFilesEqual(serialFilename, distFilename, true);
     }
     // Clean up by deallocating memory
     k_means_x.clear();
