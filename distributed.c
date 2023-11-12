@@ -113,12 +113,8 @@ int main(int argc, char *argv[])
 		num_of_processes = atoi(argv[1]);
 
 		char buffer[2];
-		printf("How many clusters would you like to analyze for? ");
-		scanf("%s", buffer);
-		printf("\n");
 
-		numOfClusters = atoi(buffer);
-		printf("Ok %d clusters it is.\n", numOfClusters);
+		numOfClusters = 4;
 
 
 		// broadcast the number of clusters to all nodes
