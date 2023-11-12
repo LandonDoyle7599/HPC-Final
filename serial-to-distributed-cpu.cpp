@@ -278,18 +278,41 @@ int main(int argc, char *argv[])
     if (world_rank == 0)
     {
         double finishTime = MPI_Wtime();
-        long duration = (long)((finishTime - startTime) * 100000);
+        long duration = (long)((finishTime - startTime) * 1000000);
         double v = finishTime - startTime;
         cout << "Time: " << v << " ms" << endl;
+
+        // Validate x y and z are the same size as numElements
+        if (data_x_points.size() != numElements || data_y_points.size() != numElements || data_z_points.size() != numElements)
+        {
+            cout << "Data vectors are not the same size as numElements" << endl;
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
 
         vector<Point3D> pointData;
         pointData.reserve(numElements); // reserve space for the vector to avoid reallocation
         for (int i = 0; i < numElements; i++)
         {
-            Point3D p = Point3D(data_x_points[i], data_y_points[i], data_z_points[i]);
-            p.cluster = k_assignment[i];
+            double x = data_x_points[i];
+            double y = data_y_points[i];
+            double z = data_z_points[i];
+            Point3D p = Point3D(x, y, z);
             pointData.push_back(p);
         }
+
+        // Now assign clusters to the points from the k_assign we already have
+        for (int i = 0; i < numElements; ++i)
+        {
+            pointData[i].clusterID = k_assignment[i];
+        }
+
+        // Validate pointData
+        if (pointData.size() != numElements)
+        {
+            cout << "Point data is not the same size as numElements after the for loop" << endl;
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
+
         saveOutputs(&pointData, distFilename);
         printStats(numEpochs, numCentroids, &pointData, duration);
         areFilesEqual(serialFilename, distFilename, true);
