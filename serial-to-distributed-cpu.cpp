@@ -9,7 +9,6 @@
 #include <mpi.h>
 #include "serial.cpp"
 
-
 using namespace std;
 
 void calculateKMean(const vector<double> &k_x, const vector<double> &k_y, const vector<double> &k_z,
@@ -279,7 +278,7 @@ int main(int argc, char *argv[])
         double finishTime = MPI_Wtime();
         long duration = (long)((finishTime - startTime) * 1000);
         vector<Point3D> pointData;
-        for (size_t i = 0; i < data_x_points.size(); ++i)
+        for (size_t i = 0; i < numElements; i++)
         {
             Point3D p = Point3D(data_x_points[i], data_y_points[i], data_z_points[i]);
             p.cluster = k_assignment[i];
