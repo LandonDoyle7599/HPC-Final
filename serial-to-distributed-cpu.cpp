@@ -280,35 +280,22 @@ int main(int argc, char *argv[])
         long duration = (long)((finishTime - startTime) * 1000000);
         double v = finishTime - startTime;
         cout << "Time: " << v << " ms" << endl;
-        vector<Point3D> pointData;
-        pointData.reserve(numElements); // reserve space for the vector to avoid reallocation
+        vector<Point3D> computedPoints;
+        computedPoints.reserve(numElements); // reserve space for the vector to avoid reallocation
         for (int i = 0; i < numElements; i++)
         {
             double x = data_x_points[i];
             double y = data_y_points[i];
             double z = data_z_points[i];
-            pointData.push_back(Point3D(x, y, z));
-        }
-
-        if (pointData.size() != k_assignment.size())
-        {
-            cout << "Point data is not the same size as k_assignment" << endl;
-            MPI_Abort(MPI_COMM_WORLD, 1);
+            computedPoints.push_back(Point3D(x, y, z));
         }
         // Now assign clusters to the points from the k_assign we already have
         for (int i = 0; i < k_assignment.size(); i++)
         {
-            pointData[i].cluster = k_assignment[i];
+            computedPoints[i].cluster = k_assignment[i];
         }
-
-        // Validate pointData
-        if (pointData.size() != numElements)
-        {
-            cout << "Point data is not the same size as numElements after the for loop" << endl;
-            MPI_Abort(MPI_COMM_WORLD, 1);
-        }
-        saveOutputs(&pointData, distFilename);
-        printStats(numEpochs, numCentroids, &pointData, duration);
+        saveOutputs(&computedPoints, distFilename);
+        printStats(numEpochs, numCentroids, &computedPoints, duration);
         areFilesEqual(serialFilename, distFilename, true);
     }
     MPI_Finalize();
