@@ -295,8 +295,7 @@ int main(int argc, char *argv[])
         printStats(numEpochs, numCentroids, &pointData, duration);
         areFilesEqual(serialFilename, distFilename, true);
     }
-
+    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
-
     return 0;
 }
