@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
 
         vector<Point3D> pointData = readcsv("song_data.csv");
 
+        k_assignment.resize(numElements);
         // add data from point data to the appropriate arrays
         for (size_t i = 0; i < pointData.size(); ++i)
         {
@@ -221,7 +222,7 @@ int main(int argc, char *argv[])
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    cout << "Rank : " << world_rank << " scattering x points " << endl;
+    // cout << "Rank : " << world_rank << " scattering points " << endl;
 
     // Assert that my rank receiving x y and z are big enough for the size counts
     if (recv_x.size() < send_counts[world_rank] || recv_y.size() < send_counts[world_rank] || recv_z.size() < send_counts[world_rank])
@@ -234,13 +235,9 @@ int main(int argc, char *argv[])
     MPI_Scatterv(data_x_points.data(), send_counts, displacements, MPI_DOUBLE,
                  recv_x.data(), recv_x.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    // cout << "Rank : " << world_rank << " scattering y points " << endl;
-
     // Scatterv for y points
     MPI_Scatterv(data_y_points.data(), send_counts, displacements, MPI_DOUBLE,
                  recv_y.data(), recv_y.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
-    // cout << "Rank : " << world_rank << " scattering z points " << endl;
 
     // Scatterv for z points
     MPI_Scatterv(data_z_points.data(), send_counts, displacements, MPI_DOUBLE,
@@ -254,6 +251,10 @@ int main(int argc, char *argv[])
     }
     while (count < numEpochs)
     {
+        if (world_rank == 0)
+        {
+            cout << "Epoch " << count << endl;
+        }
         // Broadcast the centroids
         MPI_Bcast(k_means_x.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Bcast(k_means_y.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -268,8 +269,8 @@ int main(int argc, char *argv[])
         calculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z, recv_assign);
 
         // Gather the assignments
-        MPI_Gather(recv_assign.data(), (k_assignment.size() / world_size) + 1, MPI_INT,
-                   k_assignment.data(), (k_assignment.size() / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Gather(recv_assign.data(), (numElements / world_size) + 1, MPI_INT,
+                   k_assignment.data(), (numElements / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         if (world_rank == 0)
         {
