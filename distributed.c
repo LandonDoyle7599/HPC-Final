@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
         // Get clusters and epochs from command line
         numEpochs = atoi(argv[1]);
         numCentroids = atoi(argv[2]);
-        numProcesses = world_size;
+        numProcesses = 4;
 
         printf("Number of epochs: %d\n", numEpochs);
         printf("Number of centroids: %d\n", numCentroids);
