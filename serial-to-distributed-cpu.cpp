@@ -9,7 +9,6 @@
 #include <mpi.h>
 #include "serial.cpp"
 
-// TODO: Remove all vectors and convert everything back to arrays. This will make it easier to send data between processes and catch compile time errors.
 
 using namespace std;
 
@@ -72,6 +71,7 @@ int main(int argc, char *argv[])
     int world_size;
     int world_rank;
     int numElements;
+    double startTime;
 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
@@ -130,6 +130,8 @@ int main(int argc, char *argv[])
 
         // With pointData and centeroids we can run the serial implementation
         performSerial(numEpochs, &centeroids, &pointData, serialFilename);
+
+        startTime = MPI_Wtime();
 
         // Setup the k_means vectors to proper sizes
         k_means_x.resize(numCentroids);
@@ -241,20 +243,14 @@ int main(int argc, char *argv[])
     MPI_Scatterv(data_z_points.data(), send_counts, displacements, MPI_DOUBLE,
                  recv_z.data(), recv_z.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    int count = 0;
     // Start the timer using MPI https://www.mcs.anl.gov/research/projects/mpi/tutorial/gropp/node139.html#:~:text=The%20elapsed%20(wall%2Dclock),n%22%2C%20t2%20%2D%20t1%20)%3B
-    double startTime = MPI_Wtime();
 
     if (world_rank == 0)
     {
         cout << "Starting k-means algorithm for " << numEpochs << " iterations...\n";
     }
-    while (count < numEpochs)
+    for (int i = 0; i < numEpochs; ++i)
     {
-        if (world_rank == 0)
-        {
-            cout << "Epoch " << count << endl;
-        }
         // Broadcast the centroids
         MPI_Bcast(k_means_x.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Bcast(k_means_y.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -276,14 +272,12 @@ int main(int argc, char *argv[])
         {
             updateCentroidDataDistributed(k_means_x, k_means_y, k_means_z, data_x_points, data_y_points, data_z_points, k_assignment);
         }
-
-        count++;
     }
 
     if (world_rank == 0)
     {
         double finishTime = MPI_Wtime();
-        long duration = (long)(finishTime - startTime);
+        long duration = (long)((finishTime - startTime) * 1000);
         vector<Point3D> pointData;
         for (size_t i = 0; i < data_x_points.size(); ++i)
         {
