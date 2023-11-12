@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 
     int count = 0;
     auto start = chrono::high_resolution_clock::now();
-    if (word_rank == 0)
+    if (world_rank == 0)
     {
         cout << "Starting k-means algorithm for " << numEpochs << " iterations...\n";
     }
