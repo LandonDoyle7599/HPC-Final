@@ -140,10 +140,10 @@ int main(int argc, char *argv[])
 
         cout << "Running k-means algorithm for " << numEpochs << " iterations...\n";
 
-        recv_x.resize((data_x_points.size()) + world_size);
-        recv_y.resize((data_y_points.size()) + world_size);
-        recv_z.resize((data_z_points.size()) + world_size);
-        recv_assign.resize((k_assignment.size()) + world_size);
+        recv_x.resize((data_x_points.size()) + (double)world_size);
+        recv_y.resize((data_y_points.size()) + (double)world_size);
+        recv_z.resize((data_z_points.size()) + (double)world_size);
+        recv_assign.resize((k_assignment.size()) + (double)world_size);
     }
     else
     {
@@ -157,13 +157,11 @@ int main(int argc, char *argv[])
         k_means_z.resize(numCentroids);
 
         // Setup the received vectors to proper sizes, accounting for any extra data points
-        recv_x.resize((data_x_points.size()) + world_size);
-        recv_y.resize((data_y_points.size()) + world_size);
-        recv_z.resize((data_z_points.size()) + world_size);
-        recv_assign.resize((k_assignment.size()) + world_size);
+        recv_x.resize((data_x_points.size()) + (double)world_size);
+        recv_y.resize((data_y_points.size()) + (double)world_size);
+        recv_z.resize((data_z_points.size()) + (double)world_size);
+        recv_assign.resize((k_assignment.size()) + (double)world_size);
     }
-
-    MPI_Barrier(MPI_COMM_WORLD);
 
     // Scatter data across processes
     vector<int> send_counts(world_size);
@@ -175,8 +173,14 @@ int main(int argc, char *argv[])
         send_counts[i] = data_x_points.size() / world_size;
         displacements[i] = i * send_counts[i];
     }
-    // Add the remainder to the last process
-    send_counts[world_size - 1] += data_x_points.size() % world_size;
+    // Add the remainder to each process and adjust the displacements
+    for (int i = 0; i < data_x_points.size() % world_size; ++i)
+    {
+        send_counts[i] += 1;
+        displacements[i + 1] += 1;
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
     cout << "Rank : " << world_rank << " scattering x points " << endl;
 
