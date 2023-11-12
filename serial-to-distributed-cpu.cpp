@@ -9,7 +9,7 @@
 #include <mpi.h>
 #include "serial.cpp"
 
-// TODO: Remove all vectors and convert everything back to arrays. This will make it easier to send data between processes and catch compile time errors. 
+// TODO: Remove all vectors and convert everything back to arrays. This will make it easier to send data between processes and catch compile time errors.
 
 using namespace std;
 
@@ -148,13 +148,18 @@ int main(int argc, char *argv[])
         recv_assign.resize((k_assignment.size()) + (double)world_size);
 
         // Assert the x y and z data vectors have same size
-        static_assert(sizeof(data_x_points) == sizeof(data_y_points), "data_x_points and data_y_points are not the same size");
-        static_assert(sizeof(data_x_points) == sizeof(data_z_points), "data_x_points and data_z_points are not the same size");
+        if (data_x_points.size() != data_y_points.size() || data_x_points.size() != data_z_points.size())
+        {
+            cout << "Data vectors are not the same size" << endl;
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
 
         // Assert that the recv x y and z are at least as big as the data vectors
-        static_assert(sizeof(recv_x) >= sizeof(data_x_points), "recv_x is not at least as big as data_x_points");
-        static_assert(sizeof(recv_y) >= sizeof(data_y_points), "recv_y is not at least as big as data_y_points");
-        static_assert(sizeof(recv_z) >= sizeof(data_z_points), "recv_z is not at least as big as data_z_points");
+        if (recv_x.size() < data_x_points.size() || recv_y.size() < data_y_points.size() || recv_z.size() < data_z_points.size())
+        {
+            cout << "Recv vectors are not at least as big as the data vectors" << endl;
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
     }
     else
     {
@@ -175,13 +180,21 @@ int main(int argc, char *argv[])
     }
 
     // Assert recv vectors are the same size
-    static_assert(sizeof(recv_x) == sizeof(recv_y), "recv_x and recv_y are not the same size");
-    static_assert(sizeof(recv_x) == sizeof(recv_z), "recv_x and recv_z are not the same size");
-    static_assert(sizeof(recv_assign) == sizeof(k_assignment), "recv_x and k_assignment are not the same size");
+    if (recv_x.size() != recv_y.size() || recv_x.size() != recv_z.size())
+    {
+        cout << "Recv vectors are not the same size" << endl;
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
+    // Assert that the recv vectors are at least as big as the k assignment vector
+    if (recv_assign.size < k_assignment.size())
+    {
+        cout << "Recv assignment vector is not at least as big as the k assignment vector" << endl;
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
 
-    // Scatter data across processes
-    vector<int> send_counts(world_size);
-    vector<int> displacements(world_size);
+    // Scatter data across processes but use displacements
+    [int] send_counts(world_size);
+    [int] displacements(world_size);
 
     // Break up the data into chunks accouting for evenly dividing the data
     for (int i = 0; i < world_size; ++i)
@@ -200,13 +213,13 @@ int main(int argc, char *argv[])
     {
         // Print the send counts and displacements
         cout << "Displacements will be : " << endl;
-        for (int i = 0; i < displacements.size(); ++i)
+        for (int i = 0; i < displacements.count; ++i)
         {
             cout << displacements[i] << " ";
         }
         cout << endl;
         cout << "Send counts will be : " << endl;
-        for (int i = 0; i < send_counts.size(); ++i)
+        for (int i = 0; i < send_counts.count; ++i)
         {
             cout << send_counts[i] << " ";
         }
@@ -218,9 +231,11 @@ int main(int argc, char *argv[])
     cout << "Rank : " << world_rank << " scattering x points " << endl;
 
     // Assert that my rank receiving x y and z are big enough for the size counts
-    static_assert(recv_x.size() >= send_counts[world_rank], "recv_x is not at least as big as send_counts");
-    static_assert(recv_y.size() >= send_counts[world_rank], "recv_y is not at least as big as send_counts");
-    static_assert(recv_z.size() >= send_counts[world_rank], "recv_z is not at least as big as send_counts");
+    if (recv_x.size() < send_counts[world_rank] || recv_y.size() < send_counts[world_rank] || recv_z.size() < send_counts[world_rank])
+    {
+        cout << "Recv vectors are not at least as big as the send counts" << endl;
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
 
     // Scatterv for x points
     MPI_Scatterv(data_x_points.data(), send_counts.data(), displacements.data(), MPI_DOUBLE,

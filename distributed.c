@@ -7,8 +7,8 @@
 #include<errno.h>
 #include<mpi.h>
 
-#define MAX_ITERATIONS 100
 
+int numEpochs = 100;
 int numOfClusters = 4;
 int numOfElements = 0;
 int num_of_processes = 4;
@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 			k_means_y[i] = data_y_points[random];
 		}
 
-		printf("Running k-means algorithm for %d iterations...\n\n", MAX_ITERATIONS);
+		printf("Running k-means algorithm for %d iterations...\n\n", numEpochs);
 		for(int i = 0; i < numOfClusters; i++)
 		{
 			printf("Initial K-means: (%f, %f)\n", k_means_x[i], k_means_y[i]);
@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
 		recv_y, (numOfElements/num_of_processes) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	int count = 0;
-	while(count < MAX_ITERATIONS)
+	while(count < numEpochs)
 	{
 		// broadcast k-means arrays
 		MPI_Bcast(k_means_x, numOfClusters, MPI_DOUBLE, 0, MPI_COMM_WORLD);
