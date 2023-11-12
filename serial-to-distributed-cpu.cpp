@@ -64,10 +64,9 @@ void updateCentroidDataDistributed(vector<double> &k_means_x, vector<double> &k_
 int main(int argc, char *argv[])
 {
 
-    int numEpochs;
-    int numCentroids;
-
     MPI_Init(NULL, NULL);
+    int numCentroids;
+    int numEpochs;
     int world_size;
     int world_rank;
 
@@ -127,9 +126,9 @@ int main(int argc, char *argv[])
         // With pointData and centeroids we can run the serial implementation
         performSerial(numEpochs, &centeroids, &pointData, serialFilename);
 
-        k_means_x.resize(numCentroids);
-        k_means_y.resize(numCentroids);
-        k_means_z.resize(numCentroids);
+        k_means_x.resize(numCentroids * sizeof(double));
+        k_means_y.resize(numCentroids * sizeof(double));
+        k_means_z.resize(numCentroids * sizeof(double));
 
         for (int i = 0; i < numCentroids; ++i)
         {
@@ -140,26 +139,27 @@ int main(int argc, char *argv[])
 
         cout << "Running k-means algorithm for " << numEpochs << " iterations...\n";
 
-        recv_x.resize((data_x_points.size()) + 1);
-        recv_y.resize((data_y_points.size()) + 1);
-        recv_z.resize((data_z_points.size()) + 1);
-        recv_assign.resize((k_assignment.size()) + 1);
+        recv_x.resize((data_x_points.size()) + 1 * sizeof(double));
+        recv_y.resize((data_y_points.size()) + 1 * sizeof(double));
+        recv_z.resize((data_z_points.size()) + 1 * sizeof(double));
+        recv_assign.resize((k_assignment.size()) + 1 * sizeof(int));
     }
     else
     {
+        // Receive the number of centroids and epochs
         MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         // cout << "Rank : " << world_rank << " has the size of " << world_size << endl;
 
-        k_means_x.resize(numCentroids);
-        k_means_y.resize(numCentroids);
-        k_means_z.resize(numCentroids);
+        k_means_x.resize(numCentroids * sizeof(double));
+        k_means_y.resize(numCentroids * sizeof(double)) ;
+        k_means_z.resize(numCentroids * sizeof(double));
 
-        recv_x.resize((data_x_points.size()) + 1);
-        recv_y.resize((data_y_points.size()) + 1);
-        recv_z.resize((data_y_points.size()) + 1);
-        recv_assign.resize((k_assignment.size()) + 1);
+        recv_x.resize((data_x_points.size()) + 1 * sizeof(double));
+        recv_y.resize((data_y_points.size()) + 1 * sizeof(double));
+        recv_z.resize((data_y_points.size()) + 1 * sizeof(double));
+        recv_assign.resize((k_assignment.size()) + 1 * sizeof(int));
     }
 
     // Scatter data across processes
@@ -192,15 +192,19 @@ int main(int argc, char *argv[])
     auto start = chrono::high_resolution_clock::now();
     while (count < numEpochs)
     {
+        // Broadcast the centroids
         MPI_Bcast(k_means_x.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Bcast(k_means_y.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Bcast(k_means_z.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
+        // Scatter the assignments
         MPI_Scatter(k_assignment.data(), (k_assignment.size() / world_size) + 1, MPI_INT,
                     recv_assign.data(), (k_assignment.size() / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
 
+        // Calculate the new assignments
         calculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z, recv_assign);
 
+        // Gather the assignments
         MPI_Gather(recv_assign.data(), (k_assignment.size() / world_size) + 1, MPI_INT,
                    k_assignment.data(), (k_assignment.size() / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
 
