@@ -10,9 +10,9 @@
 
 #define MAX_ITERATIONS 100
 
-int numOfClusters = 0;
+int numOfClusters = 4;
 int numOfElements = 0;
-int num_of_processes = 0;
+int num_of_processes = 4;
 
 /* This function goes through that data points and assigns them to a cluster */
 void assign2Cluster(double k_x[], double k_y[], double recv_x[], double recv_y[], int assign[])
@@ -110,8 +110,6 @@ int main(int argc, char *argv[])
 			exit(-1);
 		}
 
-		num_of_processes = atoi(argv[1]);
-
 		char buffer[2];
 
 		numOfClusters = 4;
@@ -131,7 +129,7 @@ int main(int argc, char *argv[])
 		}
 
         // For loop to randomly create data points
-        int numElements = 1000000;
+        numOfElements = 1000000;
 
 		// broadcast the number of elements to all nodes
 		MPI_Bcast(&numOfElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -155,8 +153,8 @@ int main(int argc, char *argv[])
 
 		while(i < numOfElements)
         {
-            point_x = (double)rand()/(double)(RAND_MAX/100);
-            point_y = (double)rand()/(double)(RAND_MAX/100);
+            point_x = (double)rand();
+            point_y = (double)rand();
 
             data_x_points[i] = point_x;
             data_y_points[i] = point_y;
@@ -183,6 +181,7 @@ int main(int argc, char *argv[])
 		}
 
 		// allocate memory for receive buffers
+        printf("Number of processes: %d\n", num_of_processes");
 		recv_x = (double *)malloc(sizeof(double) * ((numOfElements/num_of_processes) + 1));
 		recv_y = (double *)malloc(sizeof(double) * ((numOfElements/num_of_processes) + 1));
 		recv_assign = (int *)malloc(sizeof(int) * ((numOfElements/num_of_processes) + 1));
