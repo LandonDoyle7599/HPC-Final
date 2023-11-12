@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 
         // TODO: Change this to read in data from song_data.csv
         // For loop to randomly create data points
-        numElements = 1000000;
+        numElements = 100000;
 
 		// broadcast the number of elements to all nodes
 		MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -162,8 +162,8 @@ int main(int argc, char *argv[])
 
 		while(i < numElements)
         {
-            point_x = (double)rand()/(double)(RAND_MAX);
-            point_y = (double)rand()/(double)(RAND_MAX);
+            point_x = (double)rand()/(double)(RAND_MAX) * 100;
+            point_y = (double)rand()/(double)(RAND_MAX) * 100;
 
             data_x_points[i] = point_x;
             data_y_points[i] = point_y;
