@@ -303,7 +303,7 @@ int main(int argc, char *argv[])
         // Now assign clusters to the points from the k_assign we already have
         for (int i = 0; i < numElements; ++i)
         {
-            pointData[i].clusterID = k_assignment[i];
+            pointData[i].cluster = k_assignment[i];
         }
 
         // Validate pointData
