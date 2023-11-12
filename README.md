@@ -77,7 +77,7 @@ python3 visualize.py
 
 ## Analysis
 
-In the data set there are 1240425 points, and the amount of data processed is equal to epochs \* numPoints. So for 100 epochs, we process 124042500 points. For 200 epochs, we process 248085000 points, etc.
+In the data set there are 1240425 points, and the amount of data processed is equal to epochs \* numPoints. So for 100 epochs, we process 124042500 points. For 200 epochs, we process all of those points 200 times (248085000), etc.
 
 ### Unprocessed Data
 

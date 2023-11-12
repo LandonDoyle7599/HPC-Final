@@ -1,4 +1,3 @@
-/*  This is an implementation of the k-means clustering algorithm (aka Lloyd's algorithm) using MPI (message passing interface). */
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -129,7 +128,7 @@ int main(int argc, char *argv[])
 		}
 
         // For loop to randomly create data points
-        numOfElements = 1000000;
+        numOfElements = 1240425;
 
 		// broadcast the number of elements to all nodes
 		MPI_Bcast(&numOfElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
