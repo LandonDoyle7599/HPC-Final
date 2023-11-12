@@ -1,4 +1,3 @@
-/*  This is an implementation of the k-means clustering algorithm (aka Lloyd's algorithm) using MPI (message passing interface). */
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -8,11 +7,11 @@
 #include<errno.h>
 #include<mpi.h>
 
-#define MAX_ITERATIONS 100
 
-int numOfClusters = 4;
-int numOfElements = 0;
-int num_of_processes = 4;
+int numEpochs = 0;
+int numCentroids = 0;
+int numElements = 0;
+int numProcesses = 0;
 
 /* This function goes through that data points and assigns them to a cluster */
 void assign2Cluster(double k_x[], double k_y[], double recv_x[], double recv_y[], int assign[])
@@ -21,9 +20,9 @@ void assign2Cluster(double k_x[], double k_y[], double recv_x[], double recv_y[]
 	double x=0, y=0, temp_dist=0;
 	int k_min_index = 0;
 
-	for(int i = 0; i < (numOfElements/num_of_processes) + 1; i++)
+	for(int i = 0; i < (numElements/numProcesses) + 1; i++)
 	{
-		for(int j = 0; j < numOfClusters; j++)
+		for(int j = 0; j < numCentroids; j++)
 		{
 			x = abs(recv_x[i] - k_x[j]);
 			y = abs(recv_y[i] - k_y[j]);
@@ -51,13 +50,13 @@ void calcKmeans(double k_means_x[], double k_means_y[], double data_x_points[], 
 	double total_y = 0;
 	int numOfpoints = 0;
 
-	for(int i = 0; i < numOfClusters; i++)
+	for(int i = 0; i < numCentroids; i++)
 	{
 		total_x = 0;
 		total_y = 0;
 		numOfpoints = 0;
 
-		for(int j = 0; j < numOfElements; j++)
+		for(int j = 0; j < numElements; j++)
 		{
 			if(k_assignment[j] == i)
 			{
@@ -103,7 +102,7 @@ int main(int argc, char *argv[])
 
 	if(world_rank == 0)
 	{
-		if(argc != 2)
+		if(argc != 3)
 		{
 			printf("Please include an argument after the program name to list how many processes.\n");
 			printf("e.g. To indicate 4 processes, run: mpirun -n 4 ./kmeans 4\n");
@@ -112,15 +111,19 @@ int main(int argc, char *argv[])
 
 		char buffer[2];
 
-		numOfClusters = 4;
-
+        // Get clusters and epochs from command line
+        numEpochs = atoi(argv[1]);
+        numCentroids = atoi(argv[2]);
 
 		// broadcast the number of clusters to all nodes
-		MPI_Bcast(&numOfClusters, 1, MPI_INT, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&numProcesses, 1, MPI_INT, 0, MPI_COMM_WORLD)
+
 
 		// allocate memory for arrays
-		k_means_x = (double *)malloc(sizeof(double) * numOfClusters);
-		k_means_y = (double *)malloc(sizeof(double) * numOfClusters);
+		k_means_x = (double *)malloc(sizeof(double) * numCentroids);
+		k_means_y = (double *)malloc(sizeof(double) * numCentroids);
 
 		if(k_means_x == NULL || k_means_y == NULL)
 		{
@@ -128,16 +131,17 @@ int main(int argc, char *argv[])
 			exit(-1);
 		}
 
+        // TODO: Change this to read in data from song_data.csv
         // For loop to randomly create data points
-        numOfElements = 1000000;
+        numElements = 1000000;
 
 		// broadcast the number of elements to all nodes
-		MPI_Bcast(&numOfElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
 		// allocate memory for an array of data points
-		data_x_points = (double *)malloc(sizeof(double) * numOfElements);
-		data_y_points = (double *)malloc(sizeof(double) * numOfElements);
-		k_assignment = (int *)malloc(sizeof(int) * numOfElements);
+		data_x_points = (double *)malloc(sizeof(double) * numElements);
+		data_y_points = (double *)malloc(sizeof(double) * numElements);
+		k_assignment = (int *)malloc(sizeof(int) * numElements);
 
 		if(data_x_points == NULL || data_y_points == NULL || k_assignment == NULL)
 		{
@@ -151,7 +155,7 @@ int main(int argc, char *argv[])
 
 		double point_x=0, point_y=0;
 
-		while(i < numOfElements)
+		while(i < numElements)
         {
             point_x = (double)rand();
             point_y = (double)rand();
@@ -168,23 +172,23 @@ int main(int argc, char *argv[])
 		time_t t;
 		srand((unsigned) time(&t));
 		int random;
-		for(int i = 0; i < numOfClusters; i++) {
-			random = rand() % numOfElements;
+		for(int i = 0; i < numCentroids; i++) {
+			random = rand() % numElements;
 			k_means_x[i] = data_x_points[random];
 			k_means_y[i] = data_y_points[random];
 		}
 
 		printf("Running k-means algorithm for %d iterations...\n\n", MAX_ITERATIONS);
-		for(int i = 0; i < numOfClusters; i++)
+		for(int i = 0; i < numCentroids; i++)
 		{
 			printf("Initial K-means: (%f, %f)\n", k_means_x[i], k_means_y[i]);
 		}
 
 		// allocate memory for receive buffers
-        printf("Number of processes: %d\n", num_of_processes);
-		recv_x = (double *)malloc(sizeof(double) * ((numOfElements/num_of_processes) + 1));
-		recv_y = (double *)malloc(sizeof(double) * ((numOfElements/num_of_processes) + 1));
-		recv_assign = (int *)malloc(sizeof(int) * ((numOfElements/num_of_processes) + 1));
+        printf("Number of processes: %d\n", numProcesses);
+		recv_x = (double *)malloc(sizeof(double) * ((numElements/numProcesses) + 1));
+		recv_y = (double *)malloc(sizeof(double) * ((numElements/numProcesses) + 1));
+		recv_assign = (int *)malloc(sizeof(int) * ((numElements/numProcesses) + 1));
 
 		if(recv_x == NULL || recv_y == NULL || recv_assign == NULL)
 		{
@@ -195,17 +199,17 @@ int main(int argc, char *argv[])
 	else
 	{	// I am a worker node
 
-		num_of_processes = atoi(argv[1]);
+		numProcesses = atoi(argv[1]);
 
 		// receive broadcast of number of clusters
-		MPI_Bcast(&numOfClusters, 1, MPI_INT, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
 		// receive broadcast of number of elements
-		MPI_Bcast(&numOfElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
 		// allocate memory for arrays
-		k_means_x = (double *)malloc(sizeof(double) * numOfClusters);
-		k_means_y = (double *)malloc(sizeof(double) * numOfClusters);
+		k_means_x = (double *)malloc(sizeof(double) * numCentroids);
+		k_means_y = (double *)malloc(sizeof(double) * numCentroids);
 
 		if(k_means_x == NULL || k_means_y == NULL)
 		{
@@ -214,9 +218,9 @@ int main(int argc, char *argv[])
 		}
 
 		// allocate memory for receive buffers
-		recv_x = (double *)malloc(sizeof(double) * ((numOfElements/num_of_processes) + 1));
-		recv_y = (double *)malloc(sizeof(double) * ((numOfElements/num_of_processes) + 1));
-		recv_assign = (int *)malloc(sizeof(int) * ((numOfElements/num_of_processes) + 1));
+		recv_x = (double *)malloc(sizeof(double) * ((numElements/numProcesses) + 1));
+		recv_y = (double *)malloc(sizeof(double) * ((numElements/numProcesses) + 1));
+		recv_assign = (int *)malloc(sizeof(int) * ((numElements/numProcesses) + 1));
 
 		if(recv_x == NULL || recv_y == NULL || recv_assign == NULL)
 		{
@@ -227,29 +231,29 @@ int main(int argc, char *argv[])
 
 	/* Distribute the work among all nodes. The data points itself will stay constant and
 	   not change for the duration of the algorithm. */
-	MPI_Scatter(data_x_points, (numOfElements/num_of_processes) + 1, MPI_DOUBLE,
-		recv_x, (numOfElements/num_of_processes) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Scatter(data_x_points, (numElements/numProcesses) + 1, MPI_DOUBLE,
+		recv_x, (numElements/numProcesses) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	MPI_Scatter(data_y_points, (numOfElements/num_of_processes) + 1, MPI_DOUBLE,
-		recv_y, (numOfElements/num_of_processes) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Scatter(data_y_points, (numElements/numProcesses) + 1, MPI_DOUBLE,
+		recv_y, (numElements/numProcesses) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 	int count = 0;
 	while(count < MAX_ITERATIONS)
 	{
 		// broadcast k-means arrays
-		MPI_Bcast(k_means_x, numOfClusters, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		MPI_Bcast(k_means_y, numOfClusters, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(k_means_x, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Bcast(k_means_y, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 		// scatter k-cluster assignments array
-		MPI_Scatter(k_assignment, (numOfElements/num_of_processes) + 1, MPI_INT,
-			recv_assign, (numOfElements/num_of_processes) + 1, MPI_INT, 0, MPI_COMM_WORLD);
+		MPI_Scatter(k_assignment, (numElements/numProcesses) + 1, MPI_INT,
+			recv_assign, (numElements/numProcesses) + 1, MPI_INT, 0, MPI_COMM_WORLD);
 
 		// assign the data points to a cluster
 		assign2Cluster(k_means_x, k_means_y, recv_x, recv_y, recv_assign);
 
 		// gather back k-cluster assignments
-		MPI_Gather(recv_assign, (numOfElements/num_of_processes)+1, MPI_INT,
-			k_assignment, (numOfElements/num_of_processes)+1, MPI_INT, 0, MPI_COMM_WORLD);
+		MPI_Gather(recv_assign, (numElements/numProcesses)+1, MPI_INT,
+			k_assignment, (numElements/numProcesses)+1, MPI_INT, 0, MPI_COMM_WORLD);
 
 		// let the root process recalculate k means
 		if(world_rank == 0)
@@ -265,7 +269,7 @@ int main(int argc, char *argv[])
 	{
 		printf("--------------------------------------------------\n");
 		printf("FINAL RESULTS:\n");
-		for(int i = 0; i < numOfClusters; i++)
+		for(int i = 0; i < numCentroids; i++)
 		{
 			printf("Cluster #%d: (%f, %f)\n", i, k_means_x[i], k_means_y[i]);
 		}
