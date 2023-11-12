@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 		}
 
 		// allocate memory for receive buffers
-        printf("Number of processes: %d\n", num_of_processes");
+        printf("Number of processes: %d\n", num_of_processes);
 		recv_x = (double *)malloc(sizeof(double) * ((numOfElements/num_of_processes) + 1));
 		recv_y = (double *)malloc(sizeof(double) * ((numOfElements/num_of_processes) + 1));
 		recv_assign = (int *)malloc(sizeof(int) * ((numOfElements/num_of_processes) + 1));
