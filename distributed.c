@@ -115,6 +115,8 @@ int main(int argc, char *argv[])
         numEpochs = atoi(argv[1]);
         numCentroids = atoi(argv[2]);
 
+        numProcesses = world_size;
+
 		// broadcast the number of clusters to all nodes
 		MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -178,7 +180,7 @@ int main(int argc, char *argv[])
 			k_means_y[i] = data_y_points[random];
 		}
 
-		printf("Running k-means algorithm for %d iterations...\n\n", MAX_ITERATIONS);
+		printf("Running k-means algorithm for %d iterations...\n\n", numEpochs);
 		for(int i = 0; i < numCentroids; i++)
 		{
 			printf("Initial K-means: (%f, %f)\n", k_means_x[i], k_means_y[i]);
@@ -197,15 +199,19 @@ int main(int argc, char *argv[])
 		}
 	}
 	else
-	{	// I am a worker node
-
-		numProcesses = atoi(argv[1]);
+	{	// Worker Node
 
 		// receive broadcast of number of clusters
 		MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
 		// receive broadcast of number of elements
 		MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        // receive broadcast of number of epochs
+        MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        // receive broadcast of number of processes
+        MPI_Bcast(&numProcesses, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
 		// allocate memory for arrays
 		k_means_x = (double *)malloc(sizeof(double) * numCentroids);
@@ -237,8 +243,8 @@ int main(int argc, char *argv[])
 	MPI_Scatter(data_y_points, (numElements/numProcesses) + 1, MPI_DOUBLE,
 		recv_y, (numElements/numProcesses) + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	int count = 0;
-	while(count < MAX_ITERATIONS)
+	int epoch = 0;
+	while(epoch < numEpochs)
 	{
 		// broadcast k-means arrays
 		MPI_Bcast(k_means_x, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -259,10 +265,10 @@ int main(int argc, char *argv[])
 		if(world_rank == 0)
 		{
 			calcKmeans(k_means_x, k_means_y, data_x_points, data_y_points, k_assignment);
-			//printf("Finished iteration %d\n",count);
+			//printf("Finished iteration %d\n",epoch);
 		}
 
-		count++;
+		epoch++;
 	}
 
 	if(world_rank == 0)
