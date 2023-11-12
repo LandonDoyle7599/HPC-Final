@@ -19,6 +19,7 @@ void calculateKMean(const vector<double> &k_x, const vector<double> &k_y, const 
         double min_dist = numeric_limits<double>::max();
         int clusterID = 0;
         for (int j = 0; j < k_x.size(); ++j)
+        // Find the closest centroid
         {
             double x = abs(recv_x[i] - k_x[j]);
             double y = abs(recv_y[i] - k_y[j]);
@@ -31,6 +32,7 @@ void calculateKMean(const vector<double> &k_x, const vector<double> &k_y, const 
                 clusterID = j;
             }
         }
+        // Update the assignment
         assign[i] = clusterID;
     }
 }
@@ -131,6 +133,7 @@ int main(int argc, char *argv[])
 
         // With pointData and centeroids we can run the serial implementation
         performSerial(numEpochs, &serialCentroidCopy, &serialPointCopy, serialFilename);
+        // Start the timer using MPI https://www.mcs.anl.gov/research/projects/mpi/tutorial/gropp/node139.html#:~:text=The%20elapsed%20(wall%2Dclock),n%22%2C%20t2%20%2D%20t1%20)%3B
 
         startTime = MPI_Wtime();
         // Setup the k_means vectors to proper sizes
@@ -222,8 +225,6 @@ int main(int argc, char *argv[])
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    // cout << "Rank : " << world_rank << " scattering points " << endl;
-
     // Assert that my rank receiving x y and z are big enough for the size counts
     if (recv_x.size() < send_counts[world_rank] || recv_y.size() < send_counts[world_rank] || recv_z.size() < send_counts[world_rank])
     {
@@ -242,8 +243,6 @@ int main(int argc, char *argv[])
     // Scatterv for z points
     MPI_Scatterv(data_z_points.data(), send_counts, displacements, MPI_DOUBLE,
                  recv_z.data(), recv_z.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
-    // Start the timer using MPI https://www.mcs.anl.gov/research/projects/mpi/tutorial/gropp/node139.html#:~:text=The%20elapsed%20(wall%2Dclock),n%22%2C%20t2%20%2D%20t1%20)%3B
 
     if (world_rank == 0)
     {
@@ -281,14 +280,6 @@ int main(int argc, char *argv[])
         long duration = (long)((finishTime - startTime) * 1000000);
         double v = finishTime - startTime;
         cout << "Time: " << v << " ms" << endl;
-
-        // Validate x y and z are the same size as numElements
-        if (data_x_points.size() != numElements || data_y_points.size() != numElements || data_z_points.size() != numElements)
-        {
-            cout << "Data vectors are not the same size as numElements" << endl;
-            MPI_Abort(MPI_COMM_WORLD, 1);
-        }
-
         vector<Point3D> pointData;
         pointData.reserve(numElements); // reserve space for the vector to avoid reallocation
         for (int i = 0; i < numElements; i++)
@@ -296,12 +287,16 @@ int main(int argc, char *argv[])
             double x = data_x_points[i];
             double y = data_y_points[i];
             double z = data_z_points[i];
-            Point3D p = Point3D(x, y, z);
-            pointData.push_back(p);
+            pointData.push_back(Point3D(x, y, z));
         }
 
+        if (pointData.size() != k_assignment.size())
+        {
+            cout << "Point data is not the same size as k_assignment" << endl;
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
         // Now assign clusters to the points from the k_assign we already have
-        for (int i = 0; i < numElements; ++i)
+        for (int i = 0; i < k_assignment.size(); i++)
         {
             pointData[i].cluster = k_assignment[i];
         }
@@ -312,23 +307,9 @@ int main(int argc, char *argv[])
             cout << "Point data is not the same size as numElements after the for loop" << endl;
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
-
         saveOutputs(&pointData, distFilename);
         printStats(numEpochs, numCentroids, &pointData, duration);
         areFilesEqual(serialFilename, distFilename, true);
     }
-    // Clean up by deallocating memory
-    k_means_x.clear();
-    k_means_y.clear();
-    k_means_z.clear();
-    k_assignment.clear();
-    data_x_points.clear();
-    data_y_points.clear();
-    data_z_points.clear();
-    recv_x.clear();
-    recv_y.clear();
-    recv_z.clear();
-    recv_assign.clear();
-
     MPI_Finalize();
 }
