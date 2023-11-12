@@ -289,7 +289,19 @@ int main(int argc, char *argv[])
         printStats(numEpochs, numCentroids, &pointData, duration);
         areFilesEqual(serialFilename, distFilename, true);
     }
-    MPI_Barrier(MPI_COMM_WORLD);
+    // Clean up by deallocating memory
+    k_means_x.clear();
+    k_means_y.clear();
+    k_means_z.clear();
+    k_assignment.clear();
+    data_x_points.clear();
+    data_y_points.clear();
+    data_z_points.clear();
+    recv_x.clear();
+    recv_y.clear();
+    recv_z.clear();
+    recv_assign.clear();
+
     MPI_Finalize();
     return 0;
 }
