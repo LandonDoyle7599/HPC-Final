@@ -280,12 +280,20 @@ int main(int argc, char *argv[])
         long duration = (long)((finishTime - startTime) * 1000);
         double v = finishTime - startTime;
         cout << "Time: " << v << " ms" << endl;
-        vector<Point3D> pointData;
+        vector<Point3D> pointData[numElements];
+
+        // Validate xpoints, ypints, zpoints and k_assignment are the same size
+        if (data_x_points.size() != data_y_points.size() || data_x_points.size() != data_z_points.size() || data_x_points.size() != k_assignment.size())
+        {
+            cout << "Data vectors are not the same size" << endl;
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
+
         for (int i = 0; i < numElements; i++)
         {
             Point3D p = Point3D(data_x_points[i], data_y_points[i], data_z_points[i]);
             p.cluster = k_assignment[i];
-            pointData.push_back(p);
+            pointData[i] = p;
         }
         saveOutputs(&pointData, distFilename);
         printStats(numEpochs, numCentroids, &pointData, duration);
