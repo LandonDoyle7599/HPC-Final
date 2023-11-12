@@ -162,8 +162,8 @@ int main(int argc, char *argv[])
 
 		while(i < numElements)
         {
-            point_x = (double)rand();
-            point_y = (double)rand();
+            point_x = (double)rand()/(double)(RAND_MAX);
+            point_y = (double)rand()/(double)(RAND_MAX);
 
             data_x_points[i] = point_x;
             data_y_points[i] = point_y;
