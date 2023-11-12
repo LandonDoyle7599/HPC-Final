@@ -208,11 +208,17 @@ int main(int argc, char *argv[])
         {
             cout << send_counts[i] << " ";
         }
+        cout << endl;
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     cout << "Rank : " << world_rank << " scattering x points " << endl;
+
+    // Assert that my rank receiving x y and z are big enough for the size counts
+    static_assert(recv_x.size() >= send_counts[world_rank], "recv_x is not at least as big as send_counts");
+    static_assert(recv_y.size() >= send_counts[world_rank], "recv_y is not at least as big as send_counts");
+    static_assert(recv_z.size() >= send_counts[world_rank], "recv_z is not at least as big as send_counts");
 
     // Scatterv for x points
     MPI_Scatterv(data_x_points.data(), send_counts.data(), displacements.data(), MPI_DOUBLE,
