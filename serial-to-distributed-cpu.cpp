@@ -113,7 +113,8 @@ int main(int argc, char *argv[])
         cout << "Reading input data from file...\n";
 
         vector<Point3D> pointData = readcsv("song_data.csv");
-
+        numElements = pointData.size();
+        MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
         k_assignment.resize(numElements);
         // add data from point data to the appropriate arrays
         for (size_t i = 0; i < pointData.size(); ++i)
@@ -121,11 +122,8 @@ int main(int argc, char *argv[])
             data_x_points.push_back(pointData[i].x);
             data_y_points.push_back(pointData[i].y);
             data_z_points.push_back(pointData[i].z);
-            k_assignment.push_back(0);
+            k_assignment[i] = 0;
         }
-
-        numElements = data_x_points.size();
-        MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         // Now we initialize the centroids
         vector<Point3D> centeroids = initializeCentroids(numCentroids, &pointData);
