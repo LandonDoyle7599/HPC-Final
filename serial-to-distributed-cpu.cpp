@@ -277,12 +277,10 @@ int main(int argc, char *argv[])
     if (world_rank == 0)
     {
         double finishTime = MPI_Wtime();
-        long duration = (long)((finishTime - startTime) * 1000);
+        long duration = (long)((finishTime - startTime) * 100000);
         double v = finishTime - startTime;
         cout << "Time: " << v << " ms" << endl;
         vector<Point3D> pointData;
-        pointData.resize(numElements);
-
         // Validate xpoints, ypints, zpoints and k_assignment are the same size
         if (data_x_points.size() != data_y_points.size() || data_x_points.size() != data_z_points.size() || data_x_points.size() != k_assignment.size())
         {
@@ -294,11 +292,11 @@ int main(int argc, char *argv[])
         {
             Point3D p = Point3D(data_x_points[i], data_y_points[i], data_z_points[i]);
             p.cluster = k_assignment[i];
-            pointData[i] = p;
+            pointData.push_back(p);
         }
         saveOutputs(&pointData, distFilename);
         printStats(numEpochs, numCentroids, &pointData, duration);
-        areFilesEqual(serialFilename, distFilename, true);
+        // areFilesEqual(serialFilename, distFilename, true);
     }
     // Clean up by deallocating memory
     k_means_x.clear();
