@@ -185,10 +185,10 @@ int main(int argc, char *argv[])
         recv_assign.resize((numElements / world_size) + 1);
     }
 
-    // Assert recv vectors are the same size
-    if (recv_x.size() != recv_y.size() || recv_x.size() != recv_z.size() != recv_assign.size())
+    // Assert recv vectors are at least as big as numElements
+    if (recv_x.size() < numElements / world_size || recv_y.size() < numElements / world_size || recv_z.size() < numElements / world_size || recv_assign.size() < numElements / world_size)
     {
-        cout << "Recv vectors are not the same size" << endl;
+        cout << "Recv vectors are not at least as big as numElements" << endl;
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
