@@ -142,10 +142,10 @@ int main(int argc, char *argv[])
 
         cout << "Running k-means algorithm for " << numEpochs << " iterations...\n";
 
-        recv_x.resize((data_x_points.size()) + (double)world_size);
-        recv_y.resize((data_y_points.size()) + (double)world_size);
-        recv_z.resize((data_z_points.size()) + (double)world_size);
-        recv_assign.resize((k_assignment.size()) + (double)world_size);
+        recv_x.resize((data_x_points.size() / world_size) + world_size);
+        recv_y.resize((data_y_points.size() / world_size) + world_size);
+        recv_z.resize((data_z_points.size() / world_size) + world_size);
+        recv_assign.resize((data_x_points.size() / world_size) + world_size);
 
         // Assert the x y and z data vectors have same size
         if (data_x_points.size() != data_y_points.size() || data_x_points.size() != data_z_points.size())
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
         }
 
         // Assert that the recv x y and z are at least as big as the data vectors
-        if (recv_x.size() < data_x_points.size() || recv_y.size() < data_y_points.size() || recv_z.size() < data_z_points.size())
+        if (recv_x.size() < data_x_points.size() || recv_y.size() < data_y_points.size() || recv_z.size() < data_z_points.size() || recv_assign.size() < data_x_points.size())
         {
             cout << "Recv vectors are not at least as big as the data vectors" << endl;
             MPI_Abort(MPI_COMM_WORLD, 1);
@@ -173,22 +173,16 @@ int main(int argc, char *argv[])
         k_means_z.resize(numCentroids);
 
         // Setup the received vectors to proper sizes, accounting for any extra data points
-        recv_x.resize((data_x_points.size()) + (double)world_size);
-        recv_y.resize((data_y_points.size()) + (double)world_size);
-        recv_z.resize((data_z_points.size()) + (double)world_size);
-        recv_assign.resize((k_assignment.size()) + (double)world_size);
+        recv_x.resize((data_x_points.size() / world_size) + world_size);
+        recv_y.resize((data_y_points.size() / world_size) + world_size);
+        recv_z.resize((data_z_points.size() / world_size) + world_size);
+        recv_assign.resize((data_x_points.size() / world_size) + world_size);
     }
 
     // Assert recv vectors are the same size
-    if (recv_x.size() != recv_y.size() || recv_x.size() != recv_z.size())
+    if (recv_x.size() != recv_y.size() || recv_x.size() != recv_z.size() != recv_assign.size())
     {
         cout << "Recv vectors are not the same size" << endl;
-        MPI_Abort(MPI_COMM_WORLD, 1);
-    }
-    // Assert that the recv vectors are at least as big as the k assignment vector
-    if (recv_assign.size() < k_assignment.size())
-    {
-        cout << "Recv assignment vector is not at least as big as the k assignment vector" << endl;
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
@@ -268,8 +262,8 @@ int main(int argc, char *argv[])
 
         // Scatter the assignments
         // Note: This assumes the number of centroids is evenly divisible by the number of processes
-        MPI_Scatter(k_assignment.data(), (k_assignment.size() / world_size) + 1, MPI_INT,
-                    recv_assign.data(), (k_assignment.size() / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Scatter(k_assignment.data(), (numElements / world_size) + 1, MPI_INT,
+                    recv_assign.data(), (numElements / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         // Calculate the new assignments
         calculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z, recv_assign);
