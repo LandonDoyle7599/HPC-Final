@@ -213,13 +213,13 @@ int main(int argc, char *argv[])
     {
         // Print the send counts and displacements
         cout << "Displacements will be : " << endl;
-        for (int i = 0; i < displacements.count; ++i)
+        for (int i = 0; i < world_size; ++i)
         {
             cout << displacements[i] << " ";
         }
         cout << endl;
         cout << "Send counts will be : " << endl;
-        for (int i = 0; i < send_counts.count; ++i)
+        for (int i = 0; i < world_size; ++i)
         {
             cout << send_counts[i] << " ";
         }
@@ -238,19 +238,19 @@ int main(int argc, char *argv[])
     }
 
     // Scatterv for x points
-    MPI_Scatterv(data_x_points.data(), send_counts.data(), displacements.data(), MPI_DOUBLE,
+    MPI_Scatterv(data_x_points.data(), send_counts, displacements, MPI_DOUBLE,
                  recv_x.data(), recv_x.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // cout << "Rank : " << world_rank << " scattering y points " << endl;
 
     // Scatterv for y points
-    MPI_Scatterv(data_y_points.data(), send_counts.data(), displacements.data(), MPI_DOUBLE,
+    MPI_Scatterv(data_y_points.data(), send_counts, displacements, MPI_DOUBLE,
                  recv_y.data(), recv_y.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // cout << "Rank : " << world_rank << " scattering z points " << endl;
 
     // Scatterv for z points
-    MPI_Scatterv(data_z_points.data(), send_counts.data(), displacements.data(), MPI_DOUBLE,
+    MPI_Scatterv(data_z_points.data(), send_counts, displacements, MPI_DOUBLE,
                  recv_z.data(), recv_z.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     int count = 0;
