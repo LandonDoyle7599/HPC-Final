@@ -71,26 +71,27 @@ int main(int argc, char *argv[])
     int numEpochs;
     int world_size;
     int world_rank;
+    int numElements;
 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-    // Setup the centroids
+    // Setup the centroids (the final output)
     vector<double> k_means_x;
     vector<double> k_means_y;
     vector<double> k_means_z;
-    vector<int> k_assignment; // the cluster assignment for each point
+    vector<int> k_assignment; // the cluster assignment for each point put together
 
     // The data points
     vector<double> data_x_points;
     vector<double> data_y_points;
     vector<double> data_z_points;
 
-    // The received data points
+    // The received data points (local data)
     vector<double> recv_x;
     vector<double> recv_y;
     vector<double> recv_z;
-    vector<int> recv_assign;
+    vector<int> recv_assign; // the cluster assignment for each point for the local data
 
     // Files to store
     string serialFilename = "serial.csv";
@@ -122,6 +123,9 @@ int main(int argc, char *argv[])
             k_assignment.push_back(0);
         }
 
+        numElements = data_x_points.size();
+        MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
         // Now we initialize the centroids
         vector<Point3D> centeroids = initializeCentroids(numCentroids, &pointData);
 
@@ -142,10 +146,11 @@ int main(int argc, char *argv[])
 
         cout << "Running k-means algorithm for " << numEpochs << " iterations...\n";
 
-        recv_x.resize((data_x_points.size() / world_size) + world_size);
-        recv_y.resize((data_y_points.size() / world_size) + world_size);
-        recv_z.resize((data_z_points.size() / world_size) + world_size);
-        recv_assign.resize((data_x_points.size() / world_size) + world_size);
+        // Define the receiving vectors to be be big enough to hold the data. Add 1 in case there are extra data points
+        recv_x.resize((numElements / world_size) + 1);
+        recv_y.resize((numElements / world_size) + 1);
+        recv_z.resize((numElements / world_size) + 1);
+        recv_assign.resize((numElements / world_size) + 1);
 
         // Assert the x y and z data vectors have same size
         if (data_x_points.size() != data_y_points.size() || data_x_points.size() != data_z_points.size())
@@ -166,6 +171,7 @@ int main(int argc, char *argv[])
         // Receive the number of centroids and epochs
         MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         // Setup the k_means vectors to proper sizes
         k_means_x.resize(numCentroids);
@@ -173,10 +179,10 @@ int main(int argc, char *argv[])
         k_means_z.resize(numCentroids);
 
         // Setup the received vectors to proper sizes, accounting for any extra data points
-        recv_x.resize((data_x_points.size() / world_size) + world_size);
-        recv_y.resize((data_y_points.size() / world_size) + world_size);
-        recv_z.resize((data_z_points.size() / world_size) + world_size);
-        recv_assign.resize((data_x_points.size() / world_size) + world_size);
+        recv_x.resize((numElements / world_size) + 1);
+        recv_y.resize((numElements / world_size) + 1);
+        recv_z.resize((numElements / world_size) + 1);
+        recv_assign.resize((numElements / world_size) + 1);
     }
 
     // Assert recv vectors are the same size
