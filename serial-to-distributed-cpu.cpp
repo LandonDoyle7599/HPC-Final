@@ -242,7 +242,9 @@ int main(int argc, char *argv[])
                  recv_z.data(), recv_z.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     int count = 0;
-    auto start = chrono::high_resolution_clock::now();
+    // Start the timer using MPI https://www.mcs.anl.gov/research/projects/mpi/tutorial/gropp/node139.html#:~:text=The%20elapsed%20(wall%2Dclock),n%22%2C%20t2%20%2D%20t1%20)%3B
+    double startTime = MPI_Wtime();
+
     if (world_rank == 0)
     {
         cout << "Starting k-means algorithm for " << numEpochs << " iterations...\n";
@@ -280,9 +282,8 @@ int main(int argc, char *argv[])
 
     if (world_rank == 0)
     {
-        // auto start = chrono::high_resolution_clock::now();
-        auto end = chrono::high_resolution_clock::now();
-        auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
+        double finishTime = MPI_Wtime();
+        long duration = (long)(finishTime - startTime);
         vector<Point3D> pointData;
         for (size_t i = 0; i < data_x_points.size(); ++i)
         {
@@ -291,7 +292,7 @@ int main(int argc, char *argv[])
             pointData.push_back(p);
         }
         saveOutputs(&pointData, distFilename);
-        printStats(numEpochs, numCentroids, &pointData, duration.count());
+        printStats(numEpochs, numCentroids, &pointData, duration);
         areFilesEqual(serialFilename, distFilename, true);
     }
 
