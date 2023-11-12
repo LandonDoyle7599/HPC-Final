@@ -134,29 +134,8 @@ int main(int argc, char *argv[])
 			exit(-1);
 		}
 
-		printf("Reading input data from file...\n\n");
-
-		FILE* fp = fopen("input.txt", "r");
-
-		if(!fp)
-		{
-			perror("fopen");
-			exit(-1);
-		}
-
-		// count number of lines to find out how many elements
-		int c = 0;
-		numOfElements = 0;
-		while(!feof(fp))
-		{
-			c = fgetc(fp);
-			if(c == '\n')
-			{
-				numOfElements++;
-			}
-		}
-
-		printf("There are a total number of %d elements in the file.\n", numOfElements);
+        // For loop to randomly create data points
+        int numElements = 1000000;
 
 		// broadcast the number of elements to all nodes
 		MPI_Bcast(&numOfElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -172,26 +151,24 @@ int main(int argc, char *argv[])
 			exit(-1);
 		}
 
-		// reset file pointer to origin of file
-		fseek(fp, 0, SEEK_SET);
 
-		// now read in points and fill the arrays
+		// now fill the arrays
 		int i = 0;
 
 		double point_x=0, point_y=0;
 
-		while(fscanf(fp, "%lf %lf", &point_x, &point_y) != EOF)
-		{
-			data_x_points[i] = point_x;
-			data_y_points[i] = point_y;
+		while(i < numOfElements)
+        {
+            point_x = (double)rand()/(double)(RAND_MAX/100);
+            point_y = (double)rand()/(double)(RAND_MAX/100);
 
-			// assign the initial k means to zero
-			k_assignment[i] = 0;
-			i++;
-		}
+            data_x_points[i] = point_x;
+            data_y_points[i] = point_y;
 
-		// close file pointer
-		fclose(fp);
+            // assign the initial k means to zero
+            k_assignment[i] = 0;
+            i++;
+        }
 
 		// randomly select initial k-means
 		time_t t;
