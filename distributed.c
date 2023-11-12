@@ -114,12 +114,15 @@ int main(int argc, char *argv[])
         // Get clusters and epochs from command line
         numEpochs = atoi(argv[1]);
         numCentroids = atoi(argv[2]);
-
         numProcesses = world_size;
 
+        printf("Number of epochs: %d\n", numEpochs);
+        printf("Number of centroids: %d\n", numCentroids);
+        printf("Number of processes: %d\n", numProcesses);
+
 		// broadcast the number of clusters to all nodes
-		MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&numProcesses, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
 
