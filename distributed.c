@@ -104,8 +104,8 @@ int main(int argc, char *argv[])
 	{
 		if(argc != 3)
 		{
-			printf("Please include an argument after the program name to list how many processes.\n");
-			printf("e.g. To indicate 4 processes, run: mpirun -n 4 ./kmeans 4\n");
+			printf("Please include an argument after the program name to list <numEpochs> <numCentroids>\n");
+			printf("e.g. To indicate 4 processes, run: mpirun -n 4 ./kmeans 4 6\n");
 			exit(-1);
 		}
 
