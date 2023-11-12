@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 		// broadcast the number of clusters to all nodes
 		MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        MPI_Bcast(&numProcesses, 1, MPI_INT, 0, MPI_COMM_WORLD)
+        MPI_Bcast(&numProcesses, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
 
 		// allocate memory for arrays
