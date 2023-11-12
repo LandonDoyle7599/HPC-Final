@@ -9,6 +9,8 @@
 #include <mpi.h>
 #include "serial.cpp"
 
+// TODO: Remove all vectors and convert everything back to arrays. This will make it easier to send data between processes and catch compile time errors. 
+
 using namespace std;
 
 void calculateKMean(const vector<double> &k_x, const vector<double> &k_y, const vector<double> &k_z,
