@@ -8,7 +8,7 @@
 #include<errno.h>
 #include<mpi.h>
 
-#define MAX_ITERATIONS 1000
+#define MAX_ITERATIONS 100
 
 int numOfClusters = 0;
 int numOfElements = 0;
