@@ -194,17 +194,20 @@ int main(int argc, char *argv[])
         displacements[i + 1] += 1;
     }
 
-    // Print the send counts and displacements
-    cout << "Displacements will be : " << endl;
-    for (int i = 0; i < displacements.size(); ++i)
+    if (world_rank == 0)
     {
-        cout << displacements[i] << " ";
-    }
-    cout << endl;
-    cout << "Send counts will be : " << endl;
-    for (int i = 0; i < send_counts.size(); ++i)
-    {
-        cout << send_counts[i] << " ";
+        // Print the send counts and displacements
+        cout << "Displacements will be : " << endl;
+        for (int i = 0; i < displacements.size(); ++i)
+        {
+            cout << displacements[i] << " ";
+        }
+        cout << endl;
+        cout << "Send counts will be : " << endl;
+        for (int i = 0; i < send_counts.size(); ++i)
+        {
+            cout << send_counts[i] << " ";
+        }
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -215,13 +218,13 @@ int main(int argc, char *argv[])
     MPI_Scatterv(data_x_points.data(), send_counts.data(), displacements.data(), MPI_DOUBLE,
                  recv_x.data(), recv_x.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    cout << "Rank : " << world_rank << " scattering y points " << endl;
+    // cout << "Rank : " << world_rank << " scattering y points " << endl;
 
     // Scatterv for y points
     MPI_Scatterv(data_y_points.data(), send_counts.data(), displacements.data(), MPI_DOUBLE,
                  recv_y.data(), recv_y.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    cout << "Rank : " << world_rank << " scattering z points " << endl;
+    // cout << "Rank : " << world_rank << " scattering z points " << endl;
 
     // Scatterv for z points
     MPI_Scatterv(data_z_points.data(), send_counts.data(), displacements.data(), MPI_DOUBLE,
