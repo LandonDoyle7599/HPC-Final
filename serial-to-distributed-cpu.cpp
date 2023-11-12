@@ -278,8 +278,10 @@ int main(int argc, char *argv[])
     {
         double finishTime = MPI_Wtime();
         long duration = (long)((finishTime - startTime) * 1000);
+        double v = finishTime - startTime;
+        cout << "Time: " << v << " ms" << endl;
         vector<Point3D> pointData;
-        for (size_t i = 0; i < numElements; i++)
+        for (int i = 0; i < numElements; i++)
         {
             Point3D p = Point3D(data_x_points[i], data_y_points[i], data_z_points[i]);
             p.cluster = k_assignment[i];
@@ -303,5 +305,4 @@ int main(int argc, char *argv[])
     recv_assign.clear();
 
     MPI_Finalize();
-    return 0;
 }
