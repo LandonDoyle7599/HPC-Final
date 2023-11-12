@@ -272,6 +272,7 @@ int main(int argc, char *argv[])
             updateCentroidDataDistributed(k_means_x, k_means_y, k_means_z, data_x_points, data_y_points, data_z_points, k_assignment);
         }
     }
+    MPI_Barrier(MPI_COMM_WORLD);
 
     if (world_rank == 0)
     {
