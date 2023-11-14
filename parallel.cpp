@@ -71,7 +71,8 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
           clusterId = j;
         }
       }
-// Update the cluster id and minimum distance. This is critical because we don't want the threads to overlap as they are writing to the same memory location
+// Update the cluster id and minimum distance.
+// This is a critical section because we don't want the threads to overlap as they are writing to the same memory location
 #pragma omp critical
       {
         p.minDist = minDist;
@@ -80,7 +81,7 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
     }
 
     // Update the centroids
-    parallelUpdateCentroidData(points, centroids, centroids->size());
+    updateCentroidData(points, centroids, centroids->size());
   }
 }
 
