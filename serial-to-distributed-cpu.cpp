@@ -11,14 +11,14 @@
 
 using namespace std;
 
-void calculateKMean(const vector<double> &k_x, const vector<double> &k_y, const vector<double> &k_z,
-                    const vector<double> &recv_x, const vector<double> &recv_y, const vector<double> &recv_z, vector<int> &assign)
+void calculateKMean(double k_x[], double k_y[], double k_z[],
+                    double recv_x[], double recv_y[], double recv_z[], int assign[], int numElements, int numCentroids)
 {
-    for (int i = 0; i < recv_x.size(); ++i)
+    for (int i = 0; i < numElements; ++i)
     {
         double min_dist = numeric_limits<double>::max();
         int clusterID = 0;
-        for (int j = 0; j < k_x.size(); ++j)
+        for (int j = 0; j < numCentroids; ++j)
         // Find the closest centroid
         {
             double x = abs(recv_x[i] - k_x[j]);
@@ -37,8 +37,8 @@ void calculateKMean(const vector<double> &k_x, const vector<double> &k_y, const 
     }
 }
 
-void updateCentroidDataDistributed(vector<double> &k_means_x, vector<double> &k_means_y, vector<double> &k_means_z,
-                                   const vector<double> &data_x_points, const vector<double> &data_y_points, const vector<double> &data_z_points, const vector<int> &k_assignment)
+void updateCentroidDataDistributed(double k_means_x[], double k_means_y[], double k_means_z[],
+                                   double data_x_points[], double data_y_points[], double data_z_points[], int k_assignment[], int numElements, int numCentroids)
 {
     int numK = k_means_x.size();
     vector<int> nPoints(numK, 0);
@@ -46,7 +46,7 @@ void updateCentroidDataDistributed(vector<double> &k_means_x, vector<double> &k_
     vector<double> sumY(numK, 0.0);
 
     // Iterate over the centroids and compute the means for each value
-    for (int i = 0; i < data_x_points.size(); ++i)
+    for (int i = 0; i < numElements; ++i)
     {
         int clusterID = k_assignment[i];
         nPoints[clusterID] += 1;
@@ -69,30 +69,30 @@ int main(int argc, char *argv[])
     MPI_Init(NULL, NULL);
     int numCentroids;
     int numEpochs;
+    int numElements;
     int world_size;
     int world_rank;
-    int numElements;
     double startTime;
 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
     // Setup the centroids (the final output)
-    vector<double> k_means_x;
-    vector<double> k_means_y;
-    vector<double> k_means_z;
-    vector<int> k_assignment; // the cluster assignment for each point put together
+    double *k_means_x = NULL;
+    double *k_means_y = NULL;
+    double *k_means_z = NULL;
+    int *k_assignment = NULL; // the cluster assignment for each point put together
 
     // The data points
-    vector<double> data_x_points;
-    vector<double> data_y_points;
-    vector<double> data_z_points;
+    double *data_x_points = NULL;
+    double *data_y_points = NULL;
+    double *data_z_points = NULL;
 
     // The received data points (local data)
-    vector<double> recv_x;
-    vector<double> recv_y;
-    vector<double> recv_z;
-    vector<int> recv_assign; // the cluster assignment for each point for the local data
+    double *recv_x = NULL;
+    double *recv_y = NULL;
+    double *recv_z = NULL;
+    int *recv_assign = NULL; // the cluster assignment for each point for the local data
 
     // Files to store
     string serialFilename = "serial.csv";
@@ -112,36 +112,44 @@ int main(int argc, char *argv[])
         MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         cout << "Reading input data from file...\n";
-
         vector<Point3D> pointData = readcsv("song_data.csv");
-        numElements = pointData.size();
-        MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        k_assignment.resize(numElements);
-        // add data from point data to the appropriate arrays
-        for (size_t i = 0; i < pointData.size(); ++i)
-        {
-            data_x_points.push_back(pointData[i].x);
-            data_y_points.push_back(pointData[i].y);
-            data_z_points.push_back(pointData[i].z);
-            k_assignment[i] = 0;
-        }
 
-        // Now we initialize the centroids
+        // Now we initialize the centroids and perform serial implementation
         vector<Point3D> centeroids = initializeCentroids(numCentroids, &pointData);
         vector<Point3D> serialCentroidCopy = centeroids;
         vector<Point3D> serialPointCopy = pointData;
-
-        // With pointData and centeroids we can run the serial implementation
         performSerial(numEpochs, &serialCentroidCopy, &serialPointCopy, serialFilename);
-        // Start the timer using MPI https://www.mcs.anl.gov/research/projects/mpi/tutorial/gropp/node139.html#:~:text=The%20elapsed%20(wall%2Dclock),n%22%2C%20t2%20%2D%20t1%20)%3B
 
+        // Get numElements and brodcast for all processes
+        numElements = pointData.size();
+        MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        // Allocate memory for the data points
+        k_assignment = (int *)malloc(sizeof(int) * numOfElements);
+        data_x_points = (double *)malloc(sizeof(double) * numOfElements);
+        data_y_points = (double *)malloc(sizeof(double) * numOfElements);
+        data_z_points = (double *)malloc(sizeof(double) * numOfElements);
+
+        // add data from point data to the appropriate arrays
+
+        // TODO: Check to see what pointData at 0 is. Could be bug here
+        for (size_t i = 0; i < numElements; i++)
+        {
+            data_x_points[i] = pointData[i].x;
+            data_y_points[i] = pointData[i].y;
+            data_z_points[i] = pointData[i].z;
+            k_assignment[i] = 0;
+        }
+
+        // Start the timer using MPI https://www.mcs.anl.gov/research/projects/mpi/tutorial/gropp/node139.html#:~:text=The%20elapsed%20(wall%2Dclock),n%22%2C%20t2%20%2D%20t1%20)%3B
         startTime = MPI_Wtime();
         // Setup the k_means vectors to proper sizes
-        k_means_x.resize(numCentroids);
-        k_means_y.resize(numCentroids);
-        k_means_z.resize(numCentroids);
+        k_means_x = (double *)malloc(sizeof(double) * numCentroids);
+        k_means_y = (double *)malloc(sizeof(double) * numCentroids);
+        k_means_z = (double *)malloc(sizeof(double) * numCentroids);
 
-        for (int i = 0; i < numCentroids; ++i)
+        // TODO: Check to see what centroids at 0 is. Could be bug here
+        for (int i = 0; i < numCentroids; i++)
         {
             k_means_x[i] = centeroids[i].x;
             k_means_y[i] = centeroids[i].y;
@@ -151,10 +159,10 @@ int main(int argc, char *argv[])
         cout << "Running k-means algorithm for " << numEpochs << " iterations...\n";
 
         // Define the receiving vectors to be be big enough to hold the data. Add 1 in case there are extra data points
-        recv_x.resize((numElements / world_size) + 1);
-        recv_y.resize((numElements / world_size) + 1);
-        recv_z.resize((numElements / world_size) + 1);
-        recv_assign.resize((numElements / world_size) + 1);
+        recv_x = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
+        recv_y = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
+        recv_z = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
+        recv_assign = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
 
         // Assert the x y and z data vectors have same size
         if (data_x_points.size() != data_y_points.size() || data_x_points.size() != data_z_points.size())
@@ -171,22 +179,15 @@ int main(int argc, char *argv[])
         MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         // Setup the k_means vectors to proper sizes
-        k_means_x.resize(numCentroids);
-        k_means_y.resize(numCentroids);
-        k_means_z.resize(numCentroids);
+        k_means_x = (double *)malloc(sizeof(double) * numCentroids);
+        k_means_y = (double *)malloc(sizeof(double) * numCentroids);
+        k_means_z = (double *)malloc(sizeof(double) * numCentroids);
 
         // Setup the received vectors to proper sizes, accounting for any extra data points
-        recv_x.resize((numElements / world_size) + 1);
-        recv_y.resize((numElements / world_size) + 1);
-        recv_z.resize((numElements / world_size) + 1);
-        recv_assign.resize((numElements / world_size) + 1);
-    }
-
-    // Assert recv vectors are at least as big as numElements
-    if (recv_x.size() < numElements / world_size || recv_y.size() < numElements / world_size || recv_z.size() < numElements / world_size || recv_assign.size() < numElements / world_size)
-    {
-        cout << "Recv vectors are not at least as big as their proportion" << endl;
-        MPI_Abort(MPI_COMM_WORLD, 1);
+        recv_x = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
+        recv_y = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
+        recv_z = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
+        recv_assign = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
     }
 
     // Scatter data across processes but use displacements
@@ -225,24 +226,17 @@ int main(int argc, char *argv[])
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    // Assert that my rank receiving x y and z are big enough for the size counts
-    if (recv_x.size() < send_counts[world_rank] || recv_y.size() < send_counts[world_rank] || recv_z.size() < send_counts[world_rank])
-    {
-        cout << "Recv vectors are not at least as big as the send counts" << endl;
-        MPI_Abort(MPI_COMM_WORLD, 1);
-    }
-
     // Scatterv for x points
-    MPI_Scatterv(data_x_points.data(), send_counts, displacements, MPI_DOUBLE,
-                 recv_x.data(), recv_x.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(data_x_points, send_counts, displacements, MPI_DOUBLE,
+                 recv_x, recv_x, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // Scatterv for y points
-    MPI_Scatterv(data_y_points.data(), send_counts, displacements, MPI_DOUBLE,
-                 recv_y.data(), recv_y.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(data_y_points, send_counts, displacements, MPI_DOUBLE,
+                 recv_y, recv_y, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // Scatterv for z points
-    MPI_Scatterv(data_z_points.data(), send_counts, displacements, MPI_DOUBLE,
-                 recv_z.data(), recv_z.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(data_z_points, send_counts, displacements, MPI_DOUBLE,
+                 recv_z, recv_z, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     if (world_rank == 0)
     {
@@ -251,46 +245,45 @@ int main(int argc, char *argv[])
     for (int i = 0; i < numEpochs; ++i)
     {
         // Broadcast the centroids
-        MPI_Bcast(k_means_x.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Bcast(k_means_y.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        MPI_Bcast(k_means_z.data(), numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Bcast(k_means_x, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Bcast(k_means_y, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        MPI_Bcast(k_means_z, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
         // Scatter the assignments
         // Note: This assumes the number of centroids is evenly divisible by the number of processes
-        MPI_Scatter(k_assignment.data(), (numElements / world_size) + 1, MPI_INT,
-                    recv_assign.data(), (numElements / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Scatter(k_assignment, (numElements / world_size) + 1, MPI_INT,
+                    recv_assign, (numElements / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         // Calculate the new assignments
         calculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z, recv_assign);
 
         // Gather the assignments
-        MPI_Gather(recv_assign.data(), (numElements / world_size) + 1, MPI_INT,
-                   k_assignment.data(), (numElements / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Gather(recv_assign, (numElements / world_size) + 1, MPI_INT,
+                   k_assignment, (numElements / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         if (world_rank == 0)
         {
             updateCentroidDataDistributed(k_means_x, k_means_y, k_means_z, data_x_points, data_y_points, data_z_points, k_assignment);
         }
     }
-    MPI_Barrier(MPI_COMM_WORLD);
 
+    // TODO: Figure out segmentation fault in this code
     if (world_rank == 0)
     {
+        // Log the time to finish
         double finishTime = MPI_Wtime();
         long duration = (long)((finishTime - startTime) * 1000000);
         double v = finishTime - startTime;
         cout << "Time: " << v << " ms" << endl;
+        // Convert the data back to a vector of points for saving
         vector<Point3D> computedPoints;
         computedPoints.reserve(numElements); // reserve space for the vector to avoid reallocation
         for (int i = 0; i < numElements; i++)
         {
-            double x = data_x_points[i];
-            double y = data_y_points[i];
-            double z = data_z_points[i];
-            computedPoints.push_back(Point3D(x, y, z));
+            computedPoints.push_back(Point3D(data_x_points[i], data_y_points[i], data_z_points[i]));
         }
         // Now assign clusters to the points from the k_assign we already have
-        for (int i = 0; i < k_assignment.size(); i++)
+        for (int i = 0; i < numCentroids; i++)
         {
             computedPoints[i].cluster = k_assignment[i];
         }
