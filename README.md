@@ -60,13 +60,7 @@ To change the number of epochs and clusters, edit the `main` function in `serial
 
 <!-- TODO -->
 
-## Validation
-
-In serial.hpp we wrote a function, areFilesEqual, to validate two csv files against eachother. It will return true if the are, false if not. We will check every file against the ground truth, defined by the serial implementation.
-
-To simplify grading and validation, we built into every implementation a function call to `performSerial` this allows the specific number of epochs and clusters to be run serially, and in the implementation. We also wrote the function `areFilesEqual` to compare the output of the serial implementation to the output of the implementation being tested.
-
-## Running the Python Visualization
+### Running the Python Visualization
 
 First, edit the file `visualize.py` to point to the correct csv files you would like to visualize.
 
@@ -76,6 +70,18 @@ Now, run the following commands from the project root directory:
 pip install -r requirements.txt
 python3 visualize.py
 ```
+
+## Validation
+
+In serial.hpp we wrote a function, areFilesEqual, to validate two csv files against eachother. It will return true if the are, false if not. We will check every file against the ground truth, defined by the serial implementation.
+
+To simplify grading and validation, we built into every implementation a function call to `performSerial` this allows the specific number of epochs and clusters to be run serially, and in the implementation. We also wrote the function `areFilesEqual` to compare the output of the serial implementation to the output of the implementation being tested.
+
+## Our Approach
+
+### Serial Implementation
+
+For the serial implementation we used the link provided by Dr. Petruzza [here](http://reasonabledeviations.com/2019/10/02/k-means-in-cpp/)
 
 ## Analysis
 
