@@ -40,7 +40,7 @@ void calculateKMean(double k_x[], double k_y[], double k_z[],
 void updateCentroidDataDistributed(double k_means_x[], double k_means_y[], double k_means_z[],
                                    double data_x_points[], double data_y_points[], double data_z_points[], int k_assignment[], int numElements, int numCentroids)
 {
-    int numK = k_means_x.size();
+    int numK = numCentroids;
     vector<int> nPoints(numK, 0);
     vector<double> sumX(numK, 0.0);
     vector<double> sumY(numK, 0.0);
@@ -125,10 +125,10 @@ int main(int argc, char *argv[])
         MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         // Allocate memory for the data points
-        k_assignment = (int *)malloc(sizeof(int) * numOfElements);
-        data_x_points = (double *)malloc(sizeof(double) * numOfElements);
-        data_y_points = (double *)malloc(sizeof(double) * numOfElements);
-        data_z_points = (double *)malloc(sizeof(double) * numOfElements);
+        k_assignment = (int *)malloc(sizeof(int) * numElements);
+        data_x_points = (double *)malloc(sizeof(double) * numElements);
+        data_y_points = (double *)malloc(sizeof(double) * numElements);
+        data_z_points = (double *)malloc(sizeof(double) * numElements);
 
         // add data from point data to the appropriate arrays
 
@@ -163,13 +163,6 @@ int main(int argc, char *argv[])
         recv_y = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
         recv_z = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
         recv_assign = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
-
-        // Assert the x y and z data vectors have same size
-        if (data_x_points.size() != data_y_points.size() || data_x_points.size() != data_z_points.size())
-        {
-            cout << "Data vectors are not the same size" << endl;
-            MPI_Abort(MPI_COMM_WORLD, 1);
-        }
     }
     else
     {
@@ -197,11 +190,11 @@ int main(int argc, char *argv[])
     // Break up the data into chunks accouting for evenly dividing the data
     for (int i = 0; i < world_size; ++i)
     {
-        send_counts[i] = data_x_points.size() / world_size;
+        send_counts[i] = numElements / world_size;
         displacements[i] = i * send_counts[i];
     }
     // Add the remainder to each process and adjust the displacements
-    for (int i = 0; i < data_x_points.size() % world_size; ++i)
+    for (int i = 0; i < numElements % world_size; ++i)
     {
         send_counts[i] += 1;
         displacements[i + 1] += 1;
