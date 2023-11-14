@@ -20,7 +20,7 @@ using namespace std;
     float dx = point.x - centroid.x;
     float dy = point.y - centroid.y;
     float dz = point.z - centroid.z;
-    return sqrt(dx * dx + dy * dy + dz * dz);
+    return dx * dx + dy * dy + dz * dz; // we don't do square root to save computation time and we do the same in the serial implementation
 }
 
 // Define a GPU kernel to perform k-means clustering
@@ -85,15 +85,15 @@ void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, vector<Point3D>
   }
 }
 
-void performGPU(int numEpochs, int numCentroids, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
+void performGPU(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename)
 {
-    cout << "Entering the k means computation" << endl;
+    cout << "\tEntering the k means computation" << endl;
     // Time code: https://stackoverflow.com/questions/21856025/getting-an-accurate-execution-time-in-c-micro-seconds
     auto start_time = std::chrono::high_resolution_clock::now();
     kMeansClusteringGPU(points, numEpochs, centroids);
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-    printStats(numEpochs, numCentroids, points, duration.count());
+    printStats(numEpochs, centroids->size(), points, duration.count());
     saveOutputs(points, filename);
 }
 

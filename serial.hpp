@@ -39,7 +39,7 @@ struct Point3D
  */
 void saveOutputs(vector<Point3D> *points, string filename)
 {
-  cout << "Saving Output" << endl;
+  cout << "\tSaving Output" << endl;
   ofstream myfile;
   myfile.open(filename);
   myfile << "x,y,z,c" << endl;
@@ -59,23 +59,16 @@ void saveOutputs(vector<Point3D> *points, string filename)
  * @param random - decides whether to randomly initalize the centeroids or not
  * @return vector of centroids
  */
-vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points, bool random = true)
+vector<Point3D> initializeCentroids(int numCentroids, vector<Point3D> *points)
 {
   // Randomly initialize centroids
   // The index of the centroid within the centroids vector represents the cluster label.
   vector<Point3D> centroids;
-  srand(time(0));
+  srand(10);                       // seed the random number generator
   centroids.reserve(numCentroids); // create space in memory for specified number of centroids
   for (int i = 0; i < numCentroids; ++i)
   {
-    if (random)
-    {
-      centroids.push_back(points->at(rand() % points->size()));
-    }
-    else
-    {
-      centroids.push_back(points->at(0));
-    }
+    centroids.push_back(points->at(rand() % points->size()));
   }
   return centroids;
 }
@@ -92,6 +85,7 @@ void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int
   vector<int> nPoints(numCentroids, 0);
   vector<double> sumX(numCentroids, 0.0);
   vector<double> sumY(numCentroids, 0.0);
+  vector<double> sumZ(numCentroids, 0.0);
 
   // Iterate over points to append data to centroids
   for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
@@ -100,6 +94,7 @@ void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int
     nPoints[clusterId] += 1;
     sumX[clusterId] += it->x;
     sumY[clusterId] += it->y;
+    sumZ[clusterId] += it->z;
 
     it->minDist = numeric_limits<float>::max(); // reset distance
   }
@@ -109,6 +104,7 @@ void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int
     int clusterId = c - centroids->begin();
     c->x = sumX[clusterId] / nPoints[clusterId];
     c->y = sumY[clusterId] / nPoints[clusterId];
+    c->z = sumZ[clusterId] / nPoints[clusterId];
   }
 }
 
@@ -164,7 +160,7 @@ bool areFilesEqual(string filename1, string filename2, bool showDiff = false)
     lineNum++;
   }
 
-  std::cout << "Total differences: " << counter << "\n\n";
+  std::cout << "Total differences: " << counter << "\n";
 
   // Check if one file has extra lines
   if (getline(file1, line1))
