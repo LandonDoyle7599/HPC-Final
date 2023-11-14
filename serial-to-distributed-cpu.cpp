@@ -228,10 +228,6 @@ int main(int argc, char *argv[])
     MPI_Scatterv(data_z_points, send_counts, displacements, MPI_DOUBLE,
                  recv_z, send_counts[world_rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    if (world_rank == 0)
-    {
-        cout << "Starting k-means algorithm for " << numEpochs << " iterations...\n";
-    }
     for (int i = 0; i < numEpochs; ++i)
     {
         // Broadcast the centroids so everyone has updated information
@@ -262,7 +258,6 @@ int main(int argc, char *argv[])
         double finishTime = MPI_Wtime();
         long duration = (long)((finishTime - startTime) * 1000000);
         double v = finishTime - startTime;
-        cout << "Time: " << v << " ms" << endl;
         // Convert the data back to a vector of points for saving
         vector<Point3D> computedPoints;
         computedPoints.reserve(numElements); // reserve space for the vector to avoid reallocation
@@ -273,6 +268,7 @@ int main(int argc, char *argv[])
             computedPoints.push_back(p);
         }
         saveOutputs(&computedPoints, distFilename);
+        cout << "Number of Nodes: " << world_size << endl;
         printStats(numEpochs, numCentroids, &computedPoints, duration);
         areFilesEqual(serialFilename, distFilename, true);
     }

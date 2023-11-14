@@ -58,11 +58,7 @@ nvcc serial-to-single-gpu.cu -o gpu
 
 In serial.hpp we wrote a function, areFilesEqual, to validate two csv files against eachother. It will return true if the are, false if not. We will check every file against the ground truth, defined by the serial implementation.
 
-In order to test the truth we need to compare two sets of data, however, to properly do the kmeans algorithm we randomly initalize data points and then take the average of each point from the input data and these random points.
-
-Because of the randomness inherent to the K-means algorithm, and the varying number of clusters and epochs, we need to generate the initial set of data based on clusters and epochs, then share that data between serial CPU and the other implementations.
-
-However, to still show that the algorithm is working, we tested both the CPU and GPU implementations against eachother _without_ the random initaliztion, which does give the same output between the implementations, but it does not do a true k-means algorithm.
+To simplify grading and validation, we built into every implementation a function call to `performSerial` this allows the specific number of epochs and clusters to be run serially, and in the implementation. We also wrote the function `areFilesEqual` to compare the output of the serial implementation to the output of the implementation being tested.
 
 ## Running the Python Visualization
 
@@ -192,13 +188,37 @@ Parallel CPU Implementation Visualized with 6 Clusters:
 
 ### Distributed CPU
 
+This table displays scaling with an increasing number of nodes while keeping the amount of data the same.
+
+| Nodes | Time (s) | Epochs | Clusters |
+| ----- | -------- | ------ | -------- |
+| 2     | 1.180753 | 25     | 4        |
+| 3     | .935105  | 25     | 4        |
+| 4     | .789611  | 25     | 4        |
+
+Now with 100 epochs and 6 clusters:
+
+| Nodes | Parallel Time (s) | Serial Time | Epochs | Clusters |
+| ----- | ----------------- | ----------- | ------ | -------- |
+| 2     | 6.442704          | 25.327500   | 100    | 6        |
+| 3     | 4.587259          | 25.238905   | 100    | 6        |
+| 4     | 3.824345          | 25.277028   | 100    | 6        |
+
+Notice how the parallel time is going down as we increase the number of nodes. This breaks up the amount of data to process per node and allows us to process the data faster.
+
+Now with 4 nodes but scaling up the number of epochs and the amount of data:
+
+| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters |
+| ----- | ----------------- | --------------- | ------ | -------- |
+| 4     | 1.919520          | 12.649348       | 50     | 6        |
+| 4     | 3.824345          | 25.277028       | 100    | 6        |
+| 4     | 7.531646          | 50.564563       | 200    | 6        |
+| 4     | 15.114408         | 10.1182546      | 400    | 6        |
+
 ### Distributed GPU
 
 ## References
 
 - [K-Means Clustering](https://en.wikipedia.org/wiki/K-means_clustering)
-- [Example 1](https://github.com/dzdao/k-means-clustering-mpi/blob/master/k-means.c)
-- [Example 2](https://arxiv.org/pdf/2203.01081.pdf)
+- [Example 1](https://arxiv.org/pdf/2203.01081.pdf)
 - [Lectures](https://cse.buffalo.edu/faculty/miller/Courses/CSE633/Gautam-Shende-Spring-2018.pdf)
-  - [Lecture Repo](https://github.com/thezodiac1994/Parallel-Alogrithms/blob/master/MPI/kmeans/allot_data_upd5.c)
-- [Another Example](https://github.com/evcu/kmeans-openmpi/blob/master/k_means.c)
