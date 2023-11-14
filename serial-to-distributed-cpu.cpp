@@ -12,9 +12,9 @@
 using namespace std;
 
 void calculateKMean(double k_x[], double k_y[], double k_z[],
-                    double recv_x[], double recv_y[], double recv_z[], int assign[], int numElements, int numCentroids)
+                    double recv_x[], double recv_y[], double recv_z[], int assign[], int numLocalDataPoints, int numCentroids)
 {
-    for (int i = 0; i < numElements; ++i)
+    for (int i = 0; i < numLocalDataPoints; ++i)
     {
         double min_dist = numeric_limits<double>::max();
         int clusterID = 0;
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
         recv_x = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
         recv_y = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
         recv_z = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
-        recv_assign = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
+        recv_assign = (int *)malloc(sizeof(int) * ((numElements / world_size) + 1));
     }
     else
     {
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
         recv_x = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
         recv_y = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
         recv_z = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
-        recv_assign = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
+        recv_assign = (int *)malloc(sizeof(int) * ((numElements / world_size) + 1));
     }
 
     // Scatter data across processes but use displacements
@@ -221,15 +221,15 @@ int main(int argc, char *argv[])
 
     // Scatterv for x points
     MPI_Scatterv(data_x_points, send_counts, displacements, MPI_DOUBLE,
-                 recv_x, recv_x, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                 recv_x, send_counts, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // Scatterv for y points
     MPI_Scatterv(data_y_points, send_counts, displacements, MPI_DOUBLE,
-                 recv_y, recv_y, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                 recv_y, send_counts, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // Scatterv for z points
     MPI_Scatterv(data_z_points, send_counts, displacements, MPI_DOUBLE,
-                 recv_z, recv_z, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                 recv_z, send_counts, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     if (world_rank == 0)
     {
@@ -237,22 +237,21 @@ int main(int argc, char *argv[])
     }
     for (int i = 0; i < numEpochs; ++i)
     {
-        // Broadcast the centroids
+        // Broadcast the centroids so everyone has updated information
         MPI_Bcast(k_means_x, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Bcast(k_means_y, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Bcast(k_means_z, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-        // Scatter the assignments
-        // Note: This assumes the number of centroids is evenly divisible by the number of processes
-        MPI_Scatter(k_assignment, (numElements / world_size) + 1, MPI_INT,
-                    recv_assign, (numElements / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
+        // Every process receives a set of points and calculates the new assignments based on the new centroids
+        MPI_Scatterv(k_assignment, send_counts, displacements, MPI_INT,
+                     recv_assign, send_counts, MPI_INT, 0, MPI_COMM_WORLD);
 
         // Calculate the new assignments
-        calculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z, recv_assign);
+        calculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z, recv_assign, send_counts[world_rank], numCentroids);
 
-        // Gather the assignments
-        MPI_Gather(recv_assign, (numElements / world_size) + 1, MPI_INT,
-                   k_assignment, (numElements / world_size) + 1, MPI_INT, 0, MPI_COMM_WORLD);
+        // Gather the point assignments back together from each process
+        MPI_Gatherv(recv_assign, send_counts, displacements, MPI_INT,
+                    k_assignment, send_counts, MPI_INT, 0, MPI_COMM_WORLD);
 
         if (world_rank == 0)
         {
