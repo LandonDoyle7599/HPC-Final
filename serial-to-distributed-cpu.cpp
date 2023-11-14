@@ -131,8 +131,6 @@ int main(int argc, char *argv[])
         data_z_points = (double *)malloc(sizeof(double) * numElements);
 
         // add data from point data to the appropriate arrays
-
-        // TODO: Check to see what pointData at 0 is. Could be bug here
         for (size_t i = 0; i < numElements; i++)
         {
             data_x_points[i] = pointData[i].x;
@@ -148,7 +146,6 @@ int main(int argc, char *argv[])
         k_means_y = (double *)malloc(sizeof(double) * numCentroids);
         k_means_z = (double *)malloc(sizeof(double) * numCentroids);
 
-        // TODO: Check to see what centroids at 0 is. Could be bug here
         for (int i = 0; i < numCentroids; i++)
         {
             k_means_x[i] = centeroids[i].x;
@@ -259,7 +256,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    // TODO: Figure out segmentation fault in this code
     if (world_rank == 0)
     {
         // Log the time to finish
@@ -272,12 +268,9 @@ int main(int argc, char *argv[])
         computedPoints.reserve(numElements); // reserve space for the vector to avoid reallocation
         for (int i = 0; i < numElements; i++)
         {
+            Point3D p = Point3D(data_x_points[i], data_y_points[i], data_z_points[i]);
+            p.cluster = k_assignment[i];
             computedPoints.push_back(Point3D(data_x_points[i], data_y_points[i], data_z_points[i]));
-        }
-        // Now assign clusters to the points from the k_assign we already have
-        for (int i = 0; i < numElements; i++)
-        {
-            computedPoints[i].cluster = k_assignment[i];
         }
         saveOutputs(&computedPoints, distFilename);
         printStats(numEpochs, numCentroids, &computedPoints, duration);
