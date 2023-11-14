@@ -11,6 +11,5 @@ int main()
     // Because this is random initialization we need to share it between the serial and GPU to ensure they are valid
     vector<Point3D> centroids = initializeCentroids(numCentroids, &points);
     string f1 = "serial-cpu.csv";
-    cout << "Performing serial" << endl;
     performSerial(numEpochs, &centroids, &points, f1);
 }

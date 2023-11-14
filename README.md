@@ -8,12 +8,12 @@ We defaulted the setup on this repository to validate each implementation agains
 
 Note: We implicity run the serial implementation for every other one as comparison. However, if you would like to run it standalone:
 
-Uncomment the main function at the bottom of `serial.cpp`, and then run the following in the terminal:
-
 ```bash
-g++ serial.cpp -o serial
+g++ serial-only.cpp -o serial
 ./serial
 ```
+
+To change the number of epochs and clusters, edit the `main` function in `serial-only.cpp`.
 
 ### Parallel CPU
 
@@ -21,6 +21,8 @@ g++ serial.cpp -o serial
 g++ -fopenmp serial-to-parallel.cpp -o parallel
 ./parallel
 ```
+
+To change the number of epochs and clusters, edit the `main` function in `serial-to-parallel.cpp`.
 
 ### Distributed CPU
 
@@ -51,6 +53,8 @@ Now we can compile and execute:
 nvcc serial-to-single-gpu.cu -o gpu
 ./gpu
 ```
+
+To change the number of epochs and clusters, edit the `main` function in `serial-to-single-gpu.cu`.
 
 ### Distributed GPU
 
