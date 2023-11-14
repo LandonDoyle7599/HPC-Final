@@ -220,16 +220,16 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Scatterv for x points
-    MPI_Scatterv(data_x_points, &send_counts, displacements, MPI_DOUBLE,
-                 recv_x, &send_counts, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(data_x_points, send_counts, displacements, MPI_DOUBLE,
+                 recv_x, send_counts[world_rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // Scatterv for y points
-    MPI_Scatterv(data_y_points, &send_counts, displacements, MPI_DOUBLE,
-                 recv_y, &send_counts, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(data_y_points, send_counts, displacements, MPI_DOUBLE,
+                 recv_y, send_counts[world_rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // Scatterv for z points
-    MPI_Scatterv(data_z_points, &send_counts, displacements, MPI_DOUBLE,
-                 recv_z, &send_counts, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(data_z_points, send_counts, displacements, MPI_DOUBLE,
+                 recv_z, send_counts[world_rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     if (world_rank == 0)
     {
@@ -243,15 +243,15 @@ int main(int argc, char *argv[])
         MPI_Bcast(k_means_z, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
         // Every process receives a set of points and calculates the new assignments based on the new centroids
-        MPI_Scatterv(k_assignment, &send_counts, displacements, MPI_INT,
-                     recv_assign, &send_counts, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Scatterv(k_assignment, send_counts, displacements, MPI_INT,
+                     recv_assign, send_counts[world_rank], MPI_INT, 0, MPI_COMM_WORLD);
 
         // Calculate the new assignments
         calculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z, recv_assign, send_counts[world_rank], numCentroids);
 
         // Gather the point assignments back together from each process
-        MPI_Gatherv(recv_assign, &send_counts, displacements, MPI_INT,
-                    k_assignment, &send_counts, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Gatherv(recv_assign, send_counts, displacements, MPI_INT,
+                    k_assignment, send_counts[world_rank], MPI_INT, 0, MPI_COMM_WORLD);
 
         if (world_rank == 0)
         {
