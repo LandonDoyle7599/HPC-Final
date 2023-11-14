@@ -156,8 +156,6 @@ int main(int argc, char *argv[])
             k_means_z[i] = centeroids[i].z;
         }
 
-        cout << "Running k-means algorithm for " << numEpochs << " iterations...\n";
-
         // Define the receiving vectors to be be big enough to hold the data. Add 1 in case there are extra data points
         recv_x = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
         recv_y = (double *)malloc(sizeof(double) * ((numElements / world_size) + 1));
@@ -200,22 +198,23 @@ int main(int argc, char *argv[])
         displacements[i + 1] += 1;
     }
 
-    if (world_rank == 0)
-    {
-        // Print the send counts and displacements
-        cout << "Displacements will be : " << endl;
-        for (int i = 0; i < world_size; ++i)
-        {
-            cout << displacements[i] << " ";
-        }
-        cout << endl;
-        cout << "Send counts will be : " << endl;
-        for (int i = 0; i < world_size; ++i)
-        {
-            cout << send_counts[i] << " ";
-        }
-        cout << endl;
-    }
+    // For logging purposes
+    // if (world_rank == 0)
+    // {
+    //     // Print the send counts and displacements
+    //     cout << "Displacements will be : " << endl;
+    //     for (int i = 0; i < world_size; ++i)
+    //     {
+    //         cout << displacements[i] << " ";
+    //     }
+    //     cout << endl;
+    //     cout << "Send counts will be : " << endl;
+    //     for (int i = 0; i < world_size; ++i)
+    //     {
+    //         cout << send_counts[i] << " ";
+    //     }
+    //     cout << endl;
+    // }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
