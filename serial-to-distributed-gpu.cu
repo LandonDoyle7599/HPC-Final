@@ -265,6 +265,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    // Wait for all processes to finish before getting the time
+    MPI_Barrier(MPI_COMM_WORLD);
     if (world_rank == 0)
     {
         // Log the time to finish
