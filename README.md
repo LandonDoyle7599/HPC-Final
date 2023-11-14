@@ -58,6 +58,8 @@ To change the number of epochs and clusters, edit the `main` function in `serial
 
 ### Distributed GPU
 
+<!-- TODO -->
+
 ## Validation
 
 In serial.hpp we wrote a function, areFilesEqual, to validate two csv files against eachother. It will return true if the are, false if not. We will check every file against the ground truth, defined by the serial implementation.
@@ -194,6 +196,8 @@ Parallel CPU Implementation Visualized with 6 Clusters:
 
 This table displays scaling with an increasing number of nodes while keeping the amount of data the same.
 
+<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
+
 | Nodes | Time (s) | Epochs | Clusters |
 | ----- | -------- | ------ | -------- |
 | 2     | 1.180753 | 25     | 4        |
@@ -218,6 +222,10 @@ Now with 4 nodes but scaling up the number of epochs and the amount of data:
 | 4     | 3.824345          | 25.277028       | 100    | 6        |
 | 4     | 7.531646          | 50.564563       | 200    | 6        |
 | 4     | 15.114408         | 10.1182546      | 400    | 6        |
+
+A visualized example of the distributed CPU implementation with 4 nodes and 50 epochs:
+
+![Distributed CPU](./images/Distributed-50e-6c.png)
 
 ### Distributed GPU
 
