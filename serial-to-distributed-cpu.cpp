@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
             computedPoints.push_back(Point3D(data_x_points[i], data_y_points[i], data_z_points[i]));
         }
         // Now assign clusters to the points from the k_assign we already have
-        for (int i = 0; i < numCentroids; i++)
+        for (int i = 0; i < numElements; i++)
         {
             computedPoints[i].cluster = k_assignment[i];
         }
@@ -283,5 +283,17 @@ int main(int argc, char *argv[])
         printStats(numEpochs, numCentroids, &computedPoints, duration);
         areFilesEqual(serialFilename, distFilename, true);
     }
+    // Clean up memory
+    free(k_means_x);
+    free(k_means_y);
+    free(k_means_z);
+    free(k_assignment);
+    free(data_x_points);
+    free(data_y_points);
+    free(data_z_points);
+    free(recv_x);
+    free(recv_y);
+    free(recv_z);
+    free(recv_assign);
     MPI_Finalize();
 }
