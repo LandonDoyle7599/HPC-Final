@@ -250,8 +250,8 @@ int main(int argc, char *argv[])
         calculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z, recv_assign, send_counts[world_rank], numCentroids);
 
         // Gather the point assignments back together from each process
-        MPI_Gatherv(recv_assign, send_counts, displacements, MPI_INT,
-                    k_assignment, send_counts[world_rank], MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Gatherv(recv_assign, send_counts[world_rank], MPI_INT,
+                    k_assignment, send_counts, displacements, MPI_INT, 0, MPI_COMM_WORLD);
 
         if (world_rank == 0)
         {
