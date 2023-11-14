@@ -103,6 +103,10 @@ For the distributed CPU implementation we wanted to be able to use as much code 
 
 To ensure the data could be distributed across any number of processors we used ScatterV to distribute the data and allowed each process to only work on its specified points. We had process 0 handle the serial implementation at the beginning and the comparison of points at the end to validate accuracy.
 
+### Distributed GPU Implementation
+
+<!-- TODO -->
+
 ## Analysis
 
 In the data set there are 1240425 points, and the amount of data processed is equal to epochs \* numPoints. So for 100 epochs, we process 124042500 points. For 200 epochs, we process all of those points 200 times (248085000), etc.
@@ -232,11 +236,11 @@ This table displays scaling with an increasing number of nodes while keeping the
 
 Now with 100 epochs and 6 clusters:
 
-| Nodes | Parallel Time (s) | Serial Time | Epochs | Clusters |
-| ----- | ----------------- | ----------- | ------ | -------- |
-| 2     | 6.442704          | 25.327500   | 100    | 6        |
-| 3     | 4.587259          | 25.238905   | 100    | 6        |
-| 4     | 3.824345          | 25.277028   | 100    | 6        |
+| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters |
+| ----- | ----------------- | --------------- | ------ | -------- |
+| 2     | 6.442704          | 25.327500       | 100    | 6        |
+| 3     | 4.587259          | 25.238905       | 100    | 6        |
+| 4     | 3.824345          | 25.277028       | 100    | 6        |
 
 Notice how the parallel time is going down as we increase the number of nodes. This breaks up the amount of data to process per node and allows us to process the data faster.
 
@@ -255,8 +259,10 @@ A visualized example of the distributed CPU implementation with 4 nodes and 50 e
 
 ### Distributed GPU
 
+<!-- TODO -->
+
 ## References
 
+- [Initial Setup](http://reasonabledeviations.com/2019/10/02/k-means-in-cpp/)
 - [K-Means Clustering](https://en.wikipedia.org/wiki/K-means_clustering)
-- [Example 1](https://arxiv.org/pdf/2203.01081.pdf)
-- [Lectures](https://cse.buffalo.edu/faculty/miller/Courses/CSE633/Gautam-Shende-Spring-2018.pdf)
+- [Paper on K-Means](https://arxiv.org/pdf/2203.01081.pdf)
