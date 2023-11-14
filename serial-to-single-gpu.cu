@@ -16,9 +16,8 @@ int main()
     vector<Point3D> gpuPointsCopy = points;
     string f1 = "serial-cpu.csv";
     string f2 = "gpu.csv";
-    cout << "Performing serial" << endl;
     performSerial(numEpochs, &centroids, &points, f1);
     cout << "\nPerforming GPU" << endl;
     performGPU(numEpochs, &gpuCentroidCopy, &gpuPointsCopy, f2);
-    cout << "Files Equal: " << areFilesEqual(f1, f2, true) << endl;
+    areFilesEqual(f1, f2, true)
 }
