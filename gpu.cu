@@ -20,7 +20,7 @@ using namespace std;
     float dx = point.x - centroid.x;
     float dy = point.y - centroid.y;
     float dz = point.z - centroid.z;
-    return sqrt(dx * dx + dy * dy + dz * dz);
+    return dx * dx + dy * dy + dz * dz; // we don't do square root to save computation time and we do the same in the serial implementation
 }
 
 // Define a GPU kernel to perform k-means clustering

@@ -44,6 +44,7 @@ void updateCentroidDataDistributed(double k_means_x[], double k_means_y[], doubl
     vector<int> nPoints(numK, 0);
     vector<double> sumX(numK, 0.0);
     vector<double> sumY(numK, 0.0);
+    vector<double> sumZ(numK, 0.0);
 
     // Iterate over the centroids and compute the means for each value
     for (int i = 0; i < numElements; ++i)
@@ -52,6 +53,7 @@ void updateCentroidDataDistributed(double k_means_x[], double k_means_y[], doubl
         nPoints[clusterID] += 1;
         sumX[clusterID] += data_x_points[i];
         sumY[clusterID] += data_y_points[i];
+        sumZ[clusterID] += data_z_points[i];
         // Reset the min distance is not needed, we don't use it in the distributed version. We take this into account when calculating the k mean
     }
 
@@ -60,6 +62,7 @@ void updateCentroidDataDistributed(double k_means_x[], double k_means_y[], doubl
     {
         k_means_x[clusterId] = sumX[clusterId] / nPoints[clusterId];
         k_means_y[clusterId] = sumY[clusterId] / nPoints[clusterId];
+        k_means_z[clusterId] = sumZ[clusterId] / nPoints[clusterId];
     }
 }
 
