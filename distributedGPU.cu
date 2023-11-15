@@ -69,9 +69,9 @@ extern "C" {
         cudaMemcpy(d_assign, assign, numLocalDataPoints * sizeof(int), cudaMemcpyHostToDevice);
 
         // Launch the kernel
-        calculateKMean<<<blocksPerGrid, threadsPerBlock>>>(k_x, k_y, k_z, recv_x, recv_y, recv_z, assign, numLocalDataPoints, numCentroids);
+        calculateKMean<<<blocksPerGrid, threadsPerBlock>>>(d_k_x, d_k_y, d_k_z, d_recv_x, d_recv_y, d_recv_z, d_assign, numLocalDataPoints, numCentroids);
         checkCUDAError(cudaGetLastError(), __FILE__, __LINE__);
-        // checkCUDAError(cudaDeviceSynchronize(), __FILE__, __LINE__);
+        checkCUDAError(cudaDeviceSynchronize(), __FILE__, __LINE__);
         // Copy the result back
         checkCUDAError(cudaMemcpy(assign, d_assign, numLocalDataPoints * sizeof(int), cudaMemcpyDeviceToHost), __FILE__, __LINE__);
         // Free the memory
