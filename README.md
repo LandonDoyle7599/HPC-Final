@@ -73,20 +73,32 @@ module load openmpi
 
 Now we can compile and execute, but we need to compile the files separately and then join them together:
 
-Path to thing
+Path to where CUDA is installed
 
 ```bash
 echo $CUDA_PATH # gets the path to where cuda is
+
+```
+
+Your path will be different, but it will be similar to this:
+
+```bash
+/uufs/chpc.utah.edu/sys/installdir/r8/cuda/12.2.0/
+```
+
+Then we append `lib64` to the end of that path:
+
+```bash
 /uufs/chpc.utah.edu/sys/installdir/r8/cuda/12.2.0/lib64
 ```
+
+Now we can compile and execute:
 
 ```bash
 nvcc -c distributedGPU.cu
 mpicxx -o dist serial-to-distributed-gpu.cpp distributedGPU.o -L/uufs/chpc.utah.edu/sys/installdir/r8/cuda/12.2.0/lib64 -lcudart -lcuda
 mpirun -np 2 ./dist 25 6
 ```
-
-<!-- TODO -->
 
 To change the number of epochs and clusters, pass in different values as arguments to the command.
 
