@@ -216,6 +216,7 @@ int main(int argc, char *argv[])
     //     cout << endl;
     // }
 
+    // TODO: Test if this can be removed
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Scatterv for x points

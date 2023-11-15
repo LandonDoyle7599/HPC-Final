@@ -47,7 +47,7 @@ __global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids, int 
 
 /**
  * Perform k-means clustering with a GPU
- * @param points - pointer to vector of points
+ * @param points - pointer to vector of pointsn
  * @param numEpochs - number of k means iterations
  * @param k - the number of initial centroids
  */

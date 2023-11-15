@@ -62,7 +62,27 @@ To change the number of epochs and clusters, edit the `main` function in `serial
 
 ### Distributed GPU
 
+First we setup our CHPC environment to have N nodes and each node to have a GPU. Next, we load our modules:
+
+```bash
+module load cuda/12
+module load openmpi
+```
+
+Now we can compile and execute, but we need to compile the files separately and then join them together:
+
+```bash
+nvcc -c distributedGPU.cu
+mpic++ -c serial-to-distributed-gpu.cpp
+mpic++ -o dist distributedGPU.o serial-to-distributed-gpu.o
+mpirun -np 2 ./dist 25 6
+```
+
 <!-- TODO -->
+
+To change the number of epochs and clusters, pass in different values as arguments to the command.
+
+`mpirun -np <number of nodes> ./distributed <number of epochs> <number of clusters>`
 
 ### Running the Python Visualization
 
@@ -157,6 +177,9 @@ Device 0: "Tesla T4"
 
 ```
 
+Max Number of threads per block: 1024
+Max Number of Blocks Per SM: 16
+
 <!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
 
 | Time (s)  | Epochs | Clusters | Threads per Block | Blocks per Grid |
@@ -173,8 +196,6 @@ As you can see, compared to the serial implentation this is significantly faster
 This also shows that this algorithm is strongly scalable, because as we increase the epochs (which is a multiplier on the data we use), the time increases proportionally.
 
 We can also change the number of threads per block to fully use the number of threads per block.
-
-<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
 
 | Time(s)   | Epochs | Clusters | Threads per Block | Blocks per Grid |
 | --------- | ------ | -------- | ----------------- | --------------- |
@@ -195,6 +216,8 @@ Single GPU Implementation Visualized with 12 Clusters:
 
 ### Parallel CPU Implementation
 
+<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
+
 This table displays scaling with an increasing number of threads while keeping the amount of data the same.
 
 | Threads | Time (s)  | Epochs | Clusters |
@@ -214,15 +237,13 @@ This table displays scaling the data keeping the number of threads the same, but
 | 12      | 124.803791 | 400    | 6        |
 | 12      | 249.964666 | 800    | 6        |
 
-<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
-
 This data tells us that this is not a strongly scalable algorithm, because as we increase the number of threads, the time does not decrease. However, as we increase the amount of data, the time does increase proportionally.
 
 Parallel CPU Implementation Visualized with 6 Clusters:
 
 ![Parallel CPU ](./images/parallel-cpu-800e-6c.png)
 
-### Distributed CPU
+### Distributed CPU Implementation
 
 This table displays scaling with an increasing number of nodes while keeping the amount of data the same.
 
@@ -257,7 +278,7 @@ A visualized example of the distributed CPU implementation with 4 nodes and 50 e
 
 ![Distributed CPU](./images/Distributed-50e-6c.png)
 
-### Distributed GPU
+### Distributed GPU Implementation
 
 <!-- TODO -->
 
@@ -266,3 +287,4 @@ A visualized example of the distributed CPU implementation with 4 nodes and 50 e
 - [Initial Setup](http://reasonabledeviations.com/2019/10/02/k-means-in-cpp/)
 - [K-Means Clustering](https://en.wikipedia.org/wiki/K-means_clustering)
 - [Paper on K-Means](https://arxiv.org/pdf/2203.01081.pdf)
+- [Distributed GPUs](https://docs.ccv.brown.edu/oscar/gpu-computing/mpi-cuda)

@@ -8,7 +8,7 @@
 #include <chrono>
 #include <mpi.h>
 #include "serial.cpp"
-#include <cuda_runtime.h>
+#include "distributedGPU.cu"
 
 using namespace std;
 
@@ -217,47 +217,11 @@ int main(int argc, char *argv[])
                      recv_assign, send_counts[world_rank], MPI_INT, 0, MPI_COMM_WORLD);
 
         // Now that each process has their points, we can use the GPU to calculate the new assignments
-        // Allocate memory on the GPU
+        launchCalculateKMean(recv_x, recv_y, recv_z, k_means_x, k_means_y, k_means_z, recv_assign, send_counts[world_rank], numCentroids);
 
-        double *recv_x = NULL;
-        double *recv_y = NULL;
-        double *recv_z = NULL;
-        int *recv_assign = NULL;
-
-        cudaMalloc((void **)&d_x, sizeof(double) * send_counts[world_rank]);
-        cudaMalloc((void **)&d_y, sizeof(double) * send_counts[world_rank]);
-        cudaMalloc((void **)&d_z, sizeof(double) * send_counts[world_rank]);
-        cudaMalloc((void **)&d_assign, sizeof(int) * send_counts[world_rank]);
-
-        // Copy the data from the CPU to the GPU
-        cudaMemcpy(d_x, recv_x, sizeof(double) * send_counts[world_rank], cudaMemcpyHostToDevice);
-        cudaMemcpy(d_y, recv_y, sizeof(double) * send_counts[world_rank], cudaMemcpyHostToDevice);
-        cudaMemcpy(d_z, recv_z, sizeof(double) * send_counts[world_rank], cudaMemcpyHostToDevice);
-        cudaMemcpy(d_assign, recv_assign, sizeof(int) * send_counts[world_rank], cudaMemcpyHostToDevice);
-
-        // Define the number of blocks and threads
-        int threadsPerBlock = 256;
-        int blocksPerGrid = (send_counts[world_rank] + threadsPerBlock - 1) / threadsPerBlock;
-
-        // Calculate the new assignments
-        calculateKMean<<<blocksPerGrid, threadsPerBlock>>>(k_means_x, k_means_y, k_means_z, d_x, d_y, d_z, d_assign, send_counts[world_rank], numCentroids);
-
-        // Now get the values out of the GPU and back into the CPU
-        cudaMemcpy(recv_x, d_x, sizeof(double) * send_counts[world_rank], cudaMemcpyDeviceToHost);
-        cudaMemcpy(recv_y, d_y, sizeof(double) * send_counts[world_rank], cudaMemcpyDeviceToHost);
-        cudaMemcpy(recv_z, d_z, sizeof(double) * send_counts[world_rank], cudaMemcpyDeviceToHost);
-        cudaMemcpy(recv_assign, d_assign, sizeof(int) * send_counts[world_rank], cudaMemcpyDeviceToHost);
-
-        // Free the memory on the GPU
-        cudaFree(d_x);
-        cudaFree(d_y);
-        cudaFree(d_z);
-        cudaFree(d_assign);
-        
         // Gather the point assignments back together from each process
         MPI_Gatherv(recv_assign, send_counts[world_rank], MPI_INT,
                     k_assignment, send_counts, displacements, MPI_INT, 0, MPI_COMM_WORLD);
-
 
         if (world_rank == 0)
         {

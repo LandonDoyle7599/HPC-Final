@@ -15,6 +15,7 @@ using namespace std;
  * @param centroids - pointer to vector of centroids
  * @param numCentroids - the number of initial centroids
  */
+
 void parallelUpdateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int numCentroids)
 {
   // Create vectors to keep track of data needed to compute means
