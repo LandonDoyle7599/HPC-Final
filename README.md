@@ -353,6 +353,9 @@ Now with 4 nodes but scaling up the number of epochs and the amount of data:
 
 <!-- TODO: Add comparison between this and the CPU and Single GPU Implementations. (THis one is faster by a few seconds) -->
 
+Figure of the distributed GPU implementation with 6 nodes and 100 epochs:
+![Distributed GPU](./images/Distributed-GPU-6c.png)
+
 ## References
 
 - [Initial Setup](http://reasonabledeviations.com/2019/10/02/k-means-in-cpp/)
