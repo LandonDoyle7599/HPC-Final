@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
                      recv_assign, send_counts[world_rank], MPI_INT, 0, MPI_COMM_WORLD);
 
         // Now that each process has their points, we can use the GPU to calculate the new assignments
-        launchCalculateKMean(recv_x, recv_y, recv_z, k_means_x, k_means_y, k_means_z, recv_assign, send_counts[world_rank], numCentroids);
+        launchCalculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z,recv_assign, send_counts[world_rank], numCentroids);
         MPI_Barrier(MPI_COMM_WORLD); // need to wait for everyone to be done with their GPU before gathering
 
         // Gather the point assignments back together from each process

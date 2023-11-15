@@ -3,7 +3,16 @@
 #include <cstdlib>
 #include <cmath>
 #include <iostream>
+
+
 using namespace std;
+
+void checkCUDAError(cudaError_t err, const char *file, const int line) {
+    if (err != cudaSuccess) {
+        cerr << "CUDA Error: " << cudaGetErrorString(err) << " in " << file << " at line " << line << endl;
+        exit(EXIT_FAILURE);
+    }
+}
 
 
 __device__ float calculateDistance(float x1, float y1, float z1, float x2, float y2, float z2){
@@ -16,7 +25,7 @@ __device__ float calculateDistance(float x1, float y1, float z1, float x2, float
 __global__ void calculateKMean(double k_x[], double k_y[], double k_z[], double recv_x[], double recv_y[], double recv_z[], int assign[], int numLocalDataPoints, int numCentroids){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     // Check if we are out of bounds
-    if (i > numLocalDataPoints){
+    if (i >= numLocalDataPoints) {
         return;
     }
     double min_dist = calculateDistance(k_x[0], k_y[0], k_z[0], recv_x[i], recv_y[i], recv_z[i]);
@@ -58,12 +67,13 @@ extern "C" {
         cudaMemcpy(d_recv_y, recv_y, numLocalDataPoints * sizeof(double), cudaMemcpyHostToDevice);
         cudaMemcpy(d_recv_z, recv_z, numLocalDataPoints * sizeof(double), cudaMemcpyHostToDevice);
         cudaMemcpy(d_assign, assign, numLocalDataPoints * sizeof(int), cudaMemcpyHostToDevice);
-        
+
         // Launch the kernel
         calculateKMean<<<blocksPerGrid, threadsPerBlock>>>(k_x, k_y, k_z, recv_x, recv_y, recv_z, assign, numLocalDataPoints, numCentroids);
-        cudaDeviceSynchronize();
+        checkCUDAError(cudaGetLastError(), __FILE__, __LINE__);
+        // checkCUDAError(cudaDeviceSynchronize(), __FILE__, __LINE__);
         // Copy the result back
-        cudaMemcpy(assign, d_assign, numLocalDataPoints * sizeof(int), cudaMemcpyDeviceToHost);
+        checkCUDAError(cudaMemcpy(assign, d_assign, numLocalDataPoints * sizeof(int), cudaMemcpyDeviceToHost), __FILE__, __LINE__);
         // Free the memory
         cudaFree(d_k_x);
         cudaFree(d_k_y);
