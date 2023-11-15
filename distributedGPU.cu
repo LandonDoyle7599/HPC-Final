@@ -1,7 +1,17 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cstdlib>
+#include <cmath>
+#include <iostream>
 using namespace std;
+
+
+__device__ float calculateDistance(float x1, float y1, float z1, float x2, float y2, float z2){
+    float x = abs(x1 - x2);
+    float y = abs(y1 - y2);
+    float z = abs(z1 - z2);
+    return (x * x) + (y * y) + (z * z);
+} 
 
 __global__ void calculateKMean(double k_x[], double k_y[], double k_z[], double recv_x[], double recv_y[], double recv_z[], int assign[], int numLocalDataPoints, int numCentroids){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -9,15 +19,12 @@ __global__ void calculateKMean(double k_x[], double k_y[], double k_z[], double 
     if (i > numLocalDataPoints){
         return;
     }
-    double min_dist = numeric_limits<double>::max();
+    double min_dist = calculateDistance(k_x[0], k_y[0], k_z[0], recv_x[i], recv_y[i], recv_z[i]);
     int clusterID = 0;
-    for (int j = 0; j < numCentroids; ++j)
+    for (int j = 1; j < numCentroids; ++j)
     // Find the closest centroid
     {
-        double x = abs(recv_x[i] - k_x[j]);
-        double y = abs(recv_y[i] - k_y[j]);
-        double z = abs(recv_z[i] - k_z[j]);
-        double temp_dist = (x * x) + (y * y) + (z * z);
+        double temp_dist = calculateDistance(k_x[j], k_y[j], k_z[j], recv_x[i], recv_y[i], recv_z[i]);
 
         if (temp_dist < min_dist)
         {
