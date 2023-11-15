@@ -16,15 +16,13 @@ void calculateKMean(double k_x[], double k_y[], double k_z[],
 {
     for (int i = 0; i < numLocalDataPoints; ++i)
     {
-        double min_dist = numeric_limits<double>::max();
+        // Initialize min dist on the first centroid
+        double min_dist = calculateDistanceSerial(recv_x[i], recv_y[i], recv_z[i], k_x[0], k_y[0], k_z[0]);
         int clusterID = 0;
-        for (int j = 0; j < numCentroids; ++j)
-        // Find the closest centroid
+        // Now find closest centroid to that point by looking at distance to all of them from this point
+        for (int j = 1; j < numCentroids; ++j)
         {
-            double x = abs(recv_x[i] - k_x[j]);
-            double y = abs(recv_y[i] - k_y[j]);
-            double z = abs(recv_z[i] - k_z[j]);
-            double temp_dist = (x * x) + (y * y) + (z * z);
+            double temp_dist = calculateDistanceSerial(recv_x[i], recv_y[i], recv_z[i], k_x[j], k_y[j], k_z[j]);
 
             if (temp_dist < min_dist)
             {
@@ -32,7 +30,7 @@ void calculateKMean(double k_x[], double k_y[], double k_z[],
                 clusterID = j;
             }
         }
-        // Update the assignment
+        // Update the assignment of closest centroid to this point
         assign[i] = clusterID;
     }
 }
@@ -123,6 +121,10 @@ int main(int argc, char *argv[])
         vector<Point3D> serialPointCopy = pointData;
         performSerial(numEpochs, &serialCentroidCopy, &serialPointCopy, serialFilename);
 
+        // Start the timer using MPI https://www.mcs.anl.gov/research/projects/mpi/tutorial/gropp/node139.html#:~:text=The%20elapsed%20(wall%2Dclock),n%22%2C%20t2%20%2D%20t1%20)%3B
+        cout << "Performing Distributed CPU" << endl;
+        startTime = MPI_Wtime();
+
         // Get numElements and brodcast for all processes
         numElements = pointData.size();
         MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -142,8 +144,6 @@ int main(int argc, char *argv[])
             k_assignment[i] = 0;
         }
 
-        // Start the timer using MPI https://www.mcs.anl.gov/research/projects/mpi/tutorial/gropp/node139.html#:~:text=The%20elapsed%20(wall%2Dclock),n%22%2C%20t2%20%2D%20t1%20)%3B
-        startTime = MPI_Wtime();
         // Setup the k_means vectors to proper sizes
         k_means_x = (double *)malloc(sizeof(double) * numCentroids);
         k_means_y = (double *)malloc(sizeof(double) * numCentroids);
@@ -216,6 +216,7 @@ int main(int argc, char *argv[])
     //     cout << endl;
     // }
 
+    // TODO: Test if this can be removed
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Scatterv for x points

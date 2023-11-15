@@ -8,6 +8,24 @@
 using namespace std;
 
 /**
+ * Calculates the distance between two points
+ * @param p_x - x coordinate of point
+ * @param p_y - y coordinate of point
+ * @param p_z - z coordinate of point
+ * @param k_x - x coordinate of centroid
+ * @param k_y - y coordinate of centroid
+ * @param k_z - z coordinate of centroid
+ * @return the distance between the two points
+ */
+float calculateDistanceSerial(float p_x, float p_y, float p_z, float k_x, float k_y, float k_z)
+{
+  float dx = p_x - k_x;
+  float dy = p_y - k_y;
+  float dz = p_z - k_z;
+  return (dx * dx) + (dy * dy) + (dz * dz);
+}
+
+/**
  * Perform k-means clustering
  * @param points - pointer to vector of points
  * @param numEpochs - number of k means iterations
@@ -20,20 +38,20 @@ void kMeansClusteringSerial(vector<Point3D> *points, int numEpochs, vector<Point
   {
     // For each centroid, compute distance from centroid to each point
     // and update point's cluster if necessary
-    for (vector<Point3D>::iterator c = begin(*centroids); c != end(*centroids); ++c)
+    for (int j = 0; j < points->size(); ++j)
     {
-      int clusterId = c - begin(*centroids);
-      for (vector<Point3D>::iterator it = points->begin(); it != points->end(); ++it)
+      float minDistance = calculateDistanceSerial(points->at(j).x, points->at(j).y, points->at(j).z, centroids->at(0).x, centroids->at(0).y, centroids->at(0).z);
+      int clusterID = 0;
+      for (int k = 1; k < centroids->size(); ++k)
       {
-        Point3D p = *it;
-        double dist = c->distance(p);
-        if (dist < p.minDist)
+        float distance = calculateDistanceSerial(points->at(j).x, points->at(j).y, points->at(j).z, centroids->at(k).x, centroids->at(k).y, centroids->at(k).z);
+        if (distance < minDistance)
         {
-          p.minDist = dist;
-          p.cluster = clusterId;
+          minDistance = distance;
+          clusterID = k;
         }
-        *it = p;
       }
+      points->at(j).cluster = clusterID;
     }
     // Update the centroids
     updateCentroidData(points, centroids, centroids->size());
@@ -52,17 +70,3 @@ void performSerial(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *p
   printStats(numEpochs, centroids->size(), points, duration.count());
   saveOutputs(points, filename);
 }
-
-// Uncomment this to run the serial code standalone
-// int main()
-// {
-//   // Read in the data
-//   cout << "Reading the csv" << endl;
-//   vector<Point3D> points = readcsv("song_data.csv");
-//   int numEpochs = 100;
-//   int numCentroids = 6;
-//   // Initialize the centroids
-//   vector<Point3D> centroids = initializeCentroids(numCentroids, &points, true);
-//   // Perform it
-//   performSerial(numEpochs, numCentroids, &centroids, &points, "serial-cpu.csv");
-// }
