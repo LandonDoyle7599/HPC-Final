@@ -16,6 +16,7 @@
 using namespace std;
 
  // Define a GPU device function to calculateDistance
+ //TODO Test if we can use the calculateDistanceSerial function from the serial implementation here? not sure because we need to give it as a device function
  __device__ float calculateDistance(Point3D point, Point3D centroid) {
     float dx = point.x - centroid.x;
     float dy = point.y - centroid.y;
@@ -70,6 +71,7 @@ void kMeansClusteringGPU(vector<Point3D> *points, int numEpochs, vector<Point3D>
     int blocksPerGrid = (int)ceil((float)points->size() / threadsPerBlock);
     // cout << "Blocks per Grid " << blocksPerGrid << endl;
     kMeansClusteringKernel<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, points->size(), centroids->size());
+    cudaDeviceSynchronize();
 
     // Copy data back to CPU
     cudaMemcpy(points->data(), d_points, points->size() * sizeof(Point3D), cudaMemcpyDeviceToHost);
