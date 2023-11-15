@@ -79,7 +79,6 @@ int main(int argc, char *argv[])
 
     if (world_rank == 0)
     {
-        cout << "Node " << world_rank << " entering the serial section " << endl;
         if (argc != 3)
         {
             cout << "Usage: " << argv[0] << " <numEpochs> <numCentroids>\n";
@@ -207,12 +206,11 @@ int main(int argc, char *argv[])
     MPI_Scatterv(data_z_points, send_counts, displacements, MPI_DOUBLE,
                  recv_z, send_counts[world_rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    cout << "Node " << world_rank << " entering the epochs " << endl;
     for (int i = 0; i < numEpochs; ++i)
     {
-        if (world_rank == 0){
-            cout << "EPOCH: " << i << endl;
-        }
+        // if (world_rank == 0){ // for logs
+        //     cout << "EPOCH: " << i << endl;
+        // }
         MPI_Barrier(MPI_COMM_WORLD);
         // Broadcast the centroids so everyone has updated information
         MPI_Bcast(k_means_x, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -224,7 +222,7 @@ int main(int argc, char *argv[])
                      recv_assign, send_counts[world_rank], MPI_INT, 0, MPI_COMM_WORLD);
 
         // Now that each process has their points, we can use the GPU to calculate the new assignments
-        launchCalculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z,recv_assign, send_counts[world_rank], numCentroids);
+        launchCalculateKMean(k_means_x, k_means_y, k_means_z, recv_x, recv_y, recv_z, recv_assign, send_counts[world_rank], numCentroids);
         MPI_Barrier(MPI_COMM_WORLD); // need to wait for everyone to be done with their GPU before gathering
 
         // Gather the point assignments back together from each process
