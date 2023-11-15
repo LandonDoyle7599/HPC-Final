@@ -84,8 +84,6 @@ void updateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int
     sumX[clusterId] += it->x;
     sumY[clusterId] += it->y;
     sumZ[clusterId] += it->z;
-
-    it->minDist = numeric_limits<float>::max(); // reset distance
   }
   // Compute the new centroids
   for (vector<Point3D>::iterator c = centroids->begin(); c != centroids->end(); ++c)
