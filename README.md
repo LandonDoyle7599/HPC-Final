@@ -78,7 +78,7 @@ echo $CUDA_PATH # gets the path to where cuda is
 
 ```
 
-Your path will be different, but it will be similar to this:
+Your path could be different, but it will be similar to this on the CHPC system:
 
 ```bash
 /uufs/chpc.utah.edu/sys/installdir/r8/cuda/12.2.0/

@@ -123,6 +123,10 @@ int main(int argc, char *argv[])
         vector<Point3D> serialPointCopy = pointData;
         performSerial(numEpochs, &serialCentroidCopy, &serialPointCopy, serialFilename);
 
+        // Start the timer using MPI https://www.mcs.anl.gov/research/projects/mpi/tutorial/gropp/node139.html#:~:text=The%20elapsed%20(wall%2Dclock),n%22%2C%20t2%20%2D%20t1%20)%3B
+        cout << "Performing Distributed CPU" << endl;
+        startTime = MPI_Wtime();
+
         // Get numElements and brodcast for all processes
         numElements = pointData.size();
         MPI_Bcast(&numElements, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -142,8 +146,6 @@ int main(int argc, char *argv[])
             k_assignment[i] = 0;
         }
 
-        // Start the timer using MPI https://www.mcs.anl.gov/research/projects/mpi/tutorial/gropp/node139.html#:~:text=The%20elapsed%20(wall%2Dclock),n%22%2C%20t2%20%2D%20t1%20)%3B
-        startTime = MPI_Wtime();
         // Setup the k_means vectors to proper sizes
         k_means_x = (double *)malloc(sizeof(double) * numCentroids);
         k_means_y = (double *)malloc(sizeof(double) * numCentroids);
