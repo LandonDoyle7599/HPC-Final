@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
         }
 
         // Start the timer using MPI https://www.mcs.anl.gov/research/projects/mpi/tutorial/gropp/node139.html#:~:text=The%20elapsed%20(wall%2Dclock),n%22%2C%20t2%20%2D%20t1%20)%3B
+        cout << "Performing Distributed GPU " << endl;
         startTime = MPI_Wtime();
         // Setup the k_means vectors to proper sizes
         k_means_x = (double *)malloc(sizeof(double) * numCentroids);
@@ -211,7 +212,6 @@ int main(int argc, char *argv[])
         // if (world_rank == 0){ // for logs
         //     cout << "EPOCH: " << i << endl;
         // }
-        MPI_Barrier(MPI_COMM_WORLD);
         // Broadcast the centroids so everyone has updated information
         MPI_Bcast(k_means_x, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Bcast(k_means_y, numCentroids, MPI_DOUBLE, 0, MPI_COMM_WORLD);
