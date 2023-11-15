@@ -41,7 +41,7 @@ void kMeansClusteringSerial(vector<Point3D> *points, int numEpochs, vector<Point
           clusterID = k;
         }
       }
-      points->at(j).clusterID = clusterID;
+      points->at(j).cluster = clusterID;
     }
     // Update the centroids
     updateCentroidData(points, centroids, centroids->size());
