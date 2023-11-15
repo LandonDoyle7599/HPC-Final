@@ -42,7 +42,6 @@ __global__ void kMeansClusteringKernel(Point3D *points, Point3D *centroids, int 
     }
     // Update cluster id and minimum distance for this point
     points[tid].cluster = clusterId;
-    points[tid].minDist = minDist;
 }
 
 /**
