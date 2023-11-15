@@ -58,6 +58,7 @@ extern "C" {
         cudaMemcpy(d_recv_y, recv_y, numLocalDataPoints * sizeof(double), cudaMemcpyHostToDevice);
         cudaMemcpy(d_recv_z, recv_z, numLocalDataPoints * sizeof(double), cudaMemcpyHostToDevice);
         cudaMemcpy(d_assign, assign, numLocalDataPoints * sizeof(int), cudaMemcpyHostToDevice);
+        
         // Launch the kernel
         calculateKMean<<<blocksPerGrid, threadsPerBlock>>>(k_x, k_y, k_z, recv_x, recv_y, recv_z, assign, numLocalDataPoints, numCentroids);
         cudaDeviceSynchronize();

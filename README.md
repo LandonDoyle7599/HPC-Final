@@ -81,8 +81,7 @@ echo $CUDA_PATH # gets the path to where cuda is
 
 ```bash
 nvcc -c distributedGPU.cu
-mpic++ -c serial-to-distributed-gpu.cpp
-mpic++ -o dist distributedGPU.o serial-to-distributed-gpu.o
+mpicxx -o dist serial-to-distributed-gpu.cpp distributedGPU.o -L/uufs/chpc.utah.edu/sys/installdir/r8/cuda/12.2.0/lib64 -lcudart -lcuda
 mpirun -np 2 ./dist 25 6
 ```
 
