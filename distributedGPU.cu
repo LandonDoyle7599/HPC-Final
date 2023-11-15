@@ -15,11 +15,11 @@ void checkCUDAError(cudaError_t err, const char *file, const int line) {
 }
 
 
-__device__ float calculateDistance(float x1, float y1, float z1, float x2, float y2, float z2){
-    float x = abs(x1 - x2);
-    float y = abs(y1 - y2);
-    float z = abs(z1 - z2);
-    return (x * x) + (y * y) + (z * z);
+__device__ float calculateDistance(float p_x, float p_y, float p_z, float k_x, float k_y, float k_z){
+    float dx = p_x - k_x;
+    float dy = p_y - k_y;
+    float dz = p_z - k_z;
+    return (dx * dx) + (dy * dy) + (dz * dz);
 } 
 
 __global__ void calculateKMean(double k_x[], double k_y[], double k_z[], double recv_x[], double recv_y[], double recv_z[], int assign[], int numLocalDataPoints, int numCentroids){
@@ -28,12 +28,12 @@ __global__ void calculateKMean(double k_x[], double k_y[], double k_z[], double 
     if (i >= numLocalDataPoints) {
         return;
     }
-    double min_dist = calculateDistance(k_x[0], k_y[0], k_z[0], recv_x[i], recv_y[i], recv_z[i]);
+    double min_dist = calculateDistance(recv_x[i], recv_y[i], recv_z[i], k_x[0], k_y[0], k_z[0]);
     int clusterID = 0;
     for (int j = 1; j < numCentroids; ++j)
     // Find the closest centroid
     {
-        double temp_dist = calculateDistance(k_x[j], k_y[j], k_z[j], recv_x[i], recv_y[i], recv_z[i]);
+        double temp_dist = calculateDistance(recv_x[i], recv_y[i], recv_z[i], k_x[j], k_y[j], k_z[j]);
 
         if (temp_dist < min_dist)
         {
