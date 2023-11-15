@@ -121,6 +121,10 @@ To simplify grading and validation, we built into every implementation a functio
 
 ## Our Approaches
 
+<!-- TODO Talk abour our choice of cluster numbers 3, 4, and 6 -->
+
+<!-- TODO: Add data and visualization for each implementation using clusters of sizes 3 4 and 6 -->
+
 ### Serial Implementation
 
 For the serial implementation we used the link provided by Dr. Petruzza [here](http://reasonabledeviations.com/2019/10/02/k-means-in-cpp/). We added onto this the z variable into both the Point3D value and how we update the clusters at the end of each epoch. We implemented the actual serial code in `serial.cpp` and the commonly used code across all implementations in `serial.hpp`.
@@ -143,7 +147,11 @@ To ensure the data could be distributed across any number of processors we used 
 
 ### Distributed GPU Implementation
 
-<!-- TODO -->
+For the distributed GPU implementation, we took the code from our distributed CPU implementation and create the `distributedGPU.cu` file to run the GPU code. We wrote the `launchCalculateMean` function to launch the kernel and to also be accessible to outside files (needed for a distributed GPU). Everything else in the distributed GPU is the same as distributed CPU, besides that specific function call.
+
+When we are running `launchCalculateMean` we allocate memory for the particular node's data points and the centroids. It runs the k-means clustering algorithm on the GPU, then copies the updated associations which are on teh reference from the GPU to the CPU. At this point we are back into the distributed system and use gatherV to bring these updated centroids and their associated points together. This whole process is repeated for each epoch.
+
+We had trouble initially with the distributed GPU implementation because we were not allocating enough memory on the GPU to complete its required tasks. We diagnosed the issue using our `checkCUDAError` function and found that we were running out of memory on the GPU for our specific data points. We realized we had been using mismatched points, and after fixing that we were able to run the distributed GPU implementation.
 
 ## Analysis
 
