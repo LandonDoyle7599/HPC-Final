@@ -19,5 +19,5 @@ int main()
     performSerial(numEpochs, &centroids, &points, f1);
     cout << "\nPerforming GPU" << endl;
     performGPU(numEpochs, &gpuCentroidCopy, &gpuPointsCopy, f2);
-    areFilesEqual(f1, f2, true)
+    areFilesEqual(f1, f2, true);
 }

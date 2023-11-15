@@ -58,8 +58,6 @@ nvcc serial-to-single-gpu.cu -o gpu
 ./gpu
 ```
 
-`mpicxx -o gpu_dist serial-to-distributed-gpu.cpp dist -L/uufs/chpc.utah.edu/sys/installdir/r8/cuda/12.2.0/lib64  -lcuda -lcudart`
-
 To change the number of epochs and clusters, edit the `main` function in `serial-to-single-gpu.cu`.
 
 ### Distributed GPU
