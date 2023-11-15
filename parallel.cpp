@@ -10,42 +10,6 @@
 using namespace std;
 
 /**
- * Updates the centroid data based on the points
- * @param points - pointer to vector of points
- * @param centroids - pointer to vector of centroids
- * @param numCentroids - the number of initial centroids
- */
-
-void parallelUpdateCentroidData(vector<Point3D> *points, vector<Point3D> *centroids, int numCentroids)
-{
-  // Create vectors to keep track of data needed to compute means
-  vector<int> nPoints(numCentroids, 0);
-  vector<double> sumX(numCentroids, 0.0);
-  vector<double> sumY(numCentroids, 0.0);
-
-  // Parallelize the loop to accumulate data for centroid updates
-#pragma omp parallel for
-  for (int i = 0; i < points->size(); ++i)
-  {
-    int clusterId = (*points)[i].cluster;
-#pragma omp atomic
-    nPoints[clusterId] += 1;
-#pragma omp atomic
-    sumX[clusterId] += (*points)[i].x;
-#pragma omp atomic
-    sumY[clusterId] += (*points)[i].y;
-    (*points)[i].minDist = numeric_limits<float>::max(); // reset distance
-  }
-
-  // Compute the new centroids
-  for (int clusterId = 0; clusterId < numCentroids; ++clusterId)
-  {
-    centroids->at(clusterId).x = sumX[clusterId] / nPoints[clusterId];
-    centroids->at(clusterId).y = sumY[clusterId] / nPoints[clusterId];
-  }
-}
-
-/**
  * Perform k-means clustering
  * @param points - pointer to vector of points
  * @param numEpochs - number of k means iterations
@@ -54,33 +18,25 @@ void parallelUpdateCentroidData(vector<Point3D> *points, vector<Point3D> *centro
 void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids, int numThreads)
 {
   // Repeat over epochs to converge the centroids
-  for (int epoch = 0; epoch < numEpochs; ++epoch)
+  for (int i = 0; i < numEpochs; ++i)
   {
 #pragma omp parallel for num_threads(numThreads)
-    for (int i = 0; i < points->size(); ++i)
+    for (int j = 0; j < points->size(); ++j)
     {
-      Point3D &p = (*points)[i]; // Get the point
-      int clusterId = 0;
-      double minDist = centroids->at(0).distance(p); // Get the distance to the first centroid
-
-      for (int j = 1; j < centroids->size(); ++j) // Iterate over the rest of the centroids to see if it is closer to any others
+      float minDistance = calculateDistanceSerial(points->at(j).x, points->at(j).y, points->at(j).z, centroids->at(0).x, centroids->at(0).y, centroids->at(0).z);
+      int clusterID = 0;
+      for (int k = 1; k < centroids->size(); ++k)
       {
-        double dist = centroids->at(j).distance(p);
-        if (dist < minDist)
+        float distance = calculateDistanceSerial(points->at(j).x, points->at(j).y, points->at(j).z, centroids->at(k).x, centroids->at(k).y, centroids->at(k).z);
+        if (distance < minDistance)
         {
-          minDist = dist;
-          clusterId = j;
+          minDistance = distance;
+          clusterID = k;
         }
       }
-// Update the cluster id and minimum distance.
-// This is a critical section because we don't want the threads to overlap as they are writing to the same memory location
-#pragma omp critical
-      {
-        p.minDist = minDist;
-        p.cluster = clusterId;
-      }
+      // Update the cluster id and minimum distance.
+      points->at(j).cluster = clusterID;
     }
-
     // Update the centroids
     updateCentroidData(points, centroids, centroids->size());
   }
