@@ -8,9 +8,10 @@
 #include <chrono>
 #include <mpi.h>
 #include "serial.cpp"
-#include "distributedGPU.cu"
 
 using namespace std;
+
+extern "C" void launchCalculateKMean(double k_x[], double k_y[], double k_z[], double recv_x[], double recv_y[], double recv_z[], int assign[], int numLocalDataPoints, int numCentroids);
 
 void updateCentroidDataDistributed(double k_means_x[], double k_means_y[], double k_means_z[],
                                    double data_x_points[], double data_y_points[], double data_z_points[], int k_assignment[], int numElements, int numCentroids)

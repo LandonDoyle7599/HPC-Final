@@ -58,6 +58,8 @@ nvcc serial-to-single-gpu.cu -o gpu
 ./gpu
 ```
 
+```mpicxx -o gpu_dist serial-to-distributed-gpu.cpp dist -L/uufs/chpc.utah.edu/sys/installdir/r8/cuda/12.2.0/lib64  -lcuda -lcudart```
+
 To change the number of epochs and clusters, edit the `main` function in `serial-to-single-gpu.cu`.
 
 ### Distributed GPU
@@ -70,6 +72,12 @@ module load openmpi
 ```
 
 Now we can compile and execute, but we need to compile the files separately and then join them together:
+
+Path to thing
+```bash
+echo $CUDA_PATH # gets the path to where cuda is
+/uufs/chpc.utah.edu/sys/installdir/r8/cuda/12.2.0/lib64
+```
 
 ```bash
 nvcc -c distributedGPU.cu
