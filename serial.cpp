@@ -7,6 +7,16 @@
 
 using namespace std;
 
+/**
+ * Calculates the distance between two points
+ * @param p_x - x coordinate of point
+ * @param p_y - y coordinate of point
+ * @param p_z - z coordinate of point
+ * @param k_x - x coordinate of centroid
+ * @param k_y - y coordinate of centroid
+ * @param k_z - z coordinate of centroid
+ * @return the distance between the two points
+ */
 float calculateDistanceSerial(float p_x, float p_y, float p_z, float k_x, float k_y, float k_z)
 {
   float dx = p_x - k_x;
