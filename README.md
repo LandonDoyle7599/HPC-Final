@@ -58,7 +58,7 @@ nvcc serial-to-single-gpu.cu -o gpu
 ./gpu
 ```
 
-```mpicxx -o gpu_dist serial-to-distributed-gpu.cpp dist -L/uufs/chpc.utah.edu/sys/installdir/r8/cuda/12.2.0/lib64  -lcuda -lcudart```
+`mpicxx -o gpu_dist serial-to-distributed-gpu.cpp dist -L/uufs/chpc.utah.edu/sys/installdir/r8/cuda/12.2.0/lib64  -lcuda -lcudart`
 
 To change the number of epochs and clusters, edit the `main` function in `serial-to-single-gpu.cu`.
 
@@ -74,6 +74,7 @@ module load openmpi
 Now we can compile and execute, but we need to compile the files separately and then join them together:
 
 Path to thing
+
 ```bash
 echo $CUDA_PATH # gets the path to where cuda is
 /uufs/chpc.utah.edu/sys/installdir/r8/cuda/12.2.0/lib64
@@ -287,7 +288,50 @@ A visualized example of the distributed CPU implementation with 4 nodes and 50 e
 
 ### Distributed GPU Implementation
 
-<!-- TODO -->
+For our timings below we used 4 nodes, each with a GPU. That GPU on each is below:
+
+```bash
+Device 0: "NVIDIA GeForce RTX 2080 Ti"
+  Major revision number:                         7
+  Minor revision number:                         5
+  Total amount of global memory:                 2956460032 bytes
+  Number of multiprocessors:                     68
+  Number of cores:                               544
+  Total amount of constant memory:               65536 bytes
+  Total amount of shared memory per block:       49152 bytes
+  Total number of registers available per block: 65536
+  Warp size:                                     32
+  Maximum number of threads per block:           1024
+  Maximum sizes of each dimension of a block:    1024 x 1024 x 64
+  Maximum sizes of each dimension of a grid:     2147483647 x 65535 x 65535
+  Maximum memory pitch:                          2147483647 bytes
+  Texture alignment:                             512 bytes
+  Clock rate:                                    1.54 GHz
+  Concurrent copy and execution:                 Yes
+```
+
+<!-- TODO Decide whether this is strongly or weakly scaled -->
+
+100 epochs and 6 clusters and changing number of nodes:
+
+| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
+| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
+| 2     | 2.785133          | 27.798197       | 100    | 6        | 256               |
+| 3     | 2.822513          | 27.794231       | 100    | 6        | 256               |
+| 4     | 2.838683          | 27.768236       | 100    | 6        | 256               |
+
+<!-- TODO Add discussion for this figure -->
+
+Now with 4 nodes but scaling up the number of epochs and the amount of data:
+
+| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
+| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
+| 4     | 1.564496          | 13.977806       | 50     | 6        | 256               |
+| 4     | 2.921382          | 27.898281       | 100    | 6        | 256               |
+| 4     | 5.113978          | 55.535177       | 200    | 6        | 256               |
+| 4     | 9.965394          | 111.073740      | 400    | 6        | 256               |
+
+<!-- TODO: Add comparison between this and the CPU and Single GPU Implementations. (THis one is faster by a few seconds) -->
 
 ## References
 
