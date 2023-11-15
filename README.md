@@ -320,7 +320,17 @@ Device 0: "NVIDIA GeForce RTX 2080 Ti"
 | 3     | 2.822513          | 27.794231       | 100    | 6        | 256               |
 | 4     | 2.838683          | 27.768236       | 100    | 6        | 256               |
 
-<!-- TODO Add discussion for this figure -->
+<!-- TODO Add discussion for this table -->
+
+100 epochs and 6 clusters and same number of nodes and different threads per block:
+
+| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
+| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
+| 4     | 2.785892          | 27.932044       | 100    | 6        | 64                |
+| 4     | 2.921382          | 27.898281       | 100    | 6        | 256               |
+| 4     | 2.844672          | 28.124140       | 100    | 6        | 1024              |
+
+<!-- TODO Add discussion for this table -->
 
 Now with 4 nodes but scaling up the number of epochs and the amount of data:
 
