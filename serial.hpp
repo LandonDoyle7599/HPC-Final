@@ -8,28 +8,17 @@
 using namespace std;
 
 /**
- * Represents a 3D point
+ * Represents a 3D point and its corresponding closest cluster
  */
 struct Point3D
 {
   double x, y, z; // coordinates
   int cluster;    // no default cluster
-  double minDist; // default infinite distance to the nearest cluster
 
   Point3D()
-      : x(0.0), y(0.0), z(0.0), cluster(-1),
-        minDist(numeric_limits<double>::max()) {}
+      : x(0.0), y(0.0), z(0.0), cluster(-1) {}
   Point3D(double x, double y, double z)
-      : x(x), y(y), z(z), cluster(-1), minDist(numeric_limits<double>::max()) {}
-
-  /**
-   * Computes the (square) Euclidean distance between this point and another
-   */
-  double distance(Point3D p)
-  {
-    return (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y) +
-           (p.z - z) * (p.z - z);
-  }
+      : x(x), y(y), z(z), cluster(-1) {}
 };
 
 /**
