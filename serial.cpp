@@ -60,17 +60,3 @@ void performSerial(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *p
   printStats(numEpochs, centroids->size(), points, duration.count());
   saveOutputs(points, filename);
 }
-
-// Uncomment this to run the serial code standalone
-// int main()
-// {
-//   // Read in the data
-//   cout << "Reading the csv" << endl;
-//   vector<Point3D> points = readcsv("song_data.csv");
-//   int numEpochs = 100;
-//   int numCentroids = 6;
-//   // Initialize the centroids
-//   vector<Point3D> centroids = initializeCentroids(numCentroids, &points, true);
-//   // Perform it
-//   performSerial(numEpochs, numCentroids, &centroids, &points, "serial-cpu.csv");
-// }
