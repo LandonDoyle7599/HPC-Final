@@ -11,20 +11,26 @@
 
 using namespace std;
 
+float calculateDistanceDist(float p_x, float p_y, float p_z, float k_x, float k_y, float k_z)
+{
+    float dx = p_x - k_x;
+    float dy = p_y - k_y;
+    float dz = p_z - k_z;
+    return (dx * dx) + (dy * dy) + (dz * dz);
+}
+
 void calculateKMean(double k_x[], double k_y[], double k_z[],
                     double recv_x[], double recv_y[], double recv_z[], int assign[], int numLocalDataPoints, int numCentroids)
 {
     for (int i = 0; i < numLocalDataPoints; ++i)
     {
-        double min_dist = numeric_limits<double>::max();
+        // Initialize min dist on the first centroid
+        double min_dist = calculateDistanceDist(recv_x[i], recv_y[i], recv_z[i], k_x[0], k_y[0], k_z[0]);
         int clusterID = 0;
-        for (int j = 0; j < numCentroids; ++j)
-        // Find the closest centroid
+        // Now find closest centroid to that point by looking at distance to all of them from this point
+        for (int j = 1; j < numCentroids; ++j)
         {
-            double x = abs(recv_x[i] - k_x[j]);
-            double y = abs(recv_y[i] - k_y[j]);
-            double z = abs(recv_z[i] - k_z[j]);
-            double temp_dist = (x * x) + (y * y) + (z * z);
+            double temp_dist = calculateDistanceDist(recv_x[i], recv_y[i], recv_z[i], k_x[j], k_y[j], k_z[j]);
 
             if (temp_dist < min_dist)
             {
@@ -32,7 +38,7 @@ void calculateKMean(double k_x[], double k_y[], double k_z[],
                 clusterID = j;
             }
         }
-        // Update the assignment
+        // Update the assignment of closest centroid to this point
         assign[i] = clusterID;
     }
 }
