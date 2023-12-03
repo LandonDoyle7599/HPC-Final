@@ -17,29 +17,49 @@ using namespace std;
  */
 void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids, int numThreads)
 {
+  int numPoints = points->size();
+  int numCentroids = centroids->size();
+  float minDistance;
+  int clusterID;
+  float distance;
+  int epoch;
+  int i;
+  int j;
+
+#pragma omp parallel num_threads(numThreads) default(none) shared(points, centroids, numEpochs, numPoints, numCentroids) private(epoch, i, j, minDistance, clusterID, distance)
+// # pragma omp parallel num_threads(numThreads)
+{
   // Repeat over epochs to converge the centroids
-  for (int i = 0; i < numEpochs; ++i)
+  for (epoch = 0; epoch < numEpochs; ++epoch)
   {
-#pragma omp parallel for num_threads(numThreads)
-    for (int j = 0; j < points->size(); ++j)
+    #pragma omp for
+    for (i = 0; i < numPoints; ++i)
     {
-      float minDistance = calculateDistanceSerial(points->at(j).x, points->at(j).y, points->at(j).z, centroids->at(0).x, centroids->at(0).y, centroids->at(0).z);
-      int clusterID = 0;
-      for (int k = 1; k < centroids->size(); ++k)
+      minDistance = calculateDistanceSerial(points->at(i).x, points->at(i).y, points->at(i).z, centroids->at(0).x, centroids->at(0).y, centroids->at(0).z);
+      clusterID = 0;
+      for (j = 1; j < numCentroids; ++j)
       {
-        float distance = calculateDistanceSerial(points->at(j).x, points->at(j).y, points->at(j).z, centroids->at(k).x, centroids->at(k).y, centroids->at(k).z);
+        distance = calculateDistanceSerial(points->at(i).x, points->at(i).y, points->at(i).z, centroids->at(j).x, centroids->at(j).y, centroids->at(j).z);
         if (distance < minDistance)
         {
           minDistance = distance;
-          clusterID = k;
+          clusterID = j;
         }
       }
-      // Update the cluster id and minimum distance.
-      points->at(j).cluster = clusterID;
+      // Update the cluster id and minimum distance. Each thread has their own subsection of points
+      points->at(i).cluster = clusterID;
     }
-    // Update the centroids
-    updateCentroidData(points, centroids, centroids->size());
+
+// Update the centroids
+// We only want the root thread to update the centroids, so add a barrier before and a barrier after to ensure synchronization
+# pragma omp barrier
+#pragma omp master 
+  {
+    updateCentroidData(points, centroids, numCentroids);
   }
+  # pragma omp barrier
+}
+}
 }
 
 void performParallel(int numEpochs, vector<Point3D> *centroids, vector<Point3D> *points, string filename, int numThreads)
@@ -54,17 +74,3 @@ void performParallel(int numEpochs, vector<Point3D> *centroids, vector<Point3D> 
   printStats(numEpochs, centroids->size(), points, duration.count());
   saveOutputs(points, filename);
 }
-
-// Uncomment this to run the serial code standalone
-// int main()
-// {
-//   // Read in the data
-//   cout << "Reading the csv" << endl;
-//   vector<Point3D> points = readcsv("song_data.csv");
-//   int numEpochs = 100;
-//   int numCentroids = 6;
-//   // Initialize the centroids
-//   vector<Point3D> centroids = initializeCentroids(numCentroids, &points, true);
-//   // Perform it
-//   performParallel(numEpochs, &centroids, &points, "parallel-cpu.csv");
-// }

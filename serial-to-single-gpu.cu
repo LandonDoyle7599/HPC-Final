@@ -3,13 +3,14 @@
 #include "gpu.cu"
 #include <iostream>
 using namespace std;
-int main()
+int main(int argc, char **argv)
 {
+    int numEpochs;
+    int numCentroids;
+    getEpochsCentroids(argc, argv, numEpochs, numCentroids);
     // Read in the data
     cout << "Reading the csv" << endl;
     vector<Point3D> points = readcsv("song_data.csv");
-    int numEpochs = 25;
-    int numCentroids = 6;
     // Because this is random initialization we need to share it between the serial and GPU to ensure they are valid
     vector<Point3D> centroids = initializeCentroids(numCentroids, &points);
     vector<Point3D> gpuCentroidCopy = centroids; // Copies the data, not the reference to ensure we are validating correctly https://www.geeksforgeeks.org/ways-copy-vector-c/

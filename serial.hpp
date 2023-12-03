@@ -221,3 +221,21 @@ void printStats(int numEpochs, int numCentroids, vector<Point3D> *points, long d
   cout << "--------------\n"
        << endl;
 }
+
+/**
+ * Gets the epochs and centroids from the command line
+ * @param argc - number of command line arguments
+ * @param argv - array of command line arguments
+ * @param numEpochs - number of k means iterations
+ * @param numCentroids - the number of initial centroids
+ */
+void getEpochsCentroids(int argc, char *argv[], int &numEpochs, int &numCentroids)
+{
+  if (argc < 3)
+  {
+    cout << "Usage: " << argv[0] << " <numEpochs> <numCentroids> " << endl;
+    exit(0);
+  }
+  numEpochs = atoi(argv[1]);
+  numCentroids = atoi(argv[2]);
+}
