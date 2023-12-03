@@ -10,19 +10,14 @@ Note: We implicity run the serial implementation for every other one as comparis
 
 ```bash
 g++ serial-only.cpp -o serial
-./serial
+./serial <numEpochs> <numCentroids>
 ```
-
-To change the number of epochs and clusters, edit the `main` function in `serial-only.cpp`.
-
 ### Parallel CPU
 
 ```bash
 g++ -fopenmp serial-to-parallel.cpp -o parallel
-./parallel
+./parallel <numEpochs> <numCentroids> <optional numThreads>
 ```
-
-To change the number of epochs and clusters, edit the `main` function in `serial-to-parallel.cpp`.
 
 ### Distributed CPU
 
@@ -55,10 +50,8 @@ Now we can compile and execute:
 
 ```bash
 nvcc serial-to-single-gpu.cu -o gpu
-./gpu
+./gpu <number of epochs> <number of clusters>
 ```
-
-To change the number of epochs and clusters, edit the `main` function in `serial-to-single-gpu.cu`.
 
 ### Distributed GPU
 

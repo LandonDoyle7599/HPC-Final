@@ -46,15 +46,12 @@ void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<
           clusterID = j;
         }
       }
-      // Update the cluster id and minimum distance.
-      # pragma omp critical 
-      {
-        points->at(i).cluster = clusterID;
-      }
+      // Update the cluster id and minimum distance. Each thread has their own subsection of points
+      points->at(i).cluster = clusterID;
     }
 
 // Update the centroids
-// We only want the root thread to update the centroids
+// We only want the root thread to update the centroids, so add a barrier before and a barrier after to ensure synchronization
 # pragma omp barrier
 #pragma omp master 
   {
