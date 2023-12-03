@@ -101,14 +101,9 @@ int main(int argc, char *argv[])
 
     if (world_rank == 0)
     {
-        if (argc != 3)
-        {
-            cout << "Usage: " << argv[0] << " <numEpochs> <numCentroids>\n";
-            MPI_Abort(MPI_COMM_WORLD, 1);
-        }
-        numEpochs = atoi(argv[1]);
-        numCentroids = atoi(argv[2]);
-
+        // Read command line args
+        getEpochsCentroids(argc, argv, numEpochs, numCentroids);
+        // Share their values with the other processes
         MPI_Bcast(&numCentroids, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&numEpochs, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
