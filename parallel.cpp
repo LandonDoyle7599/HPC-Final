@@ -17,41 +17,51 @@ using namespace std;
  */
 void kMeansClusteringParallelCPU(vector<Point3D> *points, int numEpochs, vector<Point3D> *centroids, int numThreads)
 {
+  int numPoints = points->size();
+  int numCentroids = centroids->size();
   float minDistance;
   int clusterID;
   float distance;
+  int epoch;
   int i;
   int j;
-  int k;
-  // Create a thread region
-  omp_set_num_threads(numThreads);
-#pragma omp parallel for default(none) shared(points, centroids) private(i, j, k, minDistance, clusterID, distance)
+
+#pragma omp parallel num_threads(numThreads) default(none) shared(points, centroids, numEpochs, numPoints, numCentroids) private(epoch, i, j, minDistance, clusterID, distance)
+// # pragma omp parallel num_threads(numThreads)
+{
   // Repeat over epochs to converge the centroids
-  for (i = 0; i < numEpochs; ++i)
+  for (epoch = 0; epoch < numEpochs; ++epoch)
   {
-#pragma omp for
-    for (j = 0; j < points->size(); ++j)
+    #pragma omp for
+    for (i = 0; i < numPoints; ++i)
     {
-      minDistance = calculateDistanceSerial(points->at(j).x, points->at(j).y, points->at(j).z, centroids->at(0).x, centroids->at(0).y, centroids->at(0).z);
+      minDistance = calculateDistanceSerial(points->at(i).x, points->at(i).y, points->at(i).z, centroids->at(0).x, centroids->at(0).y, centroids->at(0).z);
       clusterID = 0;
-      for (k = 1; k < centroids->size(); ++k)
+      for (j = 1; j < numCentroids; ++j)
       {
-        distance = calculateDistanceSerial(points->at(j).x, points->at(j).y, points->at(j).z, centroids->at(k).x, centroids->at(k).y, centroids->at(k).z);
+        distance = calculateDistanceSerial(points->at(i).x, points->at(i).y, points->at(i).z, centroids->at(j).x, centroids->at(j).y, centroids->at(j).z);
         if (distance < minDistance)
         {
           minDistance = distance;
-          clusterID = k;
+          clusterID = j;
         }
       }
       // Update the cluster id and minimum distance.
-      points->at(j).cluster = clusterID;
+      # pragma omp critical 
+      {
+        points->at(i).cluster = clusterID;
+      }
     }
 
 // Update the centroids
 // We only want the root thread to update the centroids
-#pragma omp master {
-    updateCentroidData(points, centroids, centroids->size());
+# pragma omp barrier
+#pragma omp master 
+  {
+    updateCentroidData(points, centroids, numCentroids);
   }
+  # pragma omp barrier
+}
 }
 }
 
