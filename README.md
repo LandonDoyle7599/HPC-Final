@@ -10,14 +10,23 @@ Note: We implicity run the serial implementation for every other one as comparis
 
 ```bash
 g++ serial-only.cpp -o serial
-./serial <numEpochs> <numCentroids>
+./serial 25 6
 ```
+
+To change the number of epochs and clusters, pass in different values as arguments to the command.
+`./serial <number of epochs> <number of clusters>`
+
 ### Parallel CPU
 
 ```bash
 g++ -fopenmp serial-to-parallel.cpp -o parallel
-./parallel <numEpochs> <numCentroids> <optional numThreads>
+./parallel 25 6 8
 ```
+
+To change the number of epochs, clusters and threads, pass in different values as arguments to the command.
+`./parallel <number of epochs> <number of clusters> <optional: number of threads>`
+
+If you do not pass in a threadcount, it will default to 4 threads.
 
 ### Distributed CPU
 
@@ -50,8 +59,11 @@ Now we can compile and execute:
 
 ```bash
 nvcc serial-to-single-gpu.cu -o gpu
-./gpu <number of epochs> <number of clusters>
+./gpu 25 6
 ```
+
+To change the number of epochs and clusters, pass in different values as arguments to the command.
+`./gpu <number of epochs> <number of clusters>`
 
 ### Distributed GPU
 
@@ -114,13 +126,13 @@ To simplify grading and validation, we built into every implementation a functio
 
 ## Our Approaches
 
-<!-- TODO Talk abour our choice of cluster numbers 3, 4, and 6 -->
+We chose to use 3,4, and 6 as our testing values for the clusters because we wanted to see how well the program would change going in doubling the cluster size (3 to 6), and also to see how only changing one (3 to 4) would affect our outcomes. We ran all of the programs several times to ensure accuracy in timing and outputs.
 
 <!-- TODO: Add data and visualization for each implementation using clusters of sizes 3 4 and 6 -->
 
 ### Serial Implementation
 
-For the serial implementation we used the link provided by Dr. Petruzza [here](http://reasonabledeviations.com/2019/10/02/k-means-in-cpp/). We added onto this the z variable into both the Point3D value and how we update the clusters at the end of each epoch. We implemented the actual serial code in `serial.cpp` and the commonly used code across all implementations in `serial.hpp`.
+For the serial implementation we used the link provided by Dr. Petruzza [here](http://reasonabledeviations.com/2019/10/02/k-means-in-cpp/). We added onto this the z variable into both the Point3D value and how we update the clusters at the end of each epoch. We implemented the actual serial code in `serial.cpp` and the commonly used code across all implementations in `serial.hpp`. Fundamentally, this works by taking in X number of points and K randomized clusters. Every point is then assigned to a cluster based on how close it is. The clusters are then updated to reflect their nearest points, the average of the groupings, and then we run this entire process for a specified number of iterations, denoted as `epochs` in the code. 
 
 ### Single GPU Implementation
 
@@ -130,7 +142,7 @@ The most important thing to get right in this implementation was the memory mana
 
 ### Parallel CPU Implementation
 
-For the parallel CPU implementation we took our serial implementation and changed it to use Open MP. As with the GPU paralleization, the main consideration we had was on the nested loops iterating over every point. This was the loop we parallelized, allowing each thread to use a chunk of the total number of points (1,240,425). In the case of 5 threads, each thread works on 1240425/5 = 248085 points. We let OpenMP handle the distribution of data. After each thread is completed, we need to update the clusters, then restart the loop for the next epoch.
+For the parallel CPU implementation we took our serial implementation and changed it to use Open MP. As with the GPU paralleization, the main consideration we had was on the nested loops iterating over every point. This was the loop we parallelized, allowing each thread to use a chunk of the total number of points (1,240,425). In the case of 5 threads, each thread works on 1240425/5 = 248085 points. We let OpenMP handle the distribution of the points across each thread. After each thread is completed, we need to update the clusters, which is done by the master thread, then restart the loop for the next epoch, once again distributing points among the threads.
 
 ### Distributed CPU Implementation
 
