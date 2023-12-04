@@ -82,6 +82,8 @@ Becuase it can have 1024 threads per block, we will use that as our baseline. It
 
 Increase processes, keeping epochs the same is strong scaling.
 
+<!-- TODO: Aaron add speedup and efficiency -->
+
 | Threads per Block | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
 | ----------------- | -------- | --------------- | ------ | -------- | ------- | ---------- |
 | 256               | 1.726700 | 9.633755        | 50     | 3        |         |            |
@@ -97,6 +99,8 @@ Increase processes, keeping epochs the same is strong scaling.
 <!-- TODO: Add discussion for this table -->
 
 Increase epochs and threads proportionally is weak scaling.
+
+<!-- TODO: Aaron add speedup and efficiency -->
 
 | Threads per Block | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
 | ----------------- | -------- | --------------- | ------ | -------- | ------- | ---------- |
