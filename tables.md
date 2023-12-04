@@ -32,6 +32,7 @@ Increase processes, keeping epochs the same is strong scaling.
 | 8       | 12.101930         | 35.999700       | 100    | 6        |         |            |
 | 16      | 12.805487         | 36.019349       | 100    | 6        |         |            |
 
+<!-- TODO Add discussion of results -->
 Increase epochs and threads proportionally is weak scaling.
 
 | Threads | Time (s)  | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
@@ -45,6 +46,8 @@ Increase epochs and threads proportionally is weak scaling.
 | 4       | 10.002409 | 17.976485       | 50     | 6        |         |            |
 | 8       | 11.812873 | 35.975967       | 100    | 6        |         |            |
 | 16      | 25.851216 | 72.608509       | 200    | 6        |         |            |
+
+<!-- TODO Add discussion of results -->
 
 ### Single GPU Implementation
 
@@ -173,7 +176,8 @@ On 6 Clusters:
 | 3     | 0.657219          | 8.690562        | 25     | 6        | 256               |
 | 4     | 0.821848          | 8.679386        | 25     | 6        | 256               |
 
-<!-- TODO Add discussion for these tables above ^ -->
+Here we see that as we increase the number of nodes the time does go down for 3, but jumps back up to 4. This could be due to the amount of overhead involved in running this on only 25 epochs. As we increase the number of epochs from 25 to 100 we see much clearer the advantage of using more nodes.
+
 <!-- TODO: Landon Write discussion about how the distributed CPU and distributed GPU compare -->
 
 Now with 4 nodes but scaling up the number of epochs
@@ -185,7 +189,7 @@ Now with 4 nodes but scaling up the number of epochs
 | 4     | 2.257343          | 34.808612       | 100    | 6        | 256               |
 | 4     | 4.277128          | 69.621106       | 200    | 6        | 256               |
 
-<!-- TODO Add discussion for this table above^ -->
+On this table, we see that the increasing epochs does increase the time, and doubling the amount of data very nearly doubles the time. This is to be expected.
 
 100 epochs and 6 clusters and same number of nodes and different threads per block:
 
