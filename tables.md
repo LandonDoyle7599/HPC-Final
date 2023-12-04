@@ -119,31 +119,125 @@ Now with 4 nodes but scaling up the number of epochs and the amount of data:
 
 ### Distributed GPU Implementation
 
-100 epochs and 6 clusters and changing number of nodes:
+On 3 Clusters:
 
 | Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 2     | 2.785133          | 27.798197       | 100    | 6        | 256               |
-| 3     | 2.822513          | 27.794231       | 100    | 6        | 256               |
-| 4     | 2.838683          | 27.768236       | 100    | 6        | 256               |
+| 2     | 0.707328          | 4.711447        | 25     | 3        | 256               |
+| 3     | 0.647141          | 4.714513        | 25     | 3        | 256               |
+| 4     | 0.799928          | 4.704620        | 25     | 3        | 256               |
 
-<!-- TODO Add discussion for this table -->
+On 4 Clusters:
+
+| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
+| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
+| 2     | 0.634951          | 6.065612        | 25     | 4        | 256               |
+| 3     | 0.814948          | 6.070404        | 25     | 4        | 256               |
+| 4     | 0.804700          | 6.096105        | 25     | 4        | 256               |
+
+On 6 Clusters:
+
+| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
+| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
+| 2     | 0.778927          | 8.686541        | 25     | 6        | 256               |
+| 3     | 0.657219          | 8.690562        | 25     | 6        | 256               |
+| 4     | 0.821848          | 8.679386        | 25     | 6        | 256               |
+
+<!-- TODO Add discussion for these tables above ^ -->
+
+Now with 4 nodes but scaling up the number of epochs
+
+| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
+| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
+| 4     | 0.821734          | 8.690958        | 25     | 6        | 256               |
+| 4     | 1.296684          | 17.392156       | 50     | 6        | 256               |
+| 4     | 2.257343          | 34.808612       | 100    | 6        | 256               |
+| 4     | 4.277128          | 69.621106       | 200    | 6        | 256               |
+
+<!-- TODO Add discussion for this table above^ -->
 
 100 epochs and 6 clusters and same number of nodes and different threads per block:
 
 | Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 4     | 2.785892          | 27.932044       | 100    | 6        | 64                |
-| 4     | 2.921382          | 27.898281       | 100    | 6        | 256               |
-| 4     | 2.844672          | 28.124140       | 100    | 6        | 1024              |
+| 4     | 1.400168          | 17441074        | 50     | 6        | 64                |
+| 4     | 1.296684          | 17.392156       | 50     | 6        | 256               |
+| 4     | 1.410010          | 17.333747       | 50     | 6        | 1024              |
 
-<!-- TODO Add discussion for this table -->
+Note: For these 4 nodes, we have the following GPU configs:
 
-Now with 4 nodes but scaling up the number of epochs and the amount of data:
+```bash
+Device 0: "NVIDIA GeForce RTX 3090"
+  Major revision number:                         8
+  Minor revision number:                         6
+  Total amount of global memory:                 3963289600 bytes
+  Number of multiprocessors:                     82
+  Number of cores:                               656
+  Total amount of constant memory:               65536 bytes
+  Total amount of shared memory per block:       49152 bytes
+  Total number of registers available per block: 65536
+  Warp size:                                     32
+  Maximum number of threads per block:           1024
+  Maximum sizes of each dimension of a block:    1024 x 1024 x 64
+  Maximum sizes of each dimension of a grid:     2147483647 x 65535 x 65535
+  Maximum memory pitch:                          2147483647 bytes
+  Texture alignment:                             512 bytes
+  Clock rate:                                    1.70 GHz
+  Concurrent copy and execution:                 Yes
 
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
-| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 4     | 1.564496          | 13.977806       | 50     | 6        | 256               |
-| 4     | 2.921382          | 27.898281       | 100    | 6        | 256               |
-| 4     | 5.113978          | 55.535177       | 200    | 6        | 256               |
-| 4     | 9.965394          | 111.073740      | 400    | 6        | 256               |
+Device 1: "NVIDIA GeForce RTX 3090"
+  Major revision number:                         8
+  Minor revision number:                         6
+  Total amount of global memory:                 3963289600 bytes
+  Number of multiprocessors:                     82
+  Number of cores:                               656
+  Total amount of constant memory:               65536 bytes
+  Total amount of shared memory per block:       49152 bytes
+  Total number of registers available per block: 65536
+  Warp size:                                     32
+  Maximum number of threads per block:           1024
+  Maximum sizes of each dimension of a block:    1024 x 1024 x 64
+  Maximum sizes of each dimension of a grid:     2147483647 x 65535 x 65535
+  Maximum memory pitch:                          2147483647 bytes
+  Texture alignment:                             512 bytes
+  Clock rate:                                    1.70 GHz
+  Concurrent copy and execution:                 Yes
+
+Device 2: "NVIDIA GeForce RTX 3090"
+  Major revision number:                         8
+  Minor revision number:                         6
+  Total amount of global memory:                 3963289600 bytes
+  Number of multiprocessors:                     82
+  Number of cores:                               656
+  Total amount of constant memory:               65536 bytes
+  Total amount of shared memory per block:       49152 bytes
+  Total number of registers available per block: 65536
+  Warp size:                                     32
+  Maximum number of threads per block:           1024
+  Maximum sizes of each dimension of a block:    1024 x 1024 x 64
+  Maximum sizes of each dimension of a grid:     2147483647 x 65535 x 65535
+  Maximum memory pitch:                          2147483647 bytes
+  Texture alignment:                             512 bytes
+  Clock rate:                                    1.70 GHz
+  Concurrent copy and execution:                 Yes
+
+Device 3: "NVIDIA GeForce RTX 3090"
+  Major revision number:                         8
+  Minor revision number:                         6
+  Total amount of global memory:                 3963289600 bytes
+  Number of multiprocessors:                     82
+  Number of cores:                               656
+  Total amount of constant memory:               65536 bytes
+  Total amount of shared memory per block:       49152 bytes
+  Total number of registers available per block: 65536
+  Warp size:                                     32
+  Maximum number of threads per block:           1024
+  Maximum sizes of each dimension of a block:    1024 x 1024 x 64
+  Maximum sizes of each dimension of a grid:     2147483647 x 65535 x 65535
+  Maximum memory pitch:                          2147483647 bytes
+  Texture alignment:                             512 bytes
+  Clock rate:                                    1.70 GHz
+  Concurrent copy and execution:                 Yes
+```
+
+<!-- TODO Add discussion for this table with analytical discussion of the best GPU configuration -->
