@@ -33,6 +33,7 @@ Increase processes, keeping epochs the same is strong scaling.
 | 16      | 12.805487         | 36.019349       | 100    | 6        |         |            |
 
 <!-- TODO Add discussion of results -->
+
 Increase epochs and threads proportionally is weak scaling.
 
 | Threads | Time (s)  | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
@@ -177,6 +178,14 @@ On 6 Clusters:
 | 4     | 0.821848          | 8.679386        | 25     | 6        | 256               |
 
 Here we see that as we increase the number of nodes the time does go down for 3, but jumps back up to 4. This could be due to the amount of overhead involved in running this on only 25 epochs. As we increase the number of epochs from 25 to 100 we see much clearer the advantage of using more nodes.
+
+To illustrate the point, here are the results for 100 epochs and 6 clusters:
+
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
+| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
+| 2     | 1.847004          | 34.788968       | 100    | 6        | 256               |
+| 3     | 1.797190          | 34.751091       | 100    | 6        | 256               |
+| 4     | 2.352228          | 34.801689       | 100    | 6        | 256               |
 
 <!-- TODO: Landon Write discussion about how the distributed CPU and distributed GPU compare -->
 
