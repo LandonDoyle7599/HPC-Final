@@ -2,6 +2,8 @@
 
 ### Serial Implementation
 
+Table 1
+
 | Time (s)  | Epochs | Clusters |
 | --------- | ------ | -------- |
 | 9.807173  | 50     | 3        |
@@ -20,11 +22,13 @@ TODO Aaron: Timing are done, just need speedup and efficiency calculations.
 
 Increase processes, keeping epochs the same is strong scaling.
 
+Table 2
+
 | Threads | Time Parallel (s) | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
 | ------- | ----------------- | --------------- | ------ | -------- | ------- | ---------- |
 | 4       | 10.889288         | 19.551173       | 100    | 3        |         |            |
 | 8       | 8.705353          | 19.522629       | 100    | 3        |         |            |
-| 16      | 88.33985          | 19.614534       | 100    | 3        |         |            |
+| 16      | 8.833985          | 19.614534       | 100    | 3        |         |            |
 | 4       | 12.073964         | 25.194927       | 100    | 4        |         |            |
 | 8       | 9.659430          | 25.156176       | 100    | 4        |         |            |
 | 16      | 10.108751         | 25.094426       | 100    | 4        |         |            |
@@ -35,6 +39,8 @@ Increase processes, keeping epochs the same is strong scaling.
 <!-- TODO Add discussion of results -->
 
 Increase epochs and threads proportionally is weak scaling.
+
+Table 3
 
 | Threads | Time (s)  | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
 | ------- | --------- | --------------- | ------ | -------- | ------- | ---------- |
@@ -84,6 +90,8 @@ Increase processes, keeping epochs the same is strong scaling.
 
 <!-- TODO: Aaron add speedup and efficiency -->
 
+Table 4
+
 | Threads per Block | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
 | ----------------- | -------- | --------------- | ------ | -------- | ------- | ---------- |
 | 256               | 1.726700 | 9.633755        | 50     | 3        |         |            |
@@ -101,6 +109,8 @@ Increase processes, keeping epochs the same is strong scaling.
 Increase epochs and threads proportionally is weak scaling.
 
 <!-- TODO: Aaron add speedup and efficiency -->
+
+Table 5
 
 | Threads per Block | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
 | ----------------- | -------- | --------------- | ------ | -------- | ------- | ---------- |
@@ -122,6 +132,8 @@ Increase epochs and threads proportionally is weak scaling.
 
 On 3 clusters:
 
+Table 6
+
 | Nodes | Time (s) | Time Serial (s) | Epochs | Clusters |
 | ----- | -------- | --------------- | ------ | -------- |
 | 2     | 0.766036 | 4.811508        | 25     | 3        |
@@ -130,6 +142,8 @@ On 3 clusters:
 
 On 4 clusters:
 
+Table 7
+
 | Nodes | Time (s) | Time Serial (s) | Epochs | Clusters |
 | ----- | -------- | --------------- | ------ | -------- |
 | 2     | 0.947897 | 6.203727        | 25     | 4        |
@@ -137,6 +151,8 @@ On 4 clusters:
 | 4     | 0.670900 | 6.228862        | 25     | 4        |
 
 On 6 Clusters:
+
+Table 8
 
 | Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters |
 | ----- | ----------------- | --------------- | ------ | -------- |
@@ -148,6 +164,8 @@ Notice how the parallel time is going down as we increase the number of nodes. T
 
 Now with 4 nodes but scaling up the number of epochs and the amount of data:
 
+Table 9
+
 | Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters |
 | ----- | ----------------- | --------------- | ------ | -------- |
 | 4     | 0.820076          | 8.816901        | 25     | 6        |
@@ -158,6 +176,7 @@ Now with 4 nodes but scaling up the number of epochs and the amount of data:
 ### Distributed GPU Implementation
 
 On 3 Clusters:
+Table 10
 
 | Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
@@ -166,6 +185,7 @@ On 3 Clusters:
 | 4     | 0.799928          | 4.704620        | 25     | 3        | 256               |
 
 On 4 Clusters:
+Table 11
 
 | Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
@@ -174,6 +194,7 @@ On 4 Clusters:
 | 4     | 0.804700          | 6.096105        | 25     | 4        | 256               |
 
 On 6 Clusters:
+Table 12
 
 | Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
@@ -184,6 +205,7 @@ On 6 Clusters:
 Here we see that as we increase the number of nodes the time does go down for 3, but jumps back up to 4. This could be due to the amount of overhead involved in running this on only 25 epochs. As we increase the number of epochs from 25 to 100 we see much clearer the advantage of using more nodes.
 
 To illustrate the point, here are the results for 100 epochs and 6 clusters:
+Table 13
 
 | Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
@@ -194,6 +216,7 @@ To illustrate the point, here are the results for 100 epochs and 6 clusters:
 <!-- TODO: Landon Write discussion about how the distributed CPU and distributed GPU compare -->
 
 Now with 4 nodes but scaling up the number of epochs
+Table 15
 
 | Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
@@ -205,6 +228,7 @@ Now with 4 nodes but scaling up the number of epochs
 On this table, we see that the increasing epochs does increase the time, and doubling the amount of data very nearly doubles the time. This is to be expected.
 
 100 epochs and 6 clusters and same number of nodes and different threads per block:
+Table 16
 
 | Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
