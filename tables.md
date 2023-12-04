@@ -16,11 +16,11 @@
 
 ### Parallel CPU Implementation
 
-TODO: Timing are done, just need speedup and efficiency calculations.
+TODO Aaron: Timing are done, just need speedup and efficiency calculations.
 
 Increase processes, keeping epochs the same is strong scaling.
 
-| Threads | Time Parallel (s) | Serial Time (s) | Epochs | Clusters | Speedup | Efficiency |
+| Threads | Time Parallel (s) | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
 | ------- | ----------------- | --------------- | ------ | -------- | ------- | ---------- |
 | 4       | 10.889288         | 19.551173       | 100    | 3        |         |            |
 | 8       | 8.705353          | 19.522629       | 100    | 3        |         |            |
@@ -34,49 +34,79 @@ Increase processes, keeping epochs the same is strong scaling.
 
 Increase epochs and threads proportionally is weak scaling.
 
-| Threads | Time (s)  | Serial Time | Epochs | Clusters | Speedup | Efficiency |
-| ------- | --------- | ----------- | ------ | -------- | ------- | ---------- |
-| 4       | 6.825731  | 9.807173    | 50     | 3        |         |            |
-| 8       | 8.923136  | 19.570529   | 100    | 3        |         |            |
-| 16      | 17.886764 | 38.853329   | 200    | 3        |         |            |
-| 4       | 7.926284  | 12.552126   | 50     | 4        |         |            |
-| 8       | 9.594114  | 25.115965   | 100    | 4        |         |            |
-| 16      | 19.675230 | 50.216369   | 200    | 4        |         |            |
-| 4       | 10.002409 | 17.976485   | 50     | 6        |         |            |
-| 8       | 11.812873 | 35.975967   | 100    | 6        |         |            |
-| 16      | 25.851216 | 72.608509   | 200    | 6        |         |            |
+| Threads | Time (s)  | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
+| ------- | --------- | --------------- | ------ | -------- | ------- | ---------- |
+| 4       | 6.825731  | 9.807173        | 50     | 3        |         |            |
+| 8       | 8.923136  | 19.570529       | 100    | 3        |         |            |
+| 16      | 17.886764 | 38.853329       | 200    | 3        |         |            |
+| 4       | 7.926284  | 12.552126       | 50     | 4        |         |            |
+| 8       | 9.594114  | 25.115965       | 100    | 4        |         |            |
+| 16      | 19.675230 | 50.216369       | 200    | 4        |         |            |
+| 4       | 10.002409 | 17.976485       | 50     | 6        |         |            |
+| 8       | 11.812873 | 35.975967       | 100    | 6        |         |            |
+| 16      | 25.851216 | 72.608509       | 200    | 6        |         |            |
 
 ### Single GPU Implementation
 
-TODO
+#### Analytical Discussion
+
+We are looking at the following GPU:
+
+```bash
+Device 0: "NVIDIA GeForce RTX 3090"
+  Major revision number:                         8
+  Minor revision number:                         6
+  Total amount of global memory:                 3963289600 bytes
+  Number of multiprocessors:                     82
+  Number of cores:                               656
+  Total amount of constant memory:               65536 bytes
+  Total amount of shared memory per block:       49152 bytes
+  Total number of registers available per block: 65536
+  Warp size:                                     32
+  Maximum number of threads per block:           1024
+  Maximum sizes of each dimension of a block:    1024 x 1024 x 64
+  Maximum sizes of each dimension of a grid:     2147483647 x 65535 x 65535
+  Maximum memory pitch:                          2147483647 bytes
+  Texture alignment:                             512 bytes
+  Clock rate:                                    1.70 GHz
+  Concurrent copy and execution:                 Yes
+```
+
+Becuase it can have 1024 threads per block, we will use that as our baseline. It has 82 multiprocesors, and ideally we hit our maximum number of threads and use all of the multiprocessors.
+
+#### Experimental Results
 
 Increase processes, keeping epochs the same is strong scaling.
 
-| Threads per Block | Blocks per Grid | Time (s)  | Epochs | Clusters | Speedup | Efficiency |
-| ----------------- | --------------- | --------- | ------ | -------- | ------- | ---------- |
-| 256               | xxxx            | xxxxxxxx  | 100    | 3        |         |            |
-| 512               | xxxx            | xxxxxxxxx | 100    | 3        |         |            |
-| 1024              | xxxx            | xxxxxxxx  | 100    | 3        |         |            |
-| 256               | xxxx            | xxxxxxxx  | 100    | 6        |         |            |
-| 512               | xxxx            | xxxxxxxxx | 100    | 6        |         |            |
-| 1024              | xxxx            | xxxxxxxx  | 100    | 6        |         |            |
-| 256               | xxxx            | xxxxxxxxx | 100    | 12       |         |            |
-| 512               | xxxx            | xxxxxxxxx | 100    | 12       |         |            |
-| 1024              | xxxx            | xxxxxxxxx | 100    | 12       |         |            |
+| Threads per Block | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
+| ----------------- | -------- | --------------- | ------ | -------- | ------- | ---------- |
+| 256               | 1.726700 | 9.633755        | 50     | 3        |         |            |
+| 512               | 1.678286 | 9.381626        | 50     | 3        |         |            |
+| 1024              | 1.838031 | 9.616937        | 50     | 3        |         |            |
+| 256               | 1.731712 | 12.514634       | 50     | 4        |         |            |
+| 512               | 1.718942 | 12.332335       | 50     | 4        |         |            |
+| 1024              | 1652933  | 12.598727       | 50     | 4        |         |            |
+| 256               | 1.838919 | 18.889932       | 50     | 6        |         |            |
+| 512               | 1.670835 | 19.385700       | 50     | 6        |         |            |
+| 1024              | 1.717685 | 18.611738       | 50     | 6        |         |            |
+
+<!-- TODO: Add discussion for this table -->
 
 Increase epochs and threads proportionally is weak scaling.
 
-| Threads per Block | Blocks per Grid | Time (s)  | Epochs | Clusters | Speedup | Efficiency |
-| ----------------- | --------------- | --------- | ------ | -------- | ------- | ---------- |
-| 256               | xxxx            | xxxxxxxx  | 100    | 3        |         |            |
-| 512               | xxxx            | xxxxxxxxx | 200    | 3        |         |            |
-| 1024              | xxxx            | xxxxxxxx  | 400    | 3        |         |            |
-| 256               | xxxx            | xxxxxxxx  | 100    | 6        |         |            |
-| 512               | xxxx            | xxxxxxxxx | 200    | 6        |         |            |
-| 1024              | xxxx            | xxxxxxxx  | 400    | 6        |         |            |
-| 256               | xxxx            | xxxxxxxxx | 100    | 12       |         |            |
-| 512               | xxxx            | xxxxxxxxx | 200    | 12       |         |            |
-| 1024              | xxxx            | xxxxxxxxx | 400    | 12       |         |            |
+| Threads per Block | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
+| ----------------- | -------- | --------------- | ------ | -------- | ------- | ---------- |
+| 256               | 1.726700 | 9.633755        | 50     | 3        |         |            |
+| 512               | 3.224774 | 19.231200       | 100    | 3        |         |            |
+| 1024              | 6.292316 | 38.413889       | 200    | 3        |         |            |
+| 256               | 1.731712 | 12.514634       | 50     | 4        |         |            |
+| 512               | 3.190473 | 24.911140       | 100    | 4        |         |            |
+| 1024              | 6.146267 | 50.652925       | 200    | 4        |         |            |
+| 256               | 1.838919 | 18.889932       | 50     | 6        |         |            |
+| 512               | 3.311074 | 37.237659       | 100    | 6        |         |            |
+| 1024              | 6.135140 | 75.330369       | 200    | 6        |         |            |
+
+<!-- TODO: Add discussion for this table -->
 
 ## Analysis of Distributed Implementations
 
@@ -100,7 +130,7 @@ On 4 clusters:
 
 On 6 Clusters:
 
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters |
 | ----- | ----------------- | --------------- | ------ | -------- |
 | 2     | 1.245606          | 8.818218        | 25     | 6        |
 | 3     | 0.942043          | 8.863819        | 25     | 6        |
@@ -110,7 +140,7 @@ Notice how the parallel time is going down as we increase the number of nodes. T
 
 Now with 4 nodes but scaling up the number of epochs and the amount of data:
 
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters |
 | ----- | ----------------- | --------------- | ------ | -------- |
 | 4     | 0.820076          | 8.816901        | 25     | 6        |
 | 4     | 1.595893          | 17.698479       | 50     | 6        |
@@ -121,7 +151,7 @@ Now with 4 nodes but scaling up the number of epochs and the amount of data:
 
 On 3 Clusters:
 
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
 | 2     | 0.707328          | 4.711447        | 25     | 3        | 256               |
 | 3     | 0.647141          | 4.714513        | 25     | 3        | 256               |
@@ -129,7 +159,7 @@ On 3 Clusters:
 
 On 4 Clusters:
 
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
 | 2     | 0.634951          | 6.065612        | 25     | 4        | 256               |
 | 3     | 0.814948          | 6.070404        | 25     | 4        | 256               |
@@ -137,7 +167,7 @@ On 4 Clusters:
 
 On 6 Clusters:
 
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
 | 2     | 0.778927          | 8.686541        | 25     | 6        | 256               |
 | 3     | 0.657219          | 8.690562        | 25     | 6        | 256               |
@@ -148,7 +178,7 @@ On 6 Clusters:
 
 Now with 4 nodes but scaling up the number of epochs
 
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
 | 4     | 0.821734          | 8.690958        | 25     | 6        | 256               |
 | 4     | 1.296684          | 17.392156       | 50     | 6        | 256               |
@@ -159,7 +189,7 @@ Now with 4 nodes but scaling up the number of epochs
 
 100 epochs and 6 clusters and same number of nodes and different threads per block:
 
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
 | 4     | 1.400168          | 17.441074       | 50     | 6        | 64                |
 | 4     | 1.296684          | 17.392156       | 50     | 6        | 256               |
