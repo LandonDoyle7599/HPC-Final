@@ -167,7 +167,7 @@ Now with 4 nodes but scaling up the number of epochs
 
 Note: For these 4 nodes, we have the following GPU configs:
 
-<!-- TODO Landon: Write analytical discussion for the GPUs  -->
+<!-- TODO Landon: Write analytical discussion for the GPUs and ideal block size  -->
 
 ```bash
 Device 0: "NVIDIA GeForce RTX 3090"
@@ -242,5 +242,3 @@ Device 3: "NVIDIA GeForce RTX 3090"
   Clock rate:                                    1.70 GHz
   Concurrent copy and execution:                 Yes
 ```
-
-<!-- TODO Add discussion for this table with analytical discussion of the best GPU configuration -->
