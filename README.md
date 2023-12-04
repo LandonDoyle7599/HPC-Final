@@ -132,7 +132,7 @@ We chose to use 3,4, and 6 as our testing values for the clusters because we wan
 
 ### Serial Implementation
 
-For the serial implementation we used the link provided by Dr. Petruzza [here](http://reasonabledeviations.com/2019/10/02/k-means-in-cpp/). We added onto this the z variable into both the Point3D value and how we update the clusters at the end of each epoch. We implemented the actual serial code in `serial.cpp` and the commonly used code across all implementations in `serial.hpp`. Fundamentally, this works by taking in X number of points and K randomized clusters. Every point is then assigned to a cluster based on how close it is. The clusters are then updated to reflect their nearest points, the average of the groupings, and then we run this entire process for a specified number of iterations, denoted as `epochs` in the code. 
+For the serial implementation we used the link provided by Dr. Petruzza [here](http://reasonabledeviations.com/2019/10/02/k-means-in-cpp/). We added onto this the z variable into both the Point3D value and how we update the clusters at the end of each epoch. We implemented the actual serial code in `serial.cpp` and the commonly used code across all implementations in `serial.hpp`. Fundamentally, this works by taking in X number of points and K randomized clusters. Every point is then assigned to a cluster based on how close it is. The clusters are then updated to reflect their nearest points, the average of the groupings, and then we run this entire process for a specified number of iterations, denoted as `epochs` in the code.
 
 ### Single GPU Implementation
 
@@ -174,6 +174,10 @@ In the data set there are 1240425 points, and the amount of data processed is eq
 | 48.143714 | 100    | 12       |
 | 52.172065 | 200    | 6        |
 | 95.354178 | 200    | 12       |
+
+Output for 4 Clusters:
+
+![4 cluster serial CPU](./images/4Clusters.png)
 
 Serial Implementation Visualized with 6 Clusters:
 
