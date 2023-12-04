@@ -144,6 +144,7 @@ On 6 Clusters:
 | 4     | 0.821848          | 8.679386        | 25     | 6        | 256               |
 
 <!-- TODO Add discussion for these tables above ^ -->
+<!-- TODO: Landon Write discussion about how the distributed CPU and distributed GPU compare -->
 
 Now with 4 nodes but scaling up the number of epochs
 
@@ -160,11 +161,13 @@ Now with 4 nodes but scaling up the number of epochs
 
 | Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
 | ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 4     | 1.400168          | 17441074        | 50     | 6        | 64                |
+| 4     | 1.400168          | 17.441074       | 50     | 6        | 64                |
 | 4     | 1.296684          | 17.392156       | 50     | 6        | 256               |
 | 4     | 1.410010          | 17.333747       | 50     | 6        | 1024              |
 
 Note: For these 4 nodes, we have the following GPU configs:
+
+<!-- TODO Landon: Write analytical discussion for the GPUs  -->
 
 ```bash
 Device 0: "NVIDIA GeForce RTX 3090"
