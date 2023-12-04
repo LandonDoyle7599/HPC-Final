@@ -16,7 +16,6 @@
 using namespace std;
 
  // Define a GPU device function to calculateDistance
- //TODO Test if we can use the calculateDistanceSerial function from the serial implementation here? not sure because we need to give it as a device function
  __device__ float calculateDistance(Point3D point, Point3D centroid) {
     float dx = point.x - centroid.x;
     float dy = point.y - centroid.y;

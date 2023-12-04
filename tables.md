@@ -56,7 +56,7 @@ Increase epochs and threads proportionally is weak scaling.
 
 We are looking at the following GPU:
 
-```bash
+```text
 Device 0: "NVIDIA GeForce RTX 3090"
   Major revision number:                         8
   Minor revision number:                         6

@@ -170,10 +170,15 @@ In the data set there are 1240425 points, and the amount of data processed is eq
 
 | Time (s)  | Epochs | Clusters |
 | --------- | ------ | -------- |
-| 25.816402 | 100    | 6        |
-| 48.143714 | 100    | 12       |
-| 52.172065 | 200    | 6        |
-| 95.354178 | 200    | 12       |
+| 9.807173  | 50     | 3        |
+| 12.552126 | 50     | 4        |
+| 17.976485 | 50     | 6        |
+| 19.570529 | 100    | 3        |
+| 25.194927 | 100    | 4        |
+| 35.975967 | 100    | 6        |
+| 38.853329 | 200    | 3        |
+| 50.216369 | 200    | 4        |
+| 72.608509 | 200    | 6        |
 
 Output for 4 Clusters:
 
@@ -191,13 +196,15 @@ Serial Implementation Visualized with 12 Clusters:
 
 #### Device Details from Cuda Query
 
+We are looking at the following GPU:
+
 ```text
-Device 0: "Tesla T4"
-  Major revision number:                         7
-  Minor revision number:                         5
-  Total amount of global memory:                 2770927616 bytes
-  Number of multiprocessors:                     40
-  Number of cores:                               320
+Device 0: "NVIDIA GeForce RTX 3090"
+  Major revision number:                         8
+  Minor revision number:                         6
+  Total amount of global memory:                 3963289600 bytes
+  Number of multiprocessors:                     82
+  Number of cores:                               656
   Total amount of constant memory:               65536 bytes
   Total amount of shared memory per block:       49152 bytes
   Total number of registers available per block: 65536
@@ -207,39 +214,15 @@ Device 0: "Tesla T4"
   Maximum sizes of each dimension of a grid:     2147483647 x 65535 x 65535
   Maximum memory pitch:                          2147483647 bytes
   Texture alignment:                             512 bytes
-  Clock rate:                                    1.59 GHz
+  Clock rate:                                    1.70 GHz
   Concurrent copy and execution:                 Yes
-
 ```
 
-Max Number of threads per block: 1024
-Max Number of Blocks Per SM: 16
+Becuase it can have 1024 threads per block, we will use that as our baseline. It has 82 multiprocesors, and ideally we hit our maximum number of threads and use all of the multiprocessors.
 
-<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
+#### Experimental Results
 
-| Time (s)  | Epochs | Clusters | Threads per Block | Blocks per Grid |
-| --------- | ------ | -------- | ----------------- | --------------- |
-| 6.171497  | 100    | 6        | 256               | 4704            |
-| 11.557186 | 200    | 6        | 256               | 4704            |
-| 5.903793  | 100    | 12       | 256               | 4704            |
-| 11.755927 | 200    | 12       | 256               | 4704            |
-| 35.562620 | 600    | 12       | 256               | 4704            |
-| 70.860667 | 1200   | 12       | 256               | 4704            |
-
-As you can see, compared to the serial implentation this is significantly faster. For 200 epochs on 12 clusters it took roughly 1/9th of the time.
-
-This also shows that this algorithm is strongly scalable, because as we increase the epochs (which is a multiplier on the data we use), the time increases proportionally.
-
-We can also change the number of threads per block to fully use the number of threads per block.
-
-| Time(s)   | Epochs | Clusters | Threads per Block | Blocks per Grid |
-| --------- | ------ | -------- | ----------------- | --------------- |
-| 6.224101  | 100    | 12       | 1024              | 1176            |
-| 11.819179 | 200    | 12       | 1024              | 1176            |
-| 35.537325 | 600    | 12       | 1024              | 1176            |
-| 70.771222 | 1200   | 12       | 1024              | 1176            |
-
-As shown here above, fully using the threads per block did not make any noticeable speedup in the compuation. All values are within .3 seconds of their computation at 256 threads per block.
+<!-- TODO Insert the single gpu data from tables.md -->
 
 Single GPU Implementation Visualized with 6 Clusters:
 
@@ -251,28 +234,7 @@ Single GPU Implementation Visualized with 12 Clusters:
 
 ### Parallel CPU Implementation
 
-<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
-
-This table displays scaling with an increasing number of threads while keeping the amount of data the same.
-
-| Threads | Time (s)  | Epochs | Clusters |
-| ------- | --------- | ------ | -------- |
-| 4       | 27.579025 | 100    | 6        |
-| 8       | 28.141354 | 100    | 6        |
-| 12      | 27.901411 | 100    | 6        |
-| 16      | 30.336343 | 100    | 6        |
-| 24      | 29.499232 | 100    | 6        |
-
-This table displays scaling the data keeping the number of threads the same, but increasing the amount of data (number of epochs).
-
-| Threads | Time (s)   | Epochs | Clusters |
-| ------- | ---------- | ------ | -------- |
-| 12      | 27.901411  | 100    | 6        |
-| 12      | 61.109881  | 200    | 6        |
-| 12      | 124.803791 | 400    | 6        |
-| 12      | 249.964666 | 800    | 6        |
-
-This data tells us that this is not a strongly scalable algorithm, because as we increase the number of threads, the time does not decrease. However, as we increase the amount of data, the time does increase proportionally.
+<!-- TODO Insert the parallel CPU data from tables.md -->
 
 Parallel CPU Implementation Visualized with 6 Clusters:
 
@@ -280,34 +242,40 @@ Parallel CPU Implementation Visualized with 6 Clusters:
 
 ### Distributed CPU Implementation
 
-This table displays scaling with an increasing number of nodes while keeping the amount of data the same.
+On 3 clusters:
 
-<!-- TODO Check whether this is strongly scalable and/or weakly scalable -->
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters |
+| ----- | -------- | --------------- | ------ | -------- |
+| 2     | 0.766036 | 4.811508        | 25     | 3        |
+| 3     | 0.621373 | 4.827385        | 25     | 3        |
+| 4     | 0.581396 | 4.842869        | 25     | 3        |
 
-| Nodes | Time (s) | Epochs | Clusters |
-| ----- | -------- | ------ | -------- |
-| 2     | 1.180753 | 25     | 4        |
-| 3     | .935105  | 25     | 4        |
-| 4     | .789611  | 25     | 4        |
+On 4 clusters:
 
-Now with 100 epochs and 6 clusters:
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters |
+| ----- | -------- | --------------- | ------ | -------- |
+| 2     | 0.947897 | 6.203727        | 25     | 4        |
+| 3     | 0.739652 | 6.202104        | 25     | 4        |
+| 4     | 0.670900 | 6.228862        | 25     | 4        |
 
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters |
+On 6 Clusters:
+
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters |
 | ----- | ----------------- | --------------- | ------ | -------- |
-| 2     | 6.442704          | 25.327500       | 100    | 6        |
-| 3     | 4.587259          | 25.238905       | 100    | 6        |
-| 4     | 3.824345          | 25.277028       | 100    | 6        |
+| 2     | 1.245606          | 8.818218        | 25     | 6        |
+| 3     | 0.942043          | 8.863819        | 25     | 6        |
+| 4     | 0.819143          | 8.859402        | 25     | 6        |
 
 Notice how the parallel time is going down as we increase the number of nodes. This breaks up the amount of data to process per node and allows us to process the data faster.
 
 Now with 4 nodes but scaling up the number of epochs and the amount of data:
 
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters |
 | ----- | ----------------- | --------------- | ------ | -------- |
-| 4     | 1.919520          | 12.649348       | 50     | 6        |
-| 4     | 3.824345          | 25.277028       | 100    | 6        |
-| 4     | 7.531646          | 50.564563       | 200    | 6        |
-| 4     | 15.114408         | 10.1182546      | 400    | 6        |
+| 4     | 0.820076          | 8.816901        | 25     | 6        |
+| 4     | 1.595893          | 17.698479       | 50     | 6        |
+| 4     | 3.121529          | 35.421519       | 100    | 6        |
+| 4     | 6.180246          | 70.824262       | 200    | 6        |
 
 A visualized example of the distributed CPU implementation with 4 nodes and 50 epochs:
 
@@ -315,60 +283,7 @@ A visualized example of the distributed CPU implementation with 4 nodes and 50 e
 
 ### Distributed GPU Implementation
 
-For our timings below we used 4 nodes, each with a GPU. That GPU on each is below:
-
-```bash
-Device 0: "NVIDIA GeForce RTX 2080 Ti"
-  Major revision number:                         7
-  Minor revision number:                         5
-  Total amount of global memory:                 2956460032 bytes
-  Number of multiprocessors:                     68
-  Number of cores:                               544
-  Total amount of constant memory:               65536 bytes
-  Total amount of shared memory per block:       49152 bytes
-  Total number of registers available per block: 65536
-  Warp size:                                     32
-  Maximum number of threads per block:           1024
-  Maximum sizes of each dimension of a block:    1024 x 1024 x 64
-  Maximum sizes of each dimension of a grid:     2147483647 x 65535 x 65535
-  Maximum memory pitch:                          2147483647 bytes
-  Texture alignment:                             512 bytes
-  Clock rate:                                    1.54 GHz
-  Concurrent copy and execution:                 Yes
-```
-
-<!-- TODO Decide whether this is strongly or weakly scaled -->
-
-100 epochs and 6 clusters and changing number of nodes:
-
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
-| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 2     | 2.785133          | 27.798197       | 100    | 6        | 256               |
-| 3     | 2.822513          | 27.794231       | 100    | 6        | 256               |
-| 4     | 2.838683          | 27.768236       | 100    | 6        | 256               |
-
-<!-- TODO Add discussion for this table -->
-
-100 epochs and 6 clusters and same number of nodes and different threads per block:
-
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
-| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 4     | 2.785892          | 27.932044       | 100    | 6        | 64                |
-| 4     | 2.921382          | 27.898281       | 100    | 6        | 256               |
-| 4     | 2.844672          | 28.124140       | 100    | 6        | 1024              |
-
-<!-- TODO Add discussion for this table -->
-
-Now with 4 nodes but scaling up the number of epochs and the amount of data:
-
-| Nodes | Parallel Time (s) | Serial Time (s) | Epochs | Clusters | Threads per Block |
-| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 4     | 1.564496          | 13.977806       | 50     | 6        | 256               |
-| 4     | 2.921382          | 27.898281       | 100    | 6        | 256               |
-| 4     | 5.113978          | 55.535177       | 200    | 6        | 256               |
-| 4     | 9.965394          | 111.073740      | 400    | 6        | 256               |
-
-<!-- TODO: Add comparison between this and the CPU and Single GPU Implementations. (THis one is faster by a few seconds) -->
+<!-- TODO: Add information from tables.md for distributed GPU -->
 
 Figure of the distributed GPU implementation with 6 nodes and 100 epochs:
 ![Distributed GPU](./images/Distributed-GPU-6c.png)
