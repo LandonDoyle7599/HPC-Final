@@ -222,7 +222,37 @@ Becuase it can have 1024 threads per block, we will use that as our baseline. It
 
 #### Experimental Results
 
-<!-- TODO Insert the single gpu data from tables.md -->
+The following table represents the data for the single GPU implementation with 50 epochs. The number of clusters is variable, as is the number of threads per block. The speedup is calculated by dividing the time serial by the time parallel.
+
+| Threads per Block | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup |
+| ----------------- | -------- | --------------- | ------ | -------- | ------- |
+| 256               | 1.726700 | 9.633755        | 50     | 3        | 5.57929 |
+| 512               | 1.678286 | 9.381626        | 50     | 3        | 5.59000 |
+| 1024              | 1.838031 | 9.616937        | 50     | 3        | 5.23220 |
+| 256               | 1.731712 | 12.514634       | 50     | 4        | 7.22674 |
+| 512               | 1.718942 | 12.332335       | 50     | 4        | 7.17438 |
+| 1024              | 1.652933 | 12.598727       | 50     | 4        | 7.62204 |
+| 256               | 1.838919 | 18.889932       | 50     | 6        | 10.2723 |
+| 512               | 1.670835 | 19.385700       | 50     | 6        | 11.6024 |
+| 1024              | 1.717685 | 18.611738       | 50     | 6        | 10.8354 |
+
+As you can see from the above table, the time it takes to run the parallel implementation is less than the time it takes to run the serial implementation. It is interesting to note, that while increasing the number of threads to 512 marginally increases the speedup, increasing the number of threads to 1024 actually decreases the speedup in each case.
+
+The following table represents the data for the single GPU implementation with the number of epochs increasing at a proportional rate to the number of threads per block. Data is collected for 3, 4, and 6 clusters. Again, the speedup is calculated by dividing the time serial by the time parallel.
+
+| Threads per Block | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup |
+| ----------------- | -------- | --------------- | ------ | -------- | ------- |
+| 256               | 1.726700 | 9.633755        | 50     | 3        | 5.57929 |
+| 512               | 3.224774 | 19.231200       | 100    | 3        | 5.96358 |
+| 1024              | 6.292316 | 38.413889       | 200    | 3        | 6.10489 |
+| 256               | 1.731712 | 12.514634       | 50     | 4        | 7.22674 |
+| 512               | 3.190473 | 24.911140       | 100    | 4        | 7.80798 |
+| 1024              | 6.146267 | 50.652925       | 200    | 4        | 8.24125 |
+| 256               | 1.838919 | 18.889932       | 50     | 6        | 10.2723 |
+| 512               | 3.311074 | 37.237659       | 100    | 6        | 11.2464 |
+| 1024              | 6.135140 | 75.330369       | 200    | 6        | 12.2785 |
+
+As the number of epochs is increased with the number of threads per block, the speedup increases in each case, including the increase from 512 to 1024 threads per block. It is also worth noting, that the speedup increases as the number of clusters increases.
 
 Single GPU Implementation Visualized with 6 Clusters:
 
@@ -234,7 +264,39 @@ Single GPU Implementation Visualized with 12 Clusters:
 
 ### Parallel CPU Implementation
 
-<!-- TODO Insert the parallel CPU data from tables.md -->
+The following table represents the data for the parallel CPU implementation with 100 epochs. The number of clusters is variable, as is the number of threads. The speedup is calculated by dividing the time serial by the time parallel. The efficiency is calculated by dividing the speedup by the number of threads.
+
+| Threads | Time Parallel (s) | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
+| ------- | ----------------- | --------------- | ------ | -------- | ------- | ---------- |
+| 4       | 10.889288         | 19.551173       | 100    | 3        | 1.79545 | 0.44886    |
+| 8       | 8.705353          | 19.522629       | 100    | 3        | 2.24260 | 0.28033    |
+| 16      | 8.833985          | 19.614534       | 100    | 3        | 2.22035 | 0.13877    |
+| 4       | 12.073964         | 25.194927       | 100    | 4        | 2.08671 | 0.52168    |
+| 8       | 9.659430          | 25.156176       | 100    | 4        | 2.60431 | 0.32554    |
+| 16      | 10.108751         | 25.094426       | 100    | 4        | 2.48245 | 0.15515    |
+| 4       | 20.276805         | 36.017955       | 100    | 6        | 1.77631 | 0.44408    |
+| 8       | 12.101930         | 35.999700       | 100    | 6        | 2.97471 | 0.37184    |
+| 16      | 12.805487         | 36.019349       | 100    | 6        | 2.81281 | 0.17580    |
+
+As you can see from the above table, The time it takes to run the parallel implementation is less than the time it takes to run the serial implementation. However, this is not strongly scalable, since the efficiency goes down as we increase the number of threads. 
+
+The following table represents the data for the parallel CPU implementation with the number of epochs increasing at a proportional rate to the number of threads. Data is collected for 3, 4, and 6 clusters. Again, the speedup is calculated by dividing the time serial by the time parallel. The efficiency is calculated by dividing the speedup by the number of threads.
+
+| Threads | Time (s)  | Time Serial (s) | Epochs | Clusters | Speedup | Efficiency |
+| ------- | --------- | --------------- | ------ | -------- | ------- | ---------- |
+| 4       | 6.825731  | 9.807173        | 50     | 3        | 1.43679 | 0.35920    |
+| 8       | 8.923136  | 19.570529       | 100    | 3        | 2.19323 | 0.27415    |
+| 16      | 17.886764 | 38.853329       | 200    | 3        | 2.17218 | 0.13576    |
+| 4       | 7.926284  | 12.552126       | 50     | 4        | 1.58361 | 0.39590    |
+| 8       | 9.594114  | 25.115965       | 100    | 4        | 2.61785 | 0.32723    |
+| 16      | 19.675230 | 50.216369       | 200    | 4        | 2.55226 | 0.15952    |
+| 4       | 10.002409 | 17.976485       | 50     | 6        | 1.79722 | 0.44930    |
+| 8       | 11.812873 | 35.975967       | 100    | 6        | 3.04549 | 0.38069    |
+| 16      | 25.851216 | 72.608509       | 200    | 6        | 2.80871 | 0.17554    |
+
+The above table again shows that the parallel implementation is faster than the serial implementation. However, it is not weakly scalable, since the efficiency goes down, even as we increase the number of epochs along with the number of threads.
+
+Unfortunatly, both tables show that the parallel implementation is not scalable. However, the parallel implementation is still faster than the serial implementation.
 
 Parallel CPU Implementation Visualized with 6 Clusters:
 
