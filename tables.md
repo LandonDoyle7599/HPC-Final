@@ -92,31 +92,31 @@ On 3 clusters:
 
 Table 6
 
-| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters |
-| ----- | -------- | --------------- | ------ | -------- |
-| 2     | 0.766036 | 4.811508        | 25     | 3        |
-| 3     | 0.621373 | 4.827385        | 25     | 3        |
-| 4     | 0.581396 | 4.842869        | 25     | 3        |
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ------- |
+| 2     | 0.766036 | 4.811508        | 25     | 3        | 6.28104 |
+| 3     | 0.621373 | 4.827385        | 25     | 3        | 7.76890 |
+| 4     | 0.581396 | 4.842869        | 25     | 3        | 8.32972 |
 
 On 4 clusters:
 
 Table 7
 
-| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters |
-| ----- | -------- | --------------- | ------ | -------- |
-| 2     | 0.947897 | 6.203727        | 25     | 4        |
-| 3     | 0.739652 | 6.202104        | 25     | 4        |
-| 4     | 0.670900 | 6.228862        | 25     | 4        |
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ------- |
+| 2     | 0.947897 | 6.203727        | 25     | 4        | 6.54472 |
+| 3     | 0.739652 | 6.202104        | 25     | 4        | 8.38516 |
+| 4     | 0.670900 | 6.228862        | 25     | 4        | 9.28433 |
 
 On 6 Clusters:
 
 Table 8
 
-| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters |
-| ----- | ----------------- | --------------- | ------ | -------- |
-| 2     | 1.245606          | 8.818218        | 25     | 6        |
-| 3     | 0.942043          | 8.863819        | 25     | 6        |
-| 4     | 0.819143          | 8.859402        | 25     | 6        |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Speedup |
+| ----- | ----------------- | --------------- | ------ | -------- | ------- |
+| 2     | 1.245606          | 8.818218        | 25     | 6        | 7.07946 |
+| 3     | 0.942043          | 8.863819        | 25     | 6        | 9.40914 |
+| 4     | 0.819143          | 8.859402        | 25     | 6        | 10.8154 |
 
 Notice how the parallel time is going down as we increase the number of nodes. This breaks up the amount of data to process per node and allows us to process the data faster.
 
@@ -124,75 +124,81 @@ Now with 4 nodes but scaling up the number of epochs and the amount of data:
 
 Table 9
 
-| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters |
-| ----- | ----------------- | --------------- | ------ | -------- |
-| 4     | 0.820076          | 8.816901        | 25     | 6        |
-| 4     | 1.595893          | 17.698479       | 50     | 6        |
-| 4     | 3.121529          | 35.421519       | 100    | 6        |
-| 4     | 6.180246          | 70.824262       | 200    | 6        |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Speedup |
+| ----- | ----------------- | --------------- | ------ | -------- | ------- |
+| 4     | 0.820076          | 8.816901        | 25     | 6        | 10.7513 |
+| 4     | 1.595893          | 17.698479       | 50     | 6        | 11.0900 |
+| 4     | 3.121529          | 35.421519       | 100    | 6        | 11.3474 |
+| 4     | 6.180246          | 70.824262       | 200    | 6        | 11.4597 |
+
+The above table shows that as we increase the number of epochs, the time increases proportionally. This is to be expected. The speedup also increases as the amount of data increases.
 
 ### Distributed GPU Implementation
 
 On 3 Clusters:
 Table 10
 
-| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
-| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 2     | 0.707328          | 4.711447        | 25     | 3        | 256               |
-| 3     | 0.647141          | 4.714513        | 25     | 3        | 256               |
-| 4     | 0.799928          | 4.704620        | 25     | 3        | 256               |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block | Speedup |
+| ----- | ----------------- | --------------- | ------ | -------- | ----------------- | ------- |
+| 2     | 0.707328          | 4.711447        | 25     | 3        | 256               | 6.66090 |
+| 3     | 0.647141          | 4.714513        | 25     | 3        | 256               | 7.28514 |
+| 4     | 0.799928          | 4.704620        | 25     | 3        | 256               | 5.88130 |
 
 On 4 Clusters:
 Table 11
 
-| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
-| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 2     | 0.634951          | 6.065612        | 25     | 4        | 256               |
-| 3     | 0.814948          | 6.070404        | 25     | 4        | 256               |
-| 4     | 0.804700          | 6.096105        | 25     | 4        | 256               |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block | Speedup |
+| ----- | ----------------- | --------------- | ------ | -------- | ----------------- | ------- |
+| 2     | 0.634951          | 6.065612        | 25     | 4        | 256               | 9.55288 |
+| 3     | 0.814948          | 6.070404        | 25     | 4        | 256               | 7.44882 |
+| 4     | 0.804700          | 6.096105        | 25     | 4        | 256               | 7.57562 |
 
 On 6 Clusters:
 Table 12
 
-| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
-| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 2     | 0.778927          | 8.686541        | 25     | 6        | 256               |
-| 3     | 0.657219          | 8.690562        | 25     | 6        | 256               |
-| 4     | 0.821848          | 8.679386        | 25     | 6        | 256               |
+| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block | Speedup |
+| ----- | ----------------- | --------------- | ------ | -------- | ----------------- | ------- |
+| 2     | 0.778927          | 8.686541        | 25     | 6        | 256               | 11.1519 |
+| 3     | 0.657219          | 8.690562        | 25     | 6        | 256               | 13.2232 |
+| 4     | 0.821848          | 8.679386        | 25     | 6        | 256               | 10.5608 |
 
 Here we see that as we increase the number of nodes the time does go down for 3, but jumps back up to 4. This could be due to the amount of overhead involved in running this on only 25 epochs. As we increase the number of epochs from 25 to 100 we see much clearer the advantage of using more nodes.
 
 To illustrate the point, here are the results for 100 epochs and 6 clusters:
 Table 13
 
-| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
-| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 2     | 1.847004          | 34.788968       | 100    | 6        | 256               |
-| 3     | 1.797190          | 34.751091       | 100    | 6        | 256               |
-| 4     | 2.352228          | 34.801689       | 100    | 6        | 256               |
+18.83535065
+19.33634785
+14.79520225
+
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
+| ----- | -------- | --------------- | ------ | -------- | ----------------- |
+| 2     | 1.847004 | 34.788968       | 100    | 6        | 256               |
+| 3     | 1.797190 | 34.751091       | 100    | 6        | 256               |
+| 4     | 2.352228 | 34.801689       | 100    | 6        | 256               |
 
 <!-- TODO: Landon Write discussion about how the distributed CPU and distributed GPU compare -->
 
 Now with 4 nodes but scaling up the number of epochs
 Table 15
 
-| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
-| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 4     | 0.821734          | 8.690958        | 25     | 6        | 256               |
-| 4     | 1.296684          | 17.392156       | 50     | 6        | 256               |
-| 4     | 2.257343          | 34.808612       | 100    | 6        | 256               |
-| 4     | 4.277128          | 69.621106       | 200    | 6        | 256               |
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ----------------- | ------- |
+| 4     | 0.821734 | 8.690958        | 25     | 6        | 256               | 10.5763 |
+| 4     | 1.296684 | 17.392156       | 50     | 6        | 256               | 13.4127 |
+| 4     | 2.257343 | 34.808612       | 100    | 6        | 256               | 15.4201 |
+| 4     | 4.277128 | 69.621106       | 200    | 6        | 256               | 16.2775 |
 
-On this table, we see that the increasing epochs does increase the time, and doubling the amount of data very nearly doubles the time. This is to be expected.
+On this table, we see that the increasing epochs does increase the time, and doubling the amount of data very nearly doubles the time. This is to be expected. The speedup also increases as the amount of data increases, similar to the distributed CPU implementation.
 
 100 epochs and 6 clusters and same number of nodes and different threads per block:
 Table 16
 
-| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block |
-| ----- | ----------------- | --------------- | ------ | -------- | ----------------- |
-| 4     | 1.400168          | 17.441074       | 50     | 6        | 64                |
-| 4     | 1.296684          | 17.392156       | 50     | 6        | 256               |
-| 4     | 1.410010          | 17.333747       | 50     | 6        | 1024              |
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ----------------- | ------- |
+| 4     | 1.400168 | 17.441074       | 50     | 6        | 64                | 12.4564 |
+| 4     | 1.296684 | 17.392156       | 50     | 6        | 256               | 13.4127 |
+| 4     | 1.410010 | 17.333747       | 50     | 6        | 1024              | 12.2933 |
 
 Note: For these 4 nodes, we have the following GPU configs:
 

@@ -278,7 +278,7 @@ The following table represents the data for the parallel CPU implementation with
 | 8       | 12.101930         | 35.999700       | 100    | 6        | 2.97471 | 0.37184    |
 | 16      | 12.805487         | 36.019349       | 100    | 6        | 2.81281 | 0.17580    |
 
-As you can see from the above table, The time it takes to run the parallel implementation is less than the time it takes to run the serial implementation. However, this is not strongly scalable, since the efficiency goes down as we increase the number of threads. 
+As you can see from the above table, The time it takes to run the parallel implementation is less than the time it takes to run the serial implementation. However, this is not strongly scalable, since the efficiency goes down as we increase the number of threads.
 
 The following table represents the data for the parallel CPU implementation with the number of epochs increasing at a proportional rate to the number of threads. Data is collected for 3, 4, and 6 clusters. Again, the speedup is calculated by dividing the time serial by the time parallel. The efficiency is calculated by dividing the speedup by the number of threads.
 
@@ -306,38 +306,40 @@ Parallel CPU Implementation Visualized with 6 Clusters:
 
 On 3 clusters:
 
-| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters |
-| ----- | -------- | --------------- | ------ | -------- |
-| 2     | 0.766036 | 4.811508        | 25     | 3        |
-| 3     | 0.621373 | 4.827385        | 25     | 3        |
-| 4     | 0.581396 | 4.842869        | 25     | 3        |
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ------- |
+| 2     | 0.766036 | 4.811508        | 25     | 3        | 6.28104 |
+| 3     | 0.621373 | 4.827385        | 25     | 3        | 7.76890 |
+| 4     | 0.581396 | 4.842869        | 25     | 3        | 8.32972 |
 
 On 4 clusters:
 
-| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters |
-| ----- | -------- | --------------- | ------ | -------- |
-| 2     | 0.947897 | 6.203727        | 25     | 4        |
-| 3     | 0.739652 | 6.202104        | 25     | 4        |
-| 4     | 0.670900 | 6.228862        | 25     | 4        |
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ------- |
+| 2     | 0.947897 | 6.203727        | 25     | 4        | 6.54472 |
+| 3     | 0.739652 | 6.202104        | 25     | 4        | 8.38516 |
+| 4     | 0.670900 | 6.228862        | 25     | 4        | 9.28433 |
 
 On 6 Clusters:
 
-| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters |
-| ----- | ----------------- | --------------- | ------ | -------- |
-| 2     | 1.245606          | 8.818218        | 25     | 6        |
-| 3     | 0.942043          | 8.863819        | 25     | 6        |
-| 4     | 0.819143          | 8.859402        | 25     | 6        |
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ------- |
+| 2     | 1.245606 | 8.818218        | 25     | 6        | 7.07946 |
+| 3     | 0.942043 | 8.863819        | 25     | 6        | 9.40914 |
+| 4     | 0.819143 | 8.859402        | 25     | 6        | 10.8154 |
 
-Notice how the parallel time is going down as we increase the number of nodes. This breaks up the amount of data to process per node and allows us to process the data faster.
+Notice how the parallel time is going down as we increase the number of nodes in the above tables. Increasing the number of nodes breaks up the amount of data to process per node and allows us to process the data faster. It is also worth noting, that increasing the number of clusters increases the speedup.
 
-Now with 4 nodes but scaling up the number of epochs and the amount of data:
+Increasing the number of epochs also increases the speedup, as shown in the following table:
 
-| Nodes | Parallel Time (s) | Time Serial (s) | Epochs | Clusters |
-| ----- | ----------------- | --------------- | ------ | -------- |
-| 4     | 0.820076          | 8.816901        | 25     | 6        |
-| 4     | 1.595893          | 17.698479       | 50     | 6        |
-| 4     | 3.121529          | 35.421519       | 100    | 6        |
-| 4     | 6.180246          | 70.824262       | 200    | 6        |
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ------- |
+| 4     | 0.820076 | 8.816901        | 25     | 6        | 10.7513 |
+| 4     | 1.595893 | 17.698479       | 50     | 6        | 11.0900 |
+| 4     | 3.121529 | 35.421519       | 100    | 6        | 11.3474 |
+| 4     | 6.180246 | 70.824262       | 200    | 6        | 11.4597 |
+
+The above table shows that as we increase the number of epochs, the time increases proportionally. This is to be expected. The speedup also increases as the amount of data increases.
 
 A visualized example of the distributed CPU implementation with 4 nodes and 50 epochs:
 
@@ -345,7 +347,52 @@ A visualized example of the distributed CPU implementation with 4 nodes and 50 e
 
 ### Distributed GPU Implementation
 
-<!-- TODO: Add information from tables.md for distributed GPU -->
+On 3 Clusters:
+
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ----------------- | ------- |
+| 2     | 0.707328 | 4.711447        | 25     | 3        | 256               | 6.66090 |
+| 3     | 0.647141 | 4.714513        | 25     | 3        | 256               | 7.28514 |
+| 4     | 0.799928 | 4.704620        | 25     | 3        | 256               | 5.88130 |
+
+On 4 Clusters:
+
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ----------------- | ------- |
+| 2     | 0.634951 | 6.065612        | 25     | 4        | 256               | 9.55288 |
+| 3     | 0.814948 | 6.070404        | 25     | 4        | 256               | 7.44882 |
+| 4     | 0.804700 | 6.096105        | 25     | 4        | 256               | 7.57562 |
+
+On 6 Clusters:
+
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ----------------- | ------- |
+| 2     | 0.778927 | 8.686541        | 25     | 6        | 256               | 11.1519 |
+| 3     | 0.657219 | 8.690562        | 25     | 6        | 256               | 13.2232 |
+| 4     | 0.821848 | 8.679386        | 25     | 6        | 256               | 10.5608 |
+
+It is interesting to note that while the speedup usually increases as we increase the number of nodes from 2 to 3, it decreases when we increase the number of nodes from 3 to 4. This is likely due to the fact that we are using a distributed GPU, and the overhead of copying data to and from the GPU is slowing down the process.
+
+However, increasing the number of epochs increases the speedup in a similar behavior to the distributed CPU implementation, as shown in the following table:
+
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ----------------- | ------- |
+| 4     | 0.821734 | 8.690958        | 25     | 6        | 256               | 10.5763 |
+| 4     | 1.296684 | 17.392156       | 50     | 6        | 256               | 13.4127 |
+| 4     | 2.257343 | 34.808612       | 100    | 6        | 256               | 15.4201 |
+| 4     | 4.277128 | 69.621106       | 200    | 6        | 256               | 16.2775 |
+
+On this table, we see that the increasing epochs does increase the time, and doubling the amount of data very nearly doubles the time. This is to be expected. The speedup also increases as the amount of data increases, similar to the distributed CPU implementation.
+
+As expected, the distributed GPU implementation is generally faster than the distributed CPU implementation, however, it depends more on an ideal configuration of nodes and threads per block. The following table shows changes in the speedup as we change the number of threads per block:
+
+| Nodes | Time (s) | Time Serial (s) | Epochs | Clusters | Threads per Block | Speedup |
+| ----- | -------- | --------------- | ------ | -------- | ----------------- | ------- |
+| 4     | 1.400168 | 17.441074       | 50     | 6        | 64                | 12.4564 |
+| 4     | 1.296684 | 17.392156       | 50     | 6        | 256               | 13.4127 |
+| 4     | 1.410010 | 17.333747       | 50     | 6        | 1024              | 12.2933 |
+
+As you can see, the speedup is highest when we use 256 threads per block, and decreases when we use 64 or 1024 threads per block. Thus, the ideal configuration for the distributed GPU implementation is 256 threads per block.
 
 Figure of the distributed GPU implementation with 6 nodes and 100 epochs:
 ![Distributed GPU](./images/Distributed-GPU-6c.png)
